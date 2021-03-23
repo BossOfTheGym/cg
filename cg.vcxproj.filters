@@ -1,2 +1,114 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
-<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003" />
+<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <Filter Include="tests">
+      <UniqueIdentifier>{08cb628c-3fe4-47b2-8649-25d9b6e2f5c9}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="curve">
+      <UniqueIdentifier>{2acd2ff6-668a-4136-9ac8-14fb3c96b182}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="section">
+      <UniqueIdentifier>{657de78c-5f85-4f29-9c35-698002ec872d}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="primitive">
+      <UniqueIdentifier>{ae77c86d-9c13-40a4-af7b-1f04f882fd7f}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="core">
+      <UniqueIdentifier>{09194a2b-d556-49d4-a44d-a68c1f68bfd0}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="pqueue">
+      <UniqueIdentifier>{7fb0bf3f-9691-49a9-b8d9-c8d059ecc7e4}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="ds">
+      <UniqueIdentifier>{6d69525a-db17-4f8e-b3d1-65763c28c4c4}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="storage">
+      <UniqueIdentifier>{7ade8e57-3aa8-4505-84e7-4e7ddc108b70}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="hull">
+      <UniqueIdentifier>{730c8fdb-1697-4f3a-9ba4-513f17d5c33f}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="sort">
+      <UniqueIdentifier>{025738f8-7d93-43db-a0a8-5d3c159146e1}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="main">
+      <UniqueIdentifier>{41233188-87ab-401f-9129-ebcb50416037}</UniqueIdentifier>
+    </Filter>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="src\test_util.h">
+      <Filter>tests</Filter>
+    </ClInclude>
+    <ClInclude Include="src\trb_test.h">
+      <Filter>tests</Filter>
+    </ClInclude>
+    <ClInclude Include="src\ttrb_test.h">
+      <Filter>tests</Filter>
+    </ClInclude>
+    <ClInclude Include="src\primitive.h">
+      <Filter>primitive</Filter>
+    </ClInclude>
+    <ClInclude Include="src\trb.h">
+      <Filter>ds</Filter>
+    </ClInclude>
+    <ClInclude Include="src\ttrb.h">
+      <Filter>ds</Filter>
+    </ClInclude>
+    <ClInclude Include="src\section.h">
+      <Filter>section</Filter>
+    </ClInclude>
+    <ClInclude Include="src\quadtree_test.h">
+      <Filter>tests</Filter>
+    </ClInclude>
+    <ClInclude Include="src\bezier.h">
+      <Filter>curve</Filter>
+    </ClInclude>
+    <ClInclude Include="src\core.h">
+      <Filter>core</Filter>
+    </ClInclude>
+    <ClInclude Include="src\pqueue.h">
+      <Filter>pqueue</Filter>
+    </ClInclude>
+    <ClInclude Include="src\quadtree.h">
+      <Filter>ds</Filter>
+    </ClInclude>
+    <ClInclude Include="src\list.h">
+      <Filter>ds</Filter>
+    </ClInclude>
+    <ClInclude Include="src\pool_storage.h">
+      <Filter>storage</Filter>
+    </ClInclude>
+    <ClInclude Include="src\convex_hull.h">
+      <Filter>hull</Filter>
+    </ClInclude>
+    <ClInclude Include="src\dcel.h">
+      <Filter>ds</Filter>
+    </ClInclude>
+    <ClInclude Include="src\qsort.h">
+      <Filter>sort</Filter>
+    </ClInclude>
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="src\trb_test.cpp">
+      <Filter>tests</Filter>
+    </ClCompile>
+    <ClCompile Include="src\ttrb_test.cpp">
+      <Filter>tests</Filter>
+    </ClCompile>
+    <ClCompile Include="src\primitive.cpp">
+      <Filter>primitive</Filter>
+    </ClCompile>
+    <ClCompile Include="src\section.cpp">
+      <Filter>section</Filter>
+    </ClCompile>
+    <ClCompile Include="src\quadtree_test.cpp">
+      <Filter>tests</Filter>
+    </ClCompile>
+    <ClCompile Include="src\qsort.cpp">
+      <Filter>sort</Filter>
+    </ClCompile>
+    <ClCompile Include="main.cpp">
+      <Filter>main</Filter>
+    </ClCompile>
+  </ItemGroup>
+</Project>
