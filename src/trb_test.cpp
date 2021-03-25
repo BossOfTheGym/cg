@@ -12,6 +12,184 @@
 #include <iostream>
 #include <numeric>
 
+
+namespace
+{
+    // DEBUG
+    static void dfs(TreeRB* nil, TreeRB* root)
+    {
+        if (root != nil)
+        {
+            dfs(nil, root->left);
+            std::cout << "(" << (root->parent != nil ? (int)root->parent->key : -1) << " " << root->key << " " << (int)root->color << ") ";
+            dfs(nil, root->right);
+        }
+    }
+
+    // DEBUG
+    static i32 invariant(TreeRB* nil, TreeRB* root)
+    {
+        if (root != nil)
+        {
+            auto invL = invariant(nil, root->left);
+            auto invR = invariant(nil, root->right);
+            if (invL == -1 || invR == -1 || invL != invR)
+            {
+                return -1;
+            }
+
+            return (root->color == TreeRB::Color::Black ? 1 : 0) + invL;
+        }
+
+        return 0;
+    }
+
+    // DEBUG
+    static bool valid_nil(TreeRB* nil)
+    {
+        return nil->left  == nil
+            && nil->right == nil
+            && nil->color == TreeRB::Color::Black;
+    }
+}
+
+// DEBUG
+struct MySet
+{
+    MySet()
+    {
+        nil = std::make_unique<TreeRB>();
+        nil->left = nil.get();
+        nil->right = nil.get();
+        nil->color = TreeRB::Color::Black;
+
+        root = nil.get();
+    }
+
+    ~MySet()
+    {
+        clear();
+    }
+
+    void add(u32 key)
+    {
+        root = TreeRB::insert(nil.get(), root, new TreeRB{key});
+    }
+
+    bool has(u32 key)
+    {
+        return TreeRB::find(nil.get(), root, key) != nil.get();
+    }
+
+    void remove(u32 key)
+    {
+        if (auto node = TreeRB::find(nil.get(), root, key); node != nil.get())
+        {
+            root = TreeRB::remove(nil.get(), root, node);
+
+            delete node;
+        }
+    }
+
+    void clear()
+    {
+        clearImpl(root);
+
+        root = nil.get();
+    }
+
+    void clearImpl(TreeRB* node)
+    {
+        if (node != nil.get())
+        {
+            clearImpl(node->left);
+            clearImpl(node->right);
+
+            delete node;
+        }
+    }
+
+
+    TreeRB* lowerBound(u32 key)
+    {
+        return TreeRB::lower_bound(nil.get(), root, key);
+    }
+
+    TreeRB* upperBound(u32 key)
+    {
+        return TreeRB::upper_bound(nil.get(), root, key);
+    }
+
+    TreeRB* min()
+    {
+        return TreeRB::tree_min(nil.get(), root);
+    }
+
+    TreeRB* max()
+    {
+        return TreeRB::tree_max(nil.get(), root);
+    }
+
+    TreeRB* succ(TreeRB* node)
+    {
+        return TreeRB::successor(nil.get(), node);
+    }
+
+    TreeRB* pred(TreeRB* node)
+    {
+        return TreeRB::predecessor(nil.get(), node);
+    }
+
+
+    bool isNil(TreeRB* node)
+    {
+        return node == nil.get();
+    }
+
+
+    void dfs()
+    {
+        ::dfs(nil.get(), root);
+
+        std::cout << std::endl;
+    }
+
+    void traverse()
+    {
+        auto it = min();
+        while (it != nil.get())
+        {
+            it = succ(it);
+        }
+
+        it = max();
+        while (it != nil.get())
+        {
+            it = pred(it);
+        }
+    }
+
+    bool invariant()
+    {
+        return ::invariant(nil.get(), root) != -1;
+    }
+
+    bool validNil()
+    {
+        return valid_nil(nil.get());
+    }
+
+
+    bool empty()
+    {
+        return root == nil.get();
+    }
+
+
+    std::unique_ptr<TreeRB> nil{};
+    TreeRB* root{};
+};
+
 void test_set_stress()
 {
     std::set<u32> s;

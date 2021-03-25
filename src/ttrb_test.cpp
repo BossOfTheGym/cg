@@ -11,8 +11,195 @@
 #include <numeric>
 #include <iostream>
 
+namespace
+{
+    template<class Key>
+    void dfs(ThreadedTreeRB<Key>* nil, ThreadedTreeRB<Key>* root)
+    {
+        if (root != nil)
+        {
+            dfs(nil, root->left);
+            std::cout << "(" 
+                << (root->parent != nil ? (int)root->parent->key : -1) << " "
+                << (root->prev != nil ? (int)root->prev->key : -1) << " "
+                << (root->next != nil ? (int)root->next->key : -1) << " | "
+                << root->key << " " 
+                << (int)root->color << ") ";
+            dfs(nil, root->right);
+        }
+    }
 
-using MySet = MyThreadedSet;
+    template<class Key>
+    i32 invariant(ThreadedTreeRB<Key>* nil, ThreadedTreeRB<Key>* root)
+    {
+        if (root != nil)
+        {
+            auto invL = invariant(nil, root->left);
+            auto invR = invariant(nil, root->right);
+            if (invL == -1 || invR == -1 || invL != invR)
+            {
+                return -1;
+            }
+
+            return (root->color == ThreadedTreeRB<Key>::Color::Black ? 1 : 0) + invL;
+        }
+
+        return 0;
+    }
+
+    template<class Key>
+    bool valid_nil(ThreadedTreeRB<Key>* nil)
+    {
+        return nil->left == nil
+            && nil->right == nil
+            && nil->color == ThreadedTreeRB<Key>::Color::Black;
+    }
+
+    template<class Key>
+    struct MyThreadedSet
+    {
+        MyThreadedSet()
+        {
+            nil = std::make_unique<ThreadedTreeRB<Key>>();
+            nil->left  = nil.get();
+            nil->right = nil.get();
+            nil->prev  = nil.get();
+            nil->next  = nil.get();
+
+            nil->color = ThreadedTreeRB<Key>::Color::Black;
+
+            root = nil.get();
+        }
+
+        ~MyThreadedSet()
+        {
+            clear();
+        }
+
+        void add(u32 key)
+        {
+            root = ThreadedTreeRB<Key>::insert(nil.get(), root, new ThreadedTreeRB<Key>{key});
+        }
+
+        bool has(u32 key)
+        {
+            return ThreadedTreeRB<Key>::find(nil.get(), root, key) != nil.get();
+        }
+
+        void remove(u32 key)
+        {
+            if (auto node = ThreadedTreeRB<Key>::find(nil.get(), root, key); node != nil.get())
+            {
+                root = ThreadedTreeRB<Key>::remove(nil.get(), root, node);
+
+                delete node;
+            }
+        }
+
+        void clear()
+        {
+            clearImpl(root);
+
+            root = nil.get();
+            nil->prev = nil.get();
+            nil->next = nil.get();
+            nil->parent = nullptr;
+        }
+
+        void clearImpl(ThreadedTreeRB<Key>* node)
+        {
+            if (node != nil.get())
+            {
+                clearImpl(node->left);
+                clearImpl(node->right);
+
+                delete node;
+            }
+        }
+
+
+        ThreadedTreeRB<Key>* lowerBound(u32 key)
+        {
+            return ThreadedTreeRB<Key>::lower_bound(nil.get(), root, key);
+        }
+
+        ThreadedTreeRB<Key>* upperBound(u32 key)
+        {
+            return ThreadedTreeRB<Key>::upper_bound(nil.get(), root, key);
+        }
+
+        ThreadedTreeRB<Key>* min()
+        {
+            return ThreadedTreeRB<Key>::tree_min(nil.get(), root);
+        }
+
+        ThreadedTreeRB<Key>* max()
+        {
+            return ThreadedTreeRB<Key>::tree_max(nil.get(), root);
+        }
+
+        ThreadedTreeRB<Key>* succ(ThreadedTreeRB<Key>* node)
+        {
+            return ThreadedTreeRB<Key>::successor(nil.get(), node);
+        }
+
+        ThreadedTreeRB<Key>* pred(ThreadedTreeRB<Key>* node)
+        {
+            return ThreadedTreeRB<Key>::predecessor(nil.get(), node);
+        }
+
+
+        bool isNil(ThreadedTreeRB<Key>* node)
+        {
+            return node == nil.get();
+        }
+
+
+        void dfs()
+        {
+            ::dfs(nil.get(), root);
+
+            std::cout << std::endl;
+        }
+
+        void traverse()
+        {
+            auto it = min();
+            while (it != nil.get())
+            {
+                it = succ(it);
+            }
+
+            it = max();
+            while (it != nil.get())
+            {
+                it = pred(it);
+            }
+        }
+
+        bool invariant()
+        {
+            return ::invariant(nil.get(), root) != -1;
+        }
+
+        bool validNil()
+        {
+            return ::valid_nil(nil.get());
+        }
+
+
+        bool empty()
+        {
+            return root == nil.get();
+        }
+
+
+        std::unique_ptr<ThreadedTreeRB<Key>> nil{};
+        ThreadedTreeRB<Key>* root{};
+    };
+}
+
+using MySet = MyThreadedSet<u32>;
 using namespace std::string_literals;
 
 void test_threaded_0()

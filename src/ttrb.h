@@ -9,6 +9,7 @@
 // TODO : create simple template
 // TODO : iterator
 // TODO : join, split
+template<class Key>
 struct ThreadedTreeRB
 {
     enum class Color : char
@@ -16,9 +17,6 @@ struct ThreadedTreeRB
         Black = 0,
         Red = 1,
     };
-
-    using Key = u32;
-
 
     static ThreadedTreeRB* tree_min(ThreadedTreeRB* nil, ThreadedTreeRB* root)
     {
@@ -108,6 +106,7 @@ struct ThreadedTreeRB
 
 
     // NOTE : node != NIL, node in default state except key
+    // NOTE : requires compare
     static ThreadedTreeRB* insert(ThreadedTreeRB* nil, ThreadedTreeRB* root, ThreadedTreeRB* node)
     {
         assert(node != nil);
@@ -159,6 +158,7 @@ struct ThreadedTreeRB
         return fix_insert(nil, root, node);
     }
 
+    // NOTE : requires compare
     static ThreadedTreeRB* search_insert(ThreadedTreeRB* nil, ThreadedTreeRB* root, const Key& key)
     {
         ThreadedTreeRB* prev = nil;
@@ -166,7 +166,7 @@ struct ThreadedTreeRB
         while (curr != nil)
         {
             prev = curr;
-            if (key < curr->key)
+            if (key < curr->key) // compare
             {
                 curr = curr->left;
             }
@@ -249,10 +249,6 @@ struct ThreadedTreeRB
         Color removed = node->color;
         ThreadedTreeRB* restore = nil;
 
-        // list remove
-        node->prev->next = node->next;
-        node->next->prev = node->prev;
-
         if (node->left == nil)
         {
             restore = node->right;
@@ -267,7 +263,8 @@ struct ThreadedTreeRB
         }
         else
         {
-            auto leftmost = tree_min(nil, node->right);
+            // auto leftmost = tree_min(nil, node->right);
+            auto leftmost = node->next;
 
             removed = leftmost->color;
             restore = leftmost->right;
@@ -300,6 +297,10 @@ struct ThreadedTreeRB
         node->parent = nullptr;
         node->left   = nullptr;
         node->right  = nullptr;
+
+        // list
+        node->prev->next = node->next;
+        node->next->prev = node->prev;
 
         node->prev   = nullptr;
         node->next   = nullptr;
@@ -421,8 +422,8 @@ struct ThreadedTreeRB
         return root;
     }
 
-
-    static ThreadedTreeRB* find(ThreadedTreeRB* nil, ThreadedTreeRB* root, u32 key)
+    // NOTE : requires compare
+    static ThreadedTreeRB* find(ThreadedTreeRB* nil, ThreadedTreeRB* root, const Key& key)
     {
         ThreadedTreeRB* curr = root;
         while (curr != nil && curr->key != key)
@@ -450,6 +451,7 @@ struct ThreadedTreeRB
         return node->next;
     }
 
+    // NOTE : requires compare
     static ThreadedTreeRB* lower_bound(ThreadedTreeRB* nil, ThreadedTreeRB* root, const Key& key)
     {
         ThreadedTreeRB* lb = nil;
@@ -468,6 +470,7 @@ struct ThreadedTreeRB
         return lb;
     }
 
+    // NOTE : requires compare
     static ThreadedTreeRB* upper_bound(ThreadedTreeRB* nil, ThreadedTreeRB* root, const Key& key)
     {
         ThreadedTreeRB* ub = nil;
@@ -502,49 +505,6 @@ struct ThreadedTreeRB
     }
 
 
-    // DEBUG
-    static void dfs(ThreadedTreeRB* nil, ThreadedTreeRB* root)
-    {
-        if (root != nil)
-        {
-            dfs(nil, root->left);
-            std::cout << "(" 
-                << (root->parent != nil ? (int)root->parent->key : -1) << " "
-                << (root->prev != nil ? (int)root->prev->key : -1) << " "
-                << (root->next != nil ? (int)root->next->key : -1) << " | "
-                << root->key << " " 
-                << (int)root->color << ") ";
-            dfs(nil, root->right);
-        }
-    }
-
-    // DEBUG
-    static i32 invariant(ThreadedTreeRB* nil, ThreadedTreeRB* root)
-    {
-        if (root != nil)
-        {
-            auto invL = invariant(nil, root->left);
-            auto invR = invariant(nil, root->right);
-            if (invL == -1 || invR == -1 || invL != invR)
-            {
-                return -1;
-            }
-
-            return (root->color == Color::Black ? 1 : 0) + invL;
-        }
-
-        return 0;
-    }
-
-    // DEBUG
-    static bool valid_nil(ThreadedTreeRB* nil)
-    {
-        return nil->left == nil
-            && nil->right == nil
-            && nil->color == Color::Black;
-    }
-
-
     Key key{};
 
     ThreadedTreeRB* parent{};
@@ -555,148 +515,4 @@ struct ThreadedTreeRB
     ThreadedTreeRB* next{};
 
     Color color{Color::Black};
-};
-
-
-// DEBUG
-struct MyThreadedSet
-{
-    MyThreadedSet()
-    {
-        nil = std::make_unique<ThreadedTreeRB>();
-        nil->left  = nil.get();
-        nil->right = nil.get();
-        nil->prev  = nil.get();
-        nil->next  = nil.get();
-
-        nil->color = ThreadedTreeRB::Color::Black;
-
-        root = nil.get();
-    }
-
-    ~MyThreadedSet()
-    {
-        clear();
-    }
-
-    void add(u32 key)
-    {
-        root = ThreadedTreeRB::insert(nil.get(), root, new ThreadedTreeRB{key});
-    }
-
-    bool has(u32 key)
-    {
-        return ThreadedTreeRB::find(nil.get(), root, key) != nil.get();
-    }
-
-    void remove(u32 key)
-    {
-        if (auto node = ThreadedTreeRB::find(nil.get(), root, key); node != nil.get())
-        {
-            root = ThreadedTreeRB::remove(nil.get(), root, node);
-
-            delete node;
-        }
-    }
-
-    void clear()
-    {
-        clearImpl(root);
-
-        root = nil.get();
-        nil->prev = nil.get();
-        nil->next = nil.get();
-        nil->parent = nullptr;
-    }
-
-    void clearImpl(ThreadedTreeRB* node)
-    {
-        if (node != nil.get())
-        {
-            clearImpl(node->left);
-            clearImpl(node->right);
-
-            delete node;
-        }
-    }
-
-
-    ThreadedTreeRB* lowerBound(u32 key)
-    {
-        return ThreadedTreeRB::lower_bound(nil.get(), root, key);
-    }
-
-    ThreadedTreeRB* upperBound(u32 key)
-    {
-        return ThreadedTreeRB::upper_bound(nil.get(), root, key);
-    }
-
-    ThreadedTreeRB* min()
-    {
-        return ThreadedTreeRB::tree_min(nil.get(), root);
-    }
-
-    ThreadedTreeRB* max()
-    {
-        return ThreadedTreeRB::tree_max(nil.get(), root);
-    }
-
-    ThreadedTreeRB* succ(ThreadedTreeRB* node)
-    {
-        return ThreadedTreeRB::successor(nil.get(), node);
-    }
-
-    ThreadedTreeRB* pred(ThreadedTreeRB* node)
-    {
-        return ThreadedTreeRB::predecessor(nil.get(), node);
-    }
-
-
-    bool isNil(ThreadedTreeRB* node)
-    {
-        return node == nil.get();
-    }
-
-
-    void dfs()
-    {
-        ThreadedTreeRB::dfs(nil.get(), root);
-
-        std::cout << std::endl;
-    }
-
-    void traverse()
-    {
-        auto it = min();
-        while (it != nil.get())
-        {
-            it = succ(it);
-        }
-
-        it = max();
-        while (it != nil.get())
-        {
-            it = pred(it);
-        }
-    }
-
-    bool invariant()
-    {
-        return ThreadedTreeRB::invariant(nil.get(), root) != -1;
-    }
-
-    bool validNil()
-    {
-        return ThreadedTreeRB::valid_nil(nil.get());
-    }
-
-
-    bool empty()
-    {
-        return root == nil.get();
-    }
-
-
-    std::unique_ptr<ThreadedTreeRB> nil{};
-    ThreadedTreeRB* root{};
 };
