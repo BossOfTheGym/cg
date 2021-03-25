@@ -87,19 +87,25 @@
     <ClInclude Include="src\qsort.h">
       <Filter>sort</Filter>
     </ClInclude>
+    <ClInclude Include="src\EventQueue.h">
+      <Filter>section</Filter>
+    </ClInclude>
+    <ClInclude Include="src\PointEvent.h">
+      <Filter>section</Filter>
+    </ClInclude>
+    <ClInclude Include="src\SweepLine.h">
+      <Filter>section</Filter>
+    </ClInclude>
+    <ClInclude Include="src\trb_set.h">
+      <Filter>ds</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="src\trb_test.cpp">
       <Filter>tests</Filter>
     </ClCompile>
-    <ClCompile Include="src\ttrb_test.cpp">
-      <Filter>tests</Filter>
-    </ClCompile>
     <ClCompile Include="src\primitive.cpp">
       <Filter>primitive</Filter>
-    </ClCompile>
-    <ClCompile Include="src\section.cpp">
-      <Filter>section</Filter>
     </ClCompile>
     <ClCompile Include="src\quadtree_test.cpp">
       <Filter>tests</Filter>
@@ -107,8 +113,14 @@
     <ClCompile Include="src\qsort.cpp">
       <Filter>sort</Filter>
     </ClCompile>
-    <ClCompile Include="main.cpp">
+    <ClCompile Include="src\main.cpp">
       <Filter>main</Filter>
+    </ClCompile>
+    <ClCompile Include="src\EventQueue.cpp">
+      <Filter>section</Filter>
+    </ClCompile>
+    <ClCompile Include="src\SweepLine.cpp">
+      <Filter>section</Filter>
     </ClCompile>
   </ItemGroup>
 </Project>

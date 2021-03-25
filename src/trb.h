@@ -272,9 +272,7 @@ namespace trb
                 break;
         }
         if (curr == nil) // key not found or root is nil
-        {
             return prev;
-        }
         return curr; // key was found
     }
 
@@ -282,7 +280,7 @@ namespace trb
     NodeT* find(NodeT* nil, NodeT* root, Compare&& compare, Key&& key)
     {
         NodeT* curr = root;
-        while (curr != nil && !compare(curr->key, key) && !compare(key, curr->key))
+        while (curr != nil && (compare(curr->key, key) || compare(key, curr->key)))
         {
             if (compare(key, curr->key))
                 curr = curr->left;            

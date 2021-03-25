@@ -13,7 +13,7 @@
 #include <numeric>
 
 
-using MySet = ds::ListSet<u32>;
+using MySet = ds::Set<u32>;
 
 void test_set_stress()
 {
@@ -263,7 +263,7 @@ void test_my_set_delete_insert()
     std::iota(keys.begin() + count, keys.begin() + count * 3, 0);
 
     std::random_device device;
-    
+
     auto seed = device(); // 12345
     std::minstd_rand gen(seed);
 
@@ -520,7 +520,7 @@ void test_my_set_iteration()
             ms.insert(key);
         }
     }
-    
+
     std::cout << "Forward: ";
     auto it  = ms.begin();
     auto nil = ms.end();

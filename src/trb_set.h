@@ -197,8 +197,9 @@ namespace ds
         void init()
         {
             m_nil = m_allocator.alloc();
-            m_nil->left  = m_nil;
-            m_nil->right = m_nil;
+            m_nil->left   = m_nil;
+            m_nil->right  = m_nil;
+            m_nil->parent = m_nil;
             m_nil->color = trb::Color::Black;
 
             m_root = m_nil;
