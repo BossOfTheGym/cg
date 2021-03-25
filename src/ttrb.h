@@ -20,12 +20,22 @@ struct ThreadedTreeRB
 
     static ThreadedTreeRB* tree_min(ThreadedTreeRB* nil, ThreadedTreeRB* root)
     {
-        return nil->next;
+        while (root->left != nil)
+        {
+            root = root->left;
+        }
+
+        return root;
     }
 
     static ThreadedTreeRB* tree_max(ThreadedTreeRB* nil, ThreadedTreeRB* root)
     {
-        return nil->prev;
+        while (root->right != nil)
+        {
+            root = root->right;
+        }
+
+        return root;
     }
 
 

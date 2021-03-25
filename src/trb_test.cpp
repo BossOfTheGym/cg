@@ -2,7 +2,7 @@
 
 #include "core.h"
 #include "test_util.h"
-#include "trb.h"
+#include "trb_set.h"
 
 #include <cstdlib>
 #include <vector>
@@ -13,195 +13,33 @@
 #include <numeric>
 
 
-namespace
-{
-    // DEBUG
-    static void dfs(TreeRB* nil, TreeRB* root)
-    {
-        if (root != nil)
-        {
-            dfs(nil, root->left);
-            std::cout << "(" << (root->parent != nil ? (int)root->parent->key : -1) << " " << root->key << " " << (int)root->color << ") ";
-            dfs(nil, root->right);
-        }
-    }
-
-    // DEBUG
-    static i32 invariant(TreeRB* nil, TreeRB* root)
-    {
-        if (root != nil)
-        {
-            auto invL = invariant(nil, root->left);
-            auto invR = invariant(nil, root->right);
-            if (invL == -1 || invR == -1 || invL != invR)
-            {
-                return -1;
-            }
-
-            return (root->color == TreeRB::Color::Black ? 1 : 0) + invL;
-        }
-
-        return 0;
-    }
-
-    // DEBUG
-    static bool valid_nil(TreeRB* nil)
-    {
-        return nil->left  == nil
-            && nil->right == nil
-            && nil->color == TreeRB::Color::Black;
-    }
-}
-
-// DEBUG
-struct MySet
-{
-    MySet()
-    {
-        nil = std::make_unique<TreeRB>();
-        nil->left = nil.get();
-        nil->right = nil.get();
-        nil->color = TreeRB::Color::Black;
-
-        root = nil.get();
-    }
-
-    ~MySet()
-    {
-        clear();
-    }
-
-    void add(u32 key)
-    {
-        root = TreeRB::insert(nil.get(), root, new TreeRB{key});
-    }
-
-    bool has(u32 key)
-    {
-        return TreeRB::find(nil.get(), root, key) != nil.get();
-    }
-
-    void remove(u32 key)
-    {
-        if (auto node = TreeRB::find(nil.get(), root, key); node != nil.get())
-        {
-            root = TreeRB::remove(nil.get(), root, node);
-
-            delete node;
-        }
-    }
-
-    void clear()
-    {
-        clearImpl(root);
-
-        root = nil.get();
-    }
-
-    void clearImpl(TreeRB* node)
-    {
-        if (node != nil.get())
-        {
-            clearImpl(node->left);
-            clearImpl(node->right);
-
-            delete node;
-        }
-    }
-
-
-    TreeRB* lowerBound(u32 key)
-    {
-        return TreeRB::lower_bound(nil.get(), root, key);
-    }
-
-    TreeRB* upperBound(u32 key)
-    {
-        return TreeRB::upper_bound(nil.get(), root, key);
-    }
-
-    TreeRB* min()
-    {
-        return TreeRB::tree_min(nil.get(), root);
-    }
-
-    TreeRB* max()
-    {
-        return TreeRB::tree_max(nil.get(), root);
-    }
-
-    TreeRB* succ(TreeRB* node)
-    {
-        return TreeRB::successor(nil.get(), node);
-    }
-
-    TreeRB* pred(TreeRB* node)
-    {
-        return TreeRB::predecessor(nil.get(), node);
-    }
-
-
-    bool isNil(TreeRB* node)
-    {
-        return node == nil.get();
-    }
-
-
-    void dfs()
-    {
-        ::dfs(nil.get(), root);
-
-        std::cout << std::endl;
-    }
-
-    void traverse()
-    {
-        auto it = min();
-        while (it != nil.get())
-        {
-            it = succ(it);
-        }
-
-        it = max();
-        while (it != nil.get())
-        {
-            it = pred(it);
-        }
-    }
-
-    bool invariant()
-    {
-        return ::invariant(nil.get(), root) != -1;
-    }
-
-    bool validNil()
-    {
-        return valid_nil(nil.get());
-    }
-
-
-    bool empty()
-    {
-        return root == nil.get();
-    }
-
-
-    std::unique_ptr<TreeRB> nil{};
-    TreeRB* root{};
-};
+using MySet = ds::ListSet<u32>;
 
 void test_set_stress()
 {
-    std::set<u32> s;
+    std::vector<u32> keys(2'000'000);
+    std::iota(keys.begin(), keys.end(), 0);
 
-    auto c = clock();
-    for (u32 i = 0; i < 1'000'000; i++)
+    //std::random_device device;
+    //std::minstd_rand gen(device());
+    std::minstd_rand gen(12345);
+
+    for (i32 k = 0; k < 10; k++)
     {
-        s.insert(i);
-    }
-    c = clock() - c;
+        shuffle(keys, gen);
 
-    std::cout << "set elapsed: " << (float)c / CLOCKS_PER_SEC << std::endl << std::endl;
+        std::set<u32> s;
+
+        auto c = clock();
+        for (auto& key : keys)
+        {
+            s.insert(key);
+        }
+        c = clock() - c;
+
+        std::cout << "set elapsed: " << (float)c / CLOCKS_PER_SEC << std::endl;   
+    }
+    std::cout << std::endl;
 }
 
 void test_my_set_stress()
@@ -210,14 +48,23 @@ void test_my_set_stress()
     std::cout << "**** testing elements insertion ****" << std::endl;
     std::cout << "************************************" << std::endl;
 
-    for (u32 k = 0; k < 3; k++)
+    std::vector<u32> keys(2'000'000);
+    std::iota(keys.begin(), keys.end(), 0);
+
+    //std::random_device device;
+    //std::minstd_rand gen(device());
+    std::minstd_rand gen(12345);
+
+    for (u32 k = 0; k < 10; k++)
     {
+        shuffle(keys, gen);
+
         MySet s;
 
         auto c = clock();
-        for (u32 i = 0; i < 1'000'000; i++)
+        for (auto& key : keys)
         {
-            s.add(i);
+            s.insert(key);
         }
         c = clock() - c;
 
@@ -247,25 +94,25 @@ void test_my_set_debug()
         {
             std::cout << "(add) " << key << ": ";
 
-            ms.add(key);
-            ms.dfs();
+            ms.insert(key);
+            //ms.dfs();
 
-            assert(ms.invariant());
-            assert(ms.validNil());
+            //assert(ms.invariant());
+            //assert(ms.validNil());
         }
 
-        ms.dfs();
+        //ms.dfs();
 
         shuffle(keys, gen);
         for (auto& key : keys)
         {
             std::cout << "(rem) " << key << ": ";
 
-            ms.remove(key);
-            ms.dfs();
+            ms.erase(key);
+            //ms.dfs();
 
-            assert(ms.invariant());
-            assert(ms.validNil());
+            //assert(ms.invariant());
+            //assert(ms.validNil());
         }
 
         assert(ms.empty());
@@ -282,10 +129,10 @@ void test_structure_debug()
 
     for (u32 i = 0; i < 15; i++)
     {
-        s.add(i);
+        s.insert(i);
     }
 
-    s.dfs();
+    //s.dfs();
 }
 
 
@@ -313,19 +160,19 @@ void test_my_set0()
         shuffle(keys, gen);
         for (auto& key : keys)
         {
-            ms.add(key);
+            ms.insert(key);
 
-            assert(ms.invariant());
-            assert(ms.validNil());
+            //assert(ms.invariant());
+            //assert(ms.validNil());
         }
 
         shuffle(keys, gen);
         for (auto& key : keys)
         {
-            ms.remove(key);
+            ms.erase(key);
 
-            assert(ms.invariant());
-            assert(ms.validNil());
+            //assert(ms.invariant());
+            //assert(ms.validNil());
         }
 
         assert(ms.empty());
@@ -358,19 +205,19 @@ void test_my_set1()
         shuffle(keys, gen);
         for (auto& key : keys)
         {
-            ms.add(key);
+            ms.insert(key);
 
-            assert(ms.invariant());
-            assert(ms.validNil());
+            //assert(ms.invariant());
+            //assert(ms.validNil());
         }
 
         shuffle(keys, gen);
         for (auto& key : keys)
         {
-            ms.remove(key);
+            ms.erase(key);
 
-            assert(ms.invariant());
-            assert(ms.validNil());
+            //assert(ms.invariant());
+            //assert(ms.validNil());
         }
 
         assert(ms.empty());
@@ -393,7 +240,7 @@ void test_my_set_insert_equal()
         auto c = clock();
         for (u32 i = 0; i < 1'000'000; i++)
         {
-            ms.add(0);
+            ms.insert(0);
         }
         c = clock() - c;
         std::cout << "elapsed: " << (f32)c / CLOCKS_PER_SEC << std::endl;
@@ -408,7 +255,7 @@ void test_my_set_delete_insert()
     std::cout << "**** testing insert-delete ****" << std::endl;
     std::cout << "*******************************" << std::endl;
 
-    auto count = 50;
+    auto count = 256;
 
     std::vector<u32> keys(count * 3);
     std::iota(keys.begin(), keys.begin() + count, 0);
@@ -427,7 +274,7 @@ void test_my_set_delete_insert()
 
     MySet ms;
 
-    for (i32 k = 0; k < 10'000; k++)
+    for (i32 k = 0; k < 100'000; k++)
     {
         if (k % 1000 == 0)
         {
@@ -438,10 +285,10 @@ void test_my_set_delete_insert()
 
         for (i32 c = 0 ; c < (i32)keys.size() / 2; c++)
         {
-            ms.add(keys[c]);
+            ms.insert(keys[c]);
 
-            assert(ms.invariant());
-            assert(ms.validNil());
+            //assert(ms.invariant());
+            //assert(ms.validNil());
         }
 
         added.clear();
@@ -460,10 +307,10 @@ void test_my_set_delete_insert()
 
             added.push_back(key);
 
-            ms.add(key);
+            ms.insert(key);
 
-            assert(ms.invariant());
-            assert(ms.validNil());
+            //assert(ms.invariant());
+            //assert(ms.validNil());
         };
 
         auto rem = [&] ()
@@ -475,13 +322,13 @@ void test_my_set_delete_insert()
 
             removed.push_back(key);
 
-            ms.remove(key);
+            ms.erase(key);
 
-            assert(ms.invariant());
-            assert(ms.validNil());
+            //assert(ms.invariant());
+            //assert(ms.validNil());
         };
 
-        for (i32 m = 0; m < 1'000; m++)
+        for (i32 m = 0; m < 5'000; m++)
         {
             auto action = gen() & 0x1;
             if (action == 0) // add
@@ -553,7 +400,7 @@ namespace
         MySet myset;
         for (auto& key : keys)
         {
-            myset.add(key);
+            myset.insert(key);
         }
 
         for (; left != right; left++)
@@ -573,9 +420,9 @@ namespace
             }
 
             auto lb1 = myset.lowerBound(key);
-            if (!myset.isNil(lb1))
+            if (lb1 != myset.end())
             {
-                std::cout << "myset: " << lb1->key << std::endl;
+                std::cout << "myset: " << *lb1 << std::endl;
             }
             else
             {
@@ -595,7 +442,7 @@ namespace
         MySet myset;
         for (auto& key : keys)
         {
-            myset.add(key);
+            myset.insert(key);
         }
 
         for (; left != right; left++)
@@ -615,9 +462,9 @@ namespace
             }
 
             auto lb1 = myset.upperBound(key);
-            if (!myset.isNil(lb1))
+            if (lb1 != myset.end())
             {
-                std::cout << "myset: " << lb1->key << std::endl;
+                std::cout << "myset: " << *lb1 << std::endl;
             }
             else
             {
@@ -670,31 +517,31 @@ void test_my_set_iteration()
     {
         for(auto& key : keys)
         {
-            ms.add(key);
+            ms.insert(key);
         }
     }
     
     std::cout << "Forward: ";
-    auto it  = ms.min();
-    auto nil = ms.nil.get();
+    auto it  = ms.begin();
+    auto nil = ms.end();
     while (it != nil)
     {
-        std::cout << it->key << " ";
+        std::cout << *it << " ";
 
-        it = ms.succ(it);
+        ++it;
     }
     std::cout << std::endl;
 
-    std::cout << "Backward: ";
-    it  = ms.max();
-    nil = ms.nil.get();
-    while (it != nil)
-    {
-        std::cout << it->key << " ";
-
-        it = ms.pred(it);
-    }
-    std::cout << std::endl;
+    //std::cout << "Backward: ";
+    //it  = ms.max();
+    //nil = ms.nil.get();
+    //while (it != nil)
+    //{
+    //    std::cout << it->key << " ";
+    //
+    //    it = ms.pred(it);
+    //}
+    //std::cout << std::endl;
 
     std::cout << "testing ended" << std::endl << std::endl;
 }
