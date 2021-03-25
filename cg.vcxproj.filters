@@ -99,6 +99,9 @@
     <ClInclude Include="src\trb_set.h">
       <Filter>ds</Filter>
     </ClInclude>
+    <ClInclude Include="trb_tree.h">
+      <Filter>ds</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="src\trb_test.cpp">
