@@ -48,7 +48,7 @@
     <ClInclude Include="src\primitive.h">
       <Filter>primitive</Filter>
     </ClInclude>
-    <ClInclude Include="src\trb.h">
+    <ClInclude Include="src\trb_util.h">
       <Filter>ds</Filter>
     </ClInclude>
     <ClInclude Include="src\ttrb.h">
@@ -99,7 +99,10 @@
     <ClInclude Include="src\trb_set.h">
       <Filter>ds</Filter>
     </ClInclude>
-    <ClInclude Include="trb_tree.h">
+    <ClInclude Include="src\trb_node.h">
+      <Filter>ds</Filter>
+    </ClInclude>
+    <ClInclude Include="src\trb_tree.h">
       <Filter>ds</Filter>
     </ClInclude>
   </ItemGroup>

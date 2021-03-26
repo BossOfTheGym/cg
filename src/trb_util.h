@@ -1,64 +1,12 @@
 #pragma once
 
 #include "core.h"
+#include "trb_node.h"
 
 #include <utility>
 
 namespace trb
-{
-    enum class Color : char
-    {
-        Black = 0,
-        Red = 1,
-    };
-
-    template<class key_t, bool threaded_v>
-    struct NodeTraits
-    {
-        static constexpr bool threaded = threaded_v;
-
-        using Key = key_t;
-    };
-
-    template<class Traits, class = void>
-    struct TreeNode;
-
-    template<class Traits>
-    struct TreeNode<Traits, std::enable_if_t<Traits::threaded>>
-    {
-        static constexpr bool threaded = true;
-
-        using Key = typename Traits::Key;
-
-        Key key{};
-
-        TreeNode* parent{};
-        TreeNode* left{};
-        TreeNode* right{};
-
-        TreeNode* prev{};
-        TreeNode* next{};
-
-        Color color{Color::Black};
-    };
-
-    template<class Traits>
-    struct TreeNode<Traits, std::enable_if_t<!Traits::threaded>>
-    {
-        static constexpr bool threaded = false;
-
-        using Key = typename Traits::Key;
-        
-        Key key{};
-
-        TreeNode* parent{};
-        TreeNode* left{};
-        TreeNode* right{};
-
-        Color color{Color::Black};
-    };
-
-    
+{    
     template<class NodeT>
     NodeT* tree_min(NodeT* nil, NodeT* root)
     {
@@ -256,6 +204,7 @@ namespace trb
         return prev;
     }
 
+    // TODO : needs to be tested, just another version of search_insert
     template<class NodeT, class Compare, class Key>
     NodeT* search_insert_unique(NodeT* nil, NodeT* root, Compare&& compare, Key&& key)
     {
@@ -271,9 +220,9 @@ namespace trb
             else
                 break;
         }
-        if (curr == nil) // key not found or root is nil
+        if (curr == m_nil) // key not found or root is m_nil, position found
             return prev;
-        return curr; // key was found
+        return search_insert(nil, curr, std::forward<Compare>(compare), key); // search insert position
     }
 
     template<class NodeT, class Compare, class Key>

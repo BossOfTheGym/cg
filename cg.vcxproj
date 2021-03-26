@@ -159,12 +159,13 @@
     <ClInclude Include="src\section.h" />
     <ClInclude Include="src\SweepLine.h" />
     <ClInclude Include="src\test_util.h" />
-    <ClInclude Include="src\trb.h" />
+    <ClInclude Include="src\trb_tree.h" />
+    <ClInclude Include="src\trb_util.h" />
+    <ClInclude Include="src\trb_node.h" />
     <ClInclude Include="src\trb_set.h" />
     <ClInclude Include="src\trb_test.h" />
     <ClInclude Include="src\ttrb.h" />
     <ClInclude Include="src\ttrb_test.h" />
-    <ClInclude Include="trb_tree.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="src\EventQueue.cpp" />
