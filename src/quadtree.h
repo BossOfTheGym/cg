@@ -13,6 +13,8 @@
 // TODO : more effective insertion(has || put -> find, put)
 // TODO : query
 // TODO : capacity = 1u specialization
+// TODO : get rid of stupid optimization from wikipedia, remove capacity parameter.
+//		this implementation has a bug: it will infinitely subdivide if two equal point are given
 namespace qtree
 {
 	using vec2 = prim::vec2;
@@ -227,16 +229,12 @@ namespace qtree
 		bool insert(QuadNode* root, vec2* vec)
 		{
 			if (!root->contains(vec))
-			{
 				return false;
-			}
 
 			if (root->leaf())
 			{
 				if (root->has(vec) || root->put(vec))
-				{
 					return true;
-				}
 
 				subdivide(root);
 			}
@@ -254,14 +252,10 @@ namespace qtree
 		bool remove(QuadNode* root, vec2* vec)
 		{
 			if (!root->contains(vec))
-			{
 				return false;
-			}
 
 			if (root->leaf())
-			{
 				return root->has(vec) && root->rem(vec);
-			}
 
 			auto removed = remove(root->children[(u32)Leaf::SW], vec)
 				|| remove(root->children[(u32)Leaf::SE], vec)
@@ -269,9 +263,7 @@ namespace qtree
 				|| remove(root->children[(u32)Leaf::NE], vec);
 
 			if (root->allLeaves() && leafElems(root) <= CAPACITY / 2) // can be differrent strategy here
-			{
 				unite(root);
-			}
 
 			return removed;
 		}
