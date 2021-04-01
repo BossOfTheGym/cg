@@ -19,6 +19,7 @@ namespace trb
     };
 
 
+    // TODO : add specialization that take into consideration constructability of a Key
     template<class Traits, class = void>
     struct TreeNode;
 

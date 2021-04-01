@@ -220,7 +220,7 @@ namespace trb
             else
                 break;
         }
-        if (curr == m_nil) // key not found or root is m_nil, position found
+        if (curr == nil) // key not found or root is m_nil, position found
             return prev;
         return search_insert(nil, curr, std::forward<Compare>(compare), key); // search insert position
     }

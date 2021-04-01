@@ -27,7 +27,7 @@ namespace trb
         using Compare = typename traits::Compare;
 
         // almost corresponds to standart
-        // TODO : decrementable end()
+        // TODO : decrementable end() (easy but it would required some rework)
         class Iterator
         {
             friend class Tree;
@@ -129,7 +129,7 @@ namespace trb
         };
 
 
-    public:
+    protected:
         template<class Comp = Compare, std::enable_if_t<std::is_default_constructible_v<Comp>, int> = 0>
         Tree() : m_compare()
         {}
@@ -324,6 +324,7 @@ namespace trb
         }
 
         // TODO : needs to be tested, just another version of searchInsert
+        // TODO : this looks like bullshit
         Node* searchInsertUnique(Node* node, const Key& key)
         {
             Node* prev = m_nil;
