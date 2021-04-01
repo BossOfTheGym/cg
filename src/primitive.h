@@ -9,11 +9,9 @@
 namespace prim
 {
 	// points v0, v1, v2 are listed in counterclockwise order
-
 	using namespace glm;
 
 	using Float = f32;
-
 
 	struct Line2
 	{
@@ -49,6 +47,11 @@ namespace prim
 
 
 	// math
+	// computes 2x2 determinant (ad - bc)
+	// | a b |
+	// | c d |
+	Float det4(Float a, Float b, Float c, Float d);
+
 	Float dot2(const vec2& v0);
 
 	Float cross_z(const vec2& v0, const vec2& v1);
@@ -67,6 +70,12 @@ namespace prim
 
 	bool overlaps_checked(Float a, Float b, Float c, Float d);
 
+	bool equal(const vec2& v0, const vec2& v1, Float eps = 1e-6);
+
+	bool either_end(const vec2& v, const Line2& line, Float eps = 1e-6);
+
+	bool belongs(const vec2& v, const Line2& l, Float eps = 1e-6);
+
 
 	// intersection
 	enum class Status : i32
@@ -76,16 +85,12 @@ namespace prim
 		Overlap,
 	};
 
-	// TODO : test
 	Status intersectSegSeg(const Line2& s0, const Line2& s1, vec2& v0, vec2& v1, Float eps = 1e-6);
 
-	// TODO : test
 	Status intersectSegLine(const Line2& seg, const Line2& line, vec2& v, Float eps = 1e-6);
 
-	// TODO : test
 	Status intersectsSegX(const Line2& seg, Float x, vec2& v, Float eps = 1e-6);
 
-	// TODO : test
 	Status intersectsSegY(const Line2& seg, Float y, vec2& v, Float eps = 1e-6);
 
 
