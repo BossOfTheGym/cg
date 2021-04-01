@@ -173,6 +173,7 @@
     <ClCompile Include="src\primitive.cpp" />
     <ClCompile Include="src\qsort.cpp" />
     <ClCompile Include="src\quadtree_test.cpp" />
+    <ClCompile Include="src\section.cpp" />
     <ClCompile Include="src\SweepLine.cpp" />
     <ClCompile Include="src\trb_test.cpp" />
   </ItemGroup>
