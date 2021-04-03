@@ -3,18 +3,16 @@
 #include "core.h"
 #include "primitive.h"
 
-#include <algorithm>
-#include <cassert>
 #include <memory>
 #include <array>
+#include <queue>
+#include <vector>
+#include <cassert>
 #include <numeric>
+#include <algorithm>
+#include <type_traits>
 
 
-// TODO : more effective insertion(has || put -> find, put)
-// TODO : query
-// TODO : capacity = 1u specialization
-// TODO : get rid of stupid optimization from wikipedia, remove capacity parameter.
-//		this implementation has a bug: it will infinitely subdivide if two equal point are given
 namespace qtree
 {
 	using vec2 = prim::vec2;
@@ -40,17 +38,14 @@ namespace qtree
 	}
 
 
-	template<u32 CAPACITY = 4u>
+	template<class element_t>
 	struct QuadNode
 	{
-		bool contains(vec2* vec) const
-		{
-			return inAABB(box, *vec);
-		}
+		using Elem = element_t;
 
 		bool empty() const
 		{
-			return std::all_of(std::begin(data), std::end(data), [] (auto datum) {return datum == nullptr;});
+			return data.empty();
 		}
 
 		bool leaf() const
@@ -58,247 +53,364 @@ namespace qtree
 			return children[0] == nullptr;
 		}
 
+
+		// don't call if current node is a leaf
 		bool allLeaves() const
 		{
 			return std::all_of(std::begin(children), std::end(children), [] (auto child) {return child->leaf();});
 		}
 
-
-		auto findNull()
+		// don't call if current node is a leaf
+		u32 leaves() const
 		{
-			return std::find_if(std::begin(data), std::end(data), [] (auto datum) {return datum == nullptr;});
+			return std::count_if(std::begin(children), std::end(children), [] (auto child) {return child->leaf();});
 		}
 
-		auto findNonNull()
+		// don't call if current node is a leaf
+		u32 emptyChildren() const
 		{
-			return std::find_if(std::begin(data), std::end(data), [] (auto datum) {return datum != nullptr;});
+			return std::count_if(std::begin(children), std::end(children), [] (auto child) {return child->empty();});
 		}
 
-		auto find(vec2* vec)
+		// don't call if current node is a leaf
+		u32 nonEmptyChildren() const
 		{
-			return std::find(std::begin(data), std::end(data), vec);
+			return std::count_if(std::begin(children), std::end(children), [] (auto child) {return !child->empty();});
 		}
 
 
-		bool has(vec2* vec)
+		auto find(const Elem& elem)
 		{
-			return find(vec) != std::end(data);
+			return std::find(std::begin(data), std::end(data), elem);
 		}
 
-		bool put(vec2* vec)
+		bool has(const Elem& elem)
 		{
-			if (auto it = findNull(); it != std::end(data))
+			return find(elem) != std::end(data);
+		}
+
+		bool put(const Elem& elem)
+		{
+			if (!has(elem))
 			{
-				*it = vec;
-
+				data.push_back(elem);
 				return true;
 			}
-
 			return false;
 		}
 
-		bool rem(vec2* vec)
+		bool rem(const Elem& elem)
 		{
-			if (auto it = find(vec); it != std::end(data))
+			if (auto it = find(elem); it != std::end(data))
 			{
-				*it = nullptr;
+				std::swap(*it, data.back());
+				data.pop_back();
 
 				return true;
 			}
-
 			return false;
 		}
 
 
 		AABB box{};
-
-		std::array<vec2*, CAPACITY> data{nullptr};
-
+		std::vector<Elem> data;
 		std::array<QuadNode*, 4> children{nullptr};
 	};
 
-	template<u32 CAPACITY_>
-	struct QuadTraits
+	// allocator_t has two methods:
+	// 1) T* alloc(Args&& ... args) - constructs an object from args and returns pointer to it
+	// 2) void dealloc(T* object) - deconstructs an object under the pointer
+	// 
+	// position_t is a functor mapping element_t to vec2 (so you can store whatever you want here)
+	// TODO : maybe I need to do deduction guides
+	template<class element_t, class position_t, template<class T> class allocator_t>
+	class QuadTree
 	{
-		static constexpr u32 CAPACITY = CAPACITY_;
-
-		using QuadNode = QuadNode<CAPACITY>;
-	};
-
-
-	template<class Traits>
-	struct DefaultStorage
-	{
-		using QuadNode = typename Traits::QuadNode;
-
-		QuadNode* alloc(const AABB& box)
-		{
-			return ::new QuadNode{box};
-		}
-
-		void dealloc(QuadNode* node)
-		{
-			delete node;
-		}
-	};
-
-	template<u32 CAPACITY = 4U, template<class Traits> class Storage = DefaultStorage>
-	class QuadTree : Storage<QuadTraits<CAPACITY>>
-	{
-		using QuadNode = typename QuadTraits<CAPACITY>::QuadNode;
-		using StorageBase = Storage<QuadTraits<CAPACITY>>;
+	public:
+		using Elem = element_t;
+		using Node = QuadNode<element_t>;
+		using Position = position_t;
+		using NodeAllocator = allocator_t<Node>;
 
 
 	public:
-		template<class ... Args>
-		QuadTree(const AABB& box, Args&& ... args) : StorageBase(std::forward<Args>(args)...)
+		explicit QuadTree(const AABB& box)
 		{
-			m_root = StorageBase::alloc(box);
+			allocRoot(box);
 		}
+
+		template<class PositionT, class NodeAllocatorT>
+		QuadTree(const AABB& box, PositionT&& position, NodeAllocatorT&& alloc) 
+			noexcept(std::is_nothrow_constructible_v<Position, PositionT&&> && std::is_nothrow_constructible_v<NodeAllocator, NodeAllocatorT&&>)
+			: m_position(std::forward<PositionT>(position))
+			, m_allocator(std::forward<NodeAllocatorT>(alloc))
+		{
+			allocRoot(box);
+		}
+
+		// for now
+		QuadTree(const QuadTree&) = delete;
+		// for now
+		QuadTree(QuadTree&&) noexcept = delete;
 
 		~QuadTree()
 		{
 			clear();
 
-			StorageBase::dealloc(m_root); m_root = nullptr;
+			deallocRoot();
 		}
+
+		// for now
+		QuadTree& operator = (const QuadTree&) = delete;
+		// for now
+		QuadTree& operator = (QuadTree&&) noexcept = delete;
 
 	private:
-		static u32 elems(QuadNode* node)
+		void allocRoot(const AABB& box)
 		{
-			return std::count_if(std::begin(node->data), std::end(node->data), [] (auto datum) {return datum != nullptr;});
+			m_root = m_allocator.alloc(box);
 		}
 
-		static u32 leafElems(QuadNode* node)
+		void deallocRoot()
 		{
-			return std::accumulate(std::begin(node->children), std::end(node->children), 0u, 
-				[] (auto val, auto child) {return val + elems(child);}
-			);
+			m_allocator.dealloc(m_root);
 		}
 
-		template<class Ptr>
-		static auto moveData(QuadNode* node, Ptr ptr)
+
+		bool contains(Node* node, const Elem& elem) const
 		{
-			auto newPtr = std::copy_if(std::begin(node->data), std::end(node->data), ptr, [] (auto datum) {return datum != nullptr;});
-			std::fill(std::begin(node->data), std::end(node->data), nullptr);
-			return newPtr;
+			return prim::inAABB(node->box, m_position(elem));
 		}
 
-	private:
-		void subdivide(QuadNode* node)
+		// NOTE : node is not empty, node != nullptr
+		bool sameAs(Node* node, const Elem& elem) const
 		{
-			node->children[(u32)Leaf::SW] = StorageBase::alloc(leaf_AABB(Leaf::SW, node->box));
-			node->children[(u32)Leaf::SE] = StorageBase::alloc(leaf_AABB(Leaf::SE, node->box));
-			node->children[(u32)Leaf::NW] = StorageBase::alloc(leaf_AABB(Leaf::NW, node->box));
-			node->children[(u32)Leaf::NE] = StorageBase::alloc(leaf_AABB(Leaf::NE, node->box));
+			return m_position(node->data[0]) == m_position(elem);
+		}
+
+		// NOTE : node is not empty, node != nullptr
+		bool allSame(Node* node) const
+		{
+			return std::all_of(std::begin(node->data), std::end(node->data),
+				[&] (const auto& elem) {return m_position(elem) == m_position(node->data[0]);});
+		}
+
+		// NOTE : node is not empty, node != nullptr, all elements are same
+		void subdivide(Node* node)
+		{
+			assert(node != nullptr);
+			assert(!node->empty() && allSame(node));
+
+			node->children[(u32)Leaf::SW] = m_allocator.alloc(leaf_AABB(Leaf::SW, node->box));
+			node->children[(u32)Leaf::SE] = m_allocator.alloc(leaf_AABB(Leaf::SE, node->box));
+			node->children[(u32)Leaf::NW] = m_allocator.alloc(leaf_AABB(Leaf::NW, node->box));
+			node->children[(u32)Leaf::NE] = m_allocator.alloc(leaf_AABB(Leaf::NE, node->box));
 
 			assert(node->children[(u32)Leaf::SW] != nullptr);
 			assert(node->children[(u32)Leaf::SE] != nullptr);
 			assert(node->children[(u32)Leaf::NW] != nullptr);
 			assert(node->children[(u32)Leaf::NE] != nullptr);
 
-			for (auto i = std::begin(node->data), e = std::end(node->data); i != e; i++)
+			for (auto& child : node->children)
 			{
-				auto inserted 
-				 = node->children[(u32)Leaf::SW]->contains(*i) && node->children[(u32)Leaf::SW]->put(*i)
-				|| node->children[(u32)Leaf::SE]->contains(*i) && node->children[(u32)Leaf::SE]->put(*i)
-				|| node->children[(u32)Leaf::NW]->contains(*i) && node->children[(u32)Leaf::NW]->put(*i)
-				|| node->children[(u32)Leaf::NE]->contains(*i) && node->children[(u32)Leaf::NE]->put(*i);
-
-				*i = nullptr;
-
-				assert(inserted);
+				if (contains(child, node->data[0]))
+				{
+					child->data = std::move(node->data);
+					break;
+				}
 			}
 		}
 
-		void unite(QuadNode* node)
+		// NODE : node != nullptr, node is empty, node is not a leaf, node has only leaves 
+		// and count of non-empty children is less than or equal to 1
+		void unite(Node* node)
 		{
-			auto ptr = std::begin(node->data);
-			ptr = moveData(node->children[(u32)Leaf::SW], ptr);
-			ptr = moveData(node->children[(u32)Leaf::SE], ptr);
-			ptr = moveData(node->children[(u32)Leaf::NW], ptr);
-			ptr = moveData(node->children[(u32)Leaf::NE], ptr);
+			assert(node != nullptr);
+			assert(node->empty());
+			assert(!node->leaf());
+			assert(node->allLeaves());
+			assert(node->nonEmptyChildren() <= 1);
 
-			StorageBase::dealloc(node->children[(u32)Leaf::SW]); node->children[(u32)Leaf::SW] = nullptr;
-			StorageBase::dealloc(node->children[(u32)Leaf::SE]); node->children[(u32)Leaf::SE] = nullptr;
-			StorageBase::dealloc(node->children[(u32)Leaf::NW]); node->children[(u32)Leaf::NW] = nullptr;
-			StorageBase::dealloc(node->children[(u32)Leaf::NE]); node->children[(u32)Leaf::NE] = nullptr;
+			for (auto& child : node->children)
+			{
+				while (!child->data.empty())
+				{
+					node->data.push_back(std::move(child->data.back()));
+
+					child->data.pop_back();
+				}
+			}
+
+			m_allocator.dealloc(node->children[(u32)Leaf::SW]); node->children[(u32)Leaf::SW] = nullptr;
+			m_allocator.dealloc(node->children[(u32)Leaf::SE]); node->children[(u32)Leaf::SE] = nullptr;
+			m_allocator.dealloc(node->children[(u32)Leaf::NW]); node->children[(u32)Leaf::NW] = nullptr;
+			m_allocator.dealloc(node->children[(u32)Leaf::NE]); node->children[(u32)Leaf::NE] = nullptr;
 		}
+
 
 	private:
-		bool insert(QuadNode* root, vec2* vec)
+		bool insert(Node* node, const Elem& elem)
 		{
-			if (!root->contains(vec))
-				return false;
-
-			if (root->leaf())
+			u32 depth = 0;
+			while(depth < m_maxDepth)
 			{
-				if (root->has(vec) || root->put(vec))
-					return true;
+				if (node->leaf())
+				{
+					if (node->empty() || sameAs(node, elem))
+						// node->empty(), inserts element -> true
+						// node->same(), all elements in the node are the same, try to put
+						//		true if elements wasn't present in the node
+						//		false if was
+						return node->put(elem);
+					else
+						// never called if max_depth was reached
+						subdivide(node);
+				}
 
-				subdivide(root);
+				for (auto& child : node->children)
+				{
+					if (contains(child, elem))
+					{
+						node = child;
+
+						break;
+					}
+				}
+
+				++depth;
 			}
 
-			auto inserted = insert(root->children[(u32)Leaf::SW], vec)
-				|| insert(root->children[(u32)Leaf::SE], vec)
-				|| insert(root->children[(u32)Leaf::NW], vec)
-				|| insert(root->children[(u32)Leaf::NE], vec);
+			// max depth reached, node must be a leaf
+			assert(node != nullptr);
+			assert(node->leaf());
 
-			assert(inserted);
-
-			return inserted;
+			// element could've already been added -> false
+			// elemnts wasn't present in tree -> true
+			return node->put(elem);
 		}
 
-		bool remove(QuadNode* root, vec2* vec)
+		bool remove(Node* node, const Elem& elem)
 		{
-			if (!root->contains(vec))
+			std::vector<Node*> stack;			
+			while (!node->leaf())
+			{
+				stack.push_back(node);
+				for (auto& child : node->children)
+				{
+					if (contains(child, elem))
+					{
+						node = child;
+						break;
+					}
+				}
+			}
+
+			if (!node->rem(elem))
+				// no element was found
 				return false;
 
-			if (root->leaf())
-				return root->has(vec) && root->rem(vec);
+			if (!node->empty() && !allSame(node))
+				// node is not empty and elements are not same we cannot unite any nodes
+				return true;
 
-			auto removed = remove(root->children[(u32)Leaf::SW], vec)
-				|| remove(root->children[(u32)Leaf::SE], vec)
-				|| remove(root->children[(u32)Leaf::NW], vec)
-				|| remove(root->children[(u32)Leaf::NE], vec);
+			// here we unite nodes
+			// node->empty() or node->allSame() so the following is possible:
+			// 1) node->empty() and node->allSame()
+			// 2) !node->empty() and node->allSame()
+			// 3) node->empty() and !node->allSame()
+			// 1 <=> 3, it doesn't matter if elements are same or not if there are no elements
+			while (!stack.empty())
+			{
+				auto prev = stack.back();
+				stack.pop_back();
 
-			if (root->allLeaves() && leafElems(root) <= CAPACITY / 2) // can be differrent strategy here
-				unite(root);
+				if (!prev->allLeaves())
+					break;
 
-			return removed;
+				if (prev->nonEmptyChildren() <= 1) // if all leaves are empty (so was node) or we ascend from all-same node
+					unite(prev);
+			}	
+			return true;
 		}
 
-		void clear(QuadNode* root)
+		void clear(Node* root)
 		{
+			// deallocates only children so root is untouched
 			if (root != nullptr)
 			{
 				for (auto& child : root->children)
 				{
 					clear(child);
 
-					StorageBase::dealloc(child); child = nullptr;
+					m_allocator.dealloc(child);
 				}
 			}
 		}
 
 	public:
-		bool insert(vec2* vec)
+		bool insert(const Elem& elem)
 		{
-			return insert(m_root, vec);
+			return insert(m_root, elem);
 		}
 
-		bool remove(vec2* vec)
+		bool remove(const Elem& elem)
 		{
-			return remove(m_root, vec);
+			return remove(m_root, elem);
 		}
 
 		void clear()
 		{
 			clear(m_root);
+			for (auto& child : m_root->children)
+				child = nullptr;
 		}
 
+		void query(const AABB& box, std::vector<Elem>& result)
+		{
+			result.clear();
 
-	private:
-		QuadNode* m_root{nullptr};
+			std::queue<Node*> nodes;
+
+			nodes.push(m_root);
+			while(!nodes.empty())
+			{
+				auto curr = nodes.front();
+				if (!prim::overlaps(box, curr->box))
+					continue;
+
+				if (!curr->leaf())
+				{
+					for (auto& child : curr->children)
+						nodes.push_back(child);
+				}
+				else
+				{
+					for (auto& elem : curr->data)
+					{
+						if (prim::inAABB(box, m_position(elem)))
+							result.push_back(elem);
+					}
+				}
+			}
+		}
+		
+
+	protected:
+		Position m_position;
+		NodeAllocator m_allocator;
+
+		Node* m_root{nullptr};
+		u32 m_maxDepth{31};
+	};
+
+
+	// helper to access dependent types from QuadTree
+	template<class element_t, class position_t, template<class T> class allocator_t>
+	struct Helper
+	{
+		using Tree = QuadTree<element_t, position_t, allocator_t>;
+		using Elem = element_t;
+		using Position = position_t;
+		using NodeAllocator = allocator_t<typename Tree::Node>;
 	};
 }
