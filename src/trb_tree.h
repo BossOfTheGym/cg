@@ -5,13 +5,17 @@
 
 #include <memory>
 #include <cassert>
+#include <type_traits>
 
 namespace trb
 {
-    template<class node_traits_t, class compare_t>
+    // TODO : const iterator
+    // TODO : maybe I should give iterator ability to return its node
+    template<class key_t, class compare_t, bool threaded_v>
     struct TreeTraits
     {
-        using Node    = TreeNode<node_traits_t>;
+        using NodeTraits = NodeTraits<key_t, threaded_v>;
+        using Node    = TreeNode<NodeTraits>;
         using Key     = typename Node::Key;
         using Compare = compare_t;
     };
@@ -26,8 +30,7 @@ namespace trb
         using Key     = typename traits::Key;
         using Compare = typename traits::Compare;
 
-        // almost corresponds to standart
-        // TODO : decrementable end() (easy but it would required some rework)
+        // almost corresponds to standart (even closer)
         class Iterator
         {
             friend class Tree;
@@ -41,12 +44,12 @@ namespace trb
 
 
         private:
-            Iterator(Node* nil, Node* node) : m_nil{nil}, m_node{node}
+            Iterator(Tree* tree, Node* node) : m_tree{tree}, m_node{node}
             {}
 
         public:
-            Iterator()
-            {}
+            Iterator() = default;
+
 
         public:
             reference operator * () const
@@ -61,30 +64,30 @@ namespace trb
 
             Iterator& operator -- ()
             {
-                m_node = trb::predecessor(m_nil, m_node);
+                m_node = m_tree->predecessor(m_node);
 
                 return *this;
             }
 
             Iterator& operator ++ ()
             {
-                m_node = trb::successor(m_nil, m_node);
+                m_node = m_tree->successor(m_node);
 
                 return *this;
             }
 
-            Iterator operator -- (int) const
+            Iterator operator -- (int)
             {
                 auto it{*this};
 
-                return --*this, it;
+                return --(*this), it;
             }
 
-            Iterator operator ++ (int) const
+            Iterator operator ++ (int)
             {
                 auto it{*this};
 
-                return ++*this, it;
+                return ++(*this), it;
             }
 
 
@@ -92,13 +95,13 @@ namespace trb
             {
                 auto it{*this};
                 if (diff > 0) {
-                    while (m_nil != m_node && diff > 0) {
+                    while (m_tree->m_nil != m_node && diff > 0) {
                         ++it;
                         --diff;
                     }
                 }
                 else {
-                    while (m_nil != m_node && diff < 0) {
+                    while (m_tree->m_nil != m_node && diff < 0) {
                         --it;
                         ++diff;
                     }
@@ -124,18 +127,17 @@ namespace trb
 
 
         private:
-            Node* m_nil {nullptr};
+            Tree* m_tree{nullptr};
             Node* m_node{nullptr};
         };
 
 
     protected:
-        template<class Comp = Compare, std::enable_if_t<std::is_default_constructible_v<Comp>, int> = 0>
-        Tree() : m_compare()
-        {}
+        Tree() = default;
 
-        template<class Comp = Compare, std::enable_if_t<!std::is_default_constructible_v<Comp>, int> = 0>
-        Tree(Comp&& compare = Comp()) : m_compare(std::forward<Comp>(compare))
+        template<class Comp = Compare>
+        Tree(Comp&& compare) noexcept(std::is_nothrow_constructible_v<Compare, Comp&&>)
+            : m_compare(std::forward<Comp>(compare))
         {}
 
 
@@ -158,6 +160,9 @@ namespace trb
         {
             if constexpr(!Node::threaded)
             {
+                if (node == m_nil)
+                    return max(m_root);
+
                 if (node->left != m_nil)
                     return max(node->left);
 
@@ -180,10 +185,11 @@ namespace trb
         {
             if constexpr(!Node::threaded)
             {
+                if (node == m_nil)
+                    return min(m_root);
+
                 if (node->right != m_nil)
-                {
                     return min(node->right);
-                }
 
                 Node* succ = node->parent;
                 while (succ != m_nil && node == succ->right)
@@ -325,24 +331,26 @@ namespace trb
 
         // TODO : needs to be tested, just another version of searchInsert
         // TODO : this looks like bullshit
-        Node* searchInsertUnique(Node* node, const Key& key)
-        {
-            Node* prev = m_nil;
-            Node* curr = node;
-            while (curr != m_nil)
-            {
-                prev = curr;
-                if (m_compare(key, curr->key))
-                    curr = curr->left;            
-                else if (m_compare(curr->key, key))
-                    curr = curr->right;
-                else
-                    break;
-            }
-            if (curr == m_nil) // key not found or root is nil, insert position found
-                return prev;
-            return searchInsert(curr, key); // search insert position
-        }
+        // TODO : I don't even remember what I wanted to do with that
+        // maybe i wanted to use it for set-like insertion (no duplicates) but this doesn't seem to work
+        //Node* searchInsertUnique(Node* node, const Key& key)
+        //{
+        //    Node* prev = m_nil;
+        //    Node* curr = node;
+        //    while (curr != m_nil)
+        //    {
+        //        prev = curr;
+        //        if (m_compare(key, curr->key))
+        //            curr = curr->left;            
+        //        else if (m_compare(curr->key, key))
+        //            curr = curr->right;
+        //        else
+        //            break;
+        //    }
+        //    if (curr == m_nil) // key not found or root is nil, insert position found
+        //        return prev;
+        //    return searchInsert(curr, key); // search insert position
+        //}
 
         Node* find(Node* node, const Key& key)
         {
@@ -485,7 +493,7 @@ namespace trb
 
             node->color = Color::Red;
 
-            fixInsert(m_nil, root, node);
+            fixInsert(node);
         }
 
         // NOTE : root != m_nil, after != m_nil, node != m_nil
@@ -721,6 +729,28 @@ namespace trb
             m_nil->parent = m_nil;
         }
 
+        void remove(Iterator it)
+        {
+            assert(it.m_node != m_nil);
+
+            remove(it.m_node);
+        }
+
+
+        Iterator iter(Node* node)
+        {
+            return Iterator{this, node};
+        }
+
+        Iterator iter()
+        {
+            return Iterator{this, m_nil};
+        }
+
+        Node* iterNode(Iterator it)
+        {
+            return it.m_node;
+        }
 
     protected:
         Node* m_nil{};

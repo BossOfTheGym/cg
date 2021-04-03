@@ -205,25 +205,26 @@ namespace trb
     }
 
     // TODO : needs to be tested, just another version of search_insert
-    template<class NodeT, class Compare, class Key>
-    NodeT* search_insert_unique(NodeT* nil, NodeT* root, Compare&& compare, Key&& key)
-    {
-        NodeT* prev = nil;
-        NodeT* curr = root;
-        while (curr != nil)
-        {
-            prev = curr;
-            if (compare(key, curr->key))
-                curr = curr->left;            
-            else if (compare(curr->key, key))
-                curr = curr->right;
-            else
-                break;
-        }
-        if (curr == nil) // key not found or root is m_nil, position found
-            return prev;
-        return search_insert(nil, curr, std::forward<Compare>(compare), key); // search insert position
-    }
+    // TODO : see trb_tree.h for details
+    //template<class NodeT, class Compare, class Key>
+    //NodeT* search_insert_unique(NodeT* nil, NodeT* root, Compare&& compare, Key&& key)
+    //{
+    //    NodeT* prev = nil;
+    //    NodeT* curr = root;
+    //    while (curr != nil)
+    //    {
+    //        prev = curr;
+    //        if (compare(key, curr->key))
+    //            curr = curr->left;            
+    //        else if (compare(curr->key, key))
+    //            curr = curr->right;
+    //        else
+    //            break;
+    //    }
+    //    if (curr == nil) // key not found or root is m_nil, position found
+    //        return prev;
+    //    return search_insert(nil, curr, std::forward<Compare>(compare), key); // search insert position
+    //}
 
     template<class NodeT, class Compare, class Key>
     NodeT* find(NodeT* nil, NodeT* root, Compare&& compare, Key&& key)

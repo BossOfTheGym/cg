@@ -264,7 +264,7 @@ void test_my_set_delete_insert()
 
     std::random_device device;
 
-    auto seed = device(); // 12345
+    auto seed = device(); // 2860085261
     std::minstd_rand gen(seed);
 
     std::cout << "seed: " << seed << std::endl;
