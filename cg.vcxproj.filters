@@ -84,15 +84,6 @@
     <ClInclude Include="src\qsort.h">
       <Filter>sort</Filter>
     </ClInclude>
-    <ClInclude Include="src\EventQueue.h">
-      <Filter>section</Filter>
-    </ClInclude>
-    <ClInclude Include="src\PointEvent.h">
-      <Filter>section</Filter>
-    </ClInclude>
-    <ClInclude Include="src\SweepLine.h">
-      <Filter>section</Filter>
-    </ClInclude>
     <ClInclude Include="src\trb_set.h">
       <Filter>ds</Filter>
     </ClInclude>
@@ -124,12 +115,6 @@
     </ClCompile>
     <ClCompile Include="src\main.cpp">
       <Filter>main</Filter>
-    </ClCompile>
-    <ClCompile Include="src\EventQueue.cpp">
-      <Filter>section</Filter>
-    </ClCompile>
-    <ClCompile Include="src\SweepLine.cpp">
-      <Filter>section</Filter>
     </ClCompile>
     <ClCompile Include="src\section.cpp">
       <Filter>section</Filter>
