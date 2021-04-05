@@ -76,6 +76,10 @@ namespace prim
 
 	bool belongs(const vec2& v, const Line2& l, Float eps = 1e-6);
 
+	bool horiz(const Line2& l, Float eps = 1e-6);
+
+	bool vert(const Line2& l, Float eps = 1e-6);
+
 
 	// intersection
 	enum class Status : i32
@@ -87,11 +91,17 @@ namespace prim
 
 	Status intersectSegSeg(const Line2& s0, const Line2& s1, vec2& v0, vec2& v1, Float eps = 1e-6);
 
-	Status intersectSegLine(const Line2& seg, const Line2& line, vec2& v, Float eps = 1e-6);
+	Status intersectSegLine(const Line2& s, const Line2& l, vec2& v, Float eps = 1e-6);
 
-	Status intersectsSegX(const Line2& seg, Float x, vec2& v, Float eps = 1e-6);
+	Status intersectLineLine(const Line2& l0, const Line2& l1, vec2& v, Float eps = 1e-6);
 
-	Status intersectsSegY(const Line2& seg, Float y, vec2& v, Float eps = 1e-6);
+	Status intersectsSegX(const Line2& s, Float x, vec2& v, Float eps = 1e-6);
+
+	Status intersectsSegY(const Line2& s, Float y, vec2& v, Float eps = 1e-6);
+
+	Status intersectsLineX(const Line2& l, Float x, vec2& v, Float eps = 1e-6);
+
+	Status intersectsLineY(const Line2& l, Float y, vec2& v, Float eps = 1e-6);
 
 
 	// predicates

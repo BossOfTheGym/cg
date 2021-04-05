@@ -57,7 +57,7 @@ void test_intersections_seg_seg()
 
 	std::vector<LineTest> overlap
 	{
-		{{{-2.0, 0.0}, {0.0, 0.0}}, {{0.0, 2.0}, {0.0, 0.0}}, prim::Status::Overlap},
+		{{{-2.0, 0.0}, {0.0, 0.0}}, {{2.0, 0.0}, {0.0, 0.0}}, prim::Status::Overlap},
 		{{{2.0, 2.0}, {4.0, 4.0}}, {{3.0, 3.0}, {5.0, 5.0}}, prim::Status::Overlap},
 		{{{-5.0, 4.0}, {-3.0, 4.0}}, {{-4.5, 4.0}, {-2.5, 4.0}}, prim::Status::Overlap},
 		{{{-3.0, -2.0}, {2.0, -1.0}}, {{-0.5, -1.5}, {4.5, -0.5}}, prim::Status::Overlap},
@@ -93,7 +93,7 @@ void test_intersections_seg_seg()
 	std::cout << "***********************************" << std::endl;
 	std::cout << "**** Overlapping seg-seg       ****" << std::endl;
 	std::cout << "***********************************" << std::endl;
-	for (auto& test : noIntersection)
+	for (auto& test : overlap)
 	{
 		if (test_intersection_seg_seg(test))
 			std::cout << "Passed. " << std::endl;
@@ -125,7 +125,7 @@ void test_intersections_seg_line()
 
 	std::vector<LineTest> overlap
 	{
-		{{{-2.0, 0.0}, {0.0, 0.0}}, {{0.0, 2.0}, {0.0, 0.0}}, prim::Status::Overlap},
+		{{{-2.0, 0.0}, {0.0, 0.0}}, {{2.0, 0.0}, {0.0, 0.0}}, prim::Status::Overlap},
 		{{{2.0, 2.0}, {4.0, 4.0}}, {{3.0, 3.0}, {5.0, 5.0}}, prim::Status::Overlap},
 		{{{-5.0, 4.0}, {-3.0, 4.0}}, {{-4.5, 4.0}, {-2.5, 4.0}}, prim::Status::Overlap},
 		{{{-3.0, -2.0}, {2.0, -1.0}}, {{-0.5, -1.5}, {4.5, -0.5}}, prim::Status::Overlap},
@@ -158,7 +158,7 @@ void test_intersections_seg_line()
 	std::cout << "************************************" << std::endl;
 	std::cout << "**** Overlapping seg-line       ****" << std::endl;
 	std::cout << "************************************" << std::endl;
-	for (auto& test : noIntersection)
+	for (auto& test : overlap)
 	{
 		if (test_intersection_seg_line(test))
 			std::cout << "Passed. " << std::endl;

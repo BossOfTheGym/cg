@@ -88,6 +88,16 @@ namespace prim
 		return false;
 	}
 
+	bool horiz(const Line2& l, Float eps)
+	{
+		return std::abs(l.v1.y - l.v0.y) <= eps;
+	}
+
+	bool vert(const Line2& l, Float eps)
+	{
+		return std::abs(l.v1.x - l.v0.x) <= eps;
+	}
+
 
 	// intersection
 	Status intersectSegSeg(const Line2& s0, const Line2& s1, vec2& v0, vec2& v1, Float eps)
@@ -168,6 +178,27 @@ namespace prim
 		return Status::NoIntersection;
 	}
 
+	Status intersectLineLine(const Line2& l0, const Line2& l1, vec2& v, Float eps)
+	{
+		auto dl0 = l0.v1 - l0.v0;
+		auto dl1 = l1.v1 - l1.v0;
+
+		auto det = -cross_z(dl0, dl1);
+		if (std::abs(det) > eps) 
+		{
+			auto dl1l0 = l1.v0 - l0.v0;
+
+			Float u = -cross_z(dl1l0, dl1) / det;
+			v = l0.v0 + dl0 * u;
+			return Status::Intersection;
+		}
+
+		if (std::abs(cross_z(dl0, l1.v0 - l0.v0)) <= eps)
+			return Status::Overlap;
+
+		return Status::NoIntersection;
+	}
+
 	Status intersectsSegX(const Line2& seg, Float x, vec2& v, Float eps)
 	{
 		Float x0 = seg.v0.x;
@@ -211,6 +242,56 @@ namespace prim
 
 			Float x0 = seg.v0.x;
 			Float x1 = seg.v1.x;
+			Float dx = x1 - x0;
+
+			v.x = dx / dy * (y - y0) + x0;
+			v.y = y;
+
+			return Status::Intersection;
+		}
+
+		if (std::abs(y - y0) > eps)
+			return Status::NoIntersection;
+		return Status::Overlap;
+	}
+
+	Status intersectsLineX(const Line2& l, Float x, vec2& v, Float eps)
+	{
+		Float x0 = l.v0.x;
+		Float x1 = l.v1.x;
+		if (x0 > x1)
+			std::swap(x0, x1);
+
+		Float dx = x1 - x0;
+		if (std::abs(dx) > eps)
+		{
+			Float y0 = l.v0.y;
+			Float y1 = l.v1.y;
+			Float dy = y1 - y0;
+
+			v.x = x;
+			v.y = dy / dx * (x - x0) + y0;
+
+			return Status::Intersection;
+		}
+
+		if (std::abs(x - x0) > eps)
+			return Status::NoIntersection;
+		return Status::Overlap;
+	}
+
+	Status intersectsLineY(const Line2& l, Float y, vec2& v, Float eps)
+	{
+		Float y0 = l.v0.y;
+		Float y1 = l.v1.y;
+		if (y0 > y1)
+			std::swap(y0, y1);
+
+		Float dy = y1 - y0;
+		if (std::abs(dy) > eps) 
+		{
+			Float x0 = l.v0.x;
+			Float x1 = l.v1.x;
 			Float dx = x1 - x0;
 
 			v.x = dx / dy * (y - y0) + x0;
