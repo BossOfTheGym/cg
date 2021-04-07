@@ -46,6 +46,8 @@ namespace prim
 	};
 
 
+	static constexpr Float default_eps = 1e-6;
+
 	// math
 	// computes 2x2 determinant (ad - bc)
 	// | a b |
@@ -70,15 +72,15 @@ namespace prim
 
 	bool overlaps_checked(Float a, Float b, Float c, Float d);
 
-	bool equal(const vec2& v0, const vec2& v1, Float eps = 1e-6);
+	bool equal(const vec2& v0, const vec2& v1, Float eps = default_eps);
 
-	bool either_end(const vec2& v, const Line2& line, Float eps = 1e-6);
+	bool either_end(const vec2& v, const Line2& line, Float eps = default_eps);
 
-	bool belongs(const vec2& v, const Line2& l, Float eps = 1e-6);
+	bool belongs(const vec2& v, const Line2& l, Float eps = default_eps);
 
-	bool horiz(const Line2& l, Float eps = 1e-6);
+	bool horiz(const Line2& l, Float eps = default_eps);
 
-	bool vert(const Line2& l, Float eps = 1e-6);
+	bool vert(const Line2& l, Float eps = default_eps);
 
 
 	// intersection
@@ -89,19 +91,19 @@ namespace prim
 		Overlap,
 	};
 
-	Status intersectSegSeg(const Line2& s0, const Line2& s1, vec2& v0, vec2& v1, Float eps = 1e-6);
+	Status intersectSegSeg(const Line2& s0, const Line2& s1, vec2& v0, vec2& v1, Float eps = default_eps);
 
-	Status intersectSegLine(const Line2& s, const Line2& l, vec2& v, Float eps = 1e-6);
+	Status intersectSegLine(const Line2& s, const Line2& l, vec2& v, Float eps = default_eps);
 
-	Status intersectLineLine(const Line2& l0, const Line2& l1, vec2& v, Float eps = 1e-6);
+	Status intersectLineLine(const Line2& l0, const Line2& l1, vec2& v, Float eps = default_eps);
 
-	Status intersectsSegX(const Line2& s, Float x, vec2& v, Float eps = 1e-6);
+	Status intersectsSegX(const Line2& s, Float x, vec2& v, Float eps = default_eps);
 
-	Status intersectsSegY(const Line2& s, Float y, vec2& v, Float eps = 1e-6);
+	Status intersectsSegY(const Line2& s, Float y, vec2& v, Float eps = default_eps);
 
-	Status intersectsLineX(const Line2& l, Float x, vec2& v, Float eps = 1e-6);
+	Status intersectsLineX(const Line2& l, Float x, vec2& v, Float eps = default_eps);
 
-	Status intersectsLineY(const Line2& l, Float y, vec2& v, Float eps = 1e-6);
+	Status intersectsLineY(const Line2& l, Float y, vec2& v, Float eps = default_eps);
 
 
 	// predicates
@@ -120,9 +122,9 @@ namespace prim
 	};
 
 
-	Turn turn(const vec2& v0, const vec2& v1, const vec2& v2, Float eps = 1e-6);
+	Turn turn(const vec2& v0, const vec2& v1, const vec2& v2, Float eps = default_eps);
 
-	bool leftTurn(const vec2& v0, const vec2& v1, const vec2& v2, Float eps = 1e-6);
+	bool leftTurn(const vec2& v0, const vec2& v1, const vec2& v2, Float eps = default_eps);
 
-	Orient circleOrient(const vec2& v0, const vec2& v1, const vec2& v2, const vec2& v3, Float eps = 1e-6);
+	Orient circleOrient(const vec2& v0, const vec2& v1, const vec2& v2, const vec2& v3, Float eps = default_eps);
 }
