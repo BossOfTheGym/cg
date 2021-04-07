@@ -118,7 +118,10 @@ namespace ds
         {
             auto node = m_allocator.alloc(key);
 
-            Tree::insert(node);
+            if (!Tree::insert(node))
+                // TODO : little bit bad because of unneccessary allocation
+                // but maybe its ok
+                m_allocator.dealloc(node);
         }
 
         void erase(const Key& key)
@@ -165,11 +168,13 @@ namespace ds
 
         void clear()
         {
-            for (auto it = begin(), e = end(); it != e; ++it)
+            for (auto it = begin(), e = end(); it != e;)
             {
-                Tree::remove(it);
+                auto prev = it++;
 
-                m_allocator.dealloc(Tree::iterNode(it));
+                Tree::remove(prev);
+
+                m_allocator.dealloc(Tree::iterNode(prev));
             }
         }
 
@@ -185,8 +190,14 @@ namespace ds
 
     
     template<class key_t, class compare_t = std::less<key_t>, template<class> class allocator_t = DefaultAllocator>
-    using Set = BasicSet<trb::TreeTraits<key_t, compare_t, false>, allocator_t>;
+    using Set = BasicSet<trb::TreeTraits<key_t, compare_t, false, false>, allocator_t>;
 
     template<class key_t, class compare_t = std::less<key_t>, template<class> class allocator_t = DefaultAllocator>
-    using ListSet = BasicSet<trb::TreeTraits<key_t, compare_t, true>, allocator_t>;
+    using Multiset = BasicSet<trb::TreeTraits<key_t, compare_t, false, true>, allocator_t>;
+
+    template<class key_t, class compare_t = std::less<key_t>, template<class> class allocator_t = DefaultAllocator>
+    using ListSet = BasicSet<trb::TreeTraits<key_t, compare_t, true, false>, allocator_t>;
+
+    template<class key_t, class compare_t = std::less<key_t>, template<class> class allocator_t = DefaultAllocator>
+    using ListMultiset = BasicSet<trb::TreeTraits<key_t, compare_t, true, true>, allocator_t>;
 }

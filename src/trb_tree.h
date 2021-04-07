@@ -11,24 +11,27 @@ namespace trb
 {
     // TODO : const iterator
     // TODO : maybe I should give iterator ability to return its node
-    template<class key_t, class compare_t, bool threaded_v>
+    template<class key_t, class compare_t, bool threaded_v, bool multi_v>
     struct TreeTraits
     {
+        static constexpr const bool threaded = threaded_v;
+        static constexpr const bool multi = multi_v;
+
         using NodeTraits = NodeTraits<key_t, threaded_v>;
         using Node    = TreeNode<NodeTraits>;
         using Key     = typename Node::Key;
         using Compare = compare_t;
     };
 
-    template<class traits>
+    template<class tree_traits_t>
     class Tree
     {
         friend class Iterator;
 
     public:
-        using Node    = typename traits::Node;
-        using Key     = typename traits::Key;
-        using Compare = typename traits::Compare;
+        using Node    = typename tree_traits_t::Node;
+        using Key     = typename tree_traits_t::Key;
+        using Compare = typename tree_traits_t::Compare;
 
         // almost corresponds to standart (even closer)
         class Iterator
@@ -211,7 +214,7 @@ namespace trb
             Node* lb = m_nil;
             while (node != m_nil)
             {
-                if (m_compare(node->key, key))
+                if (m_compare(node->key, key)) // node->key < key
                 {
                     node = node->right;
                 }
@@ -229,7 +232,7 @@ namespace trb
             Node* ub = m_nil;
             while (node != m_nil)
             {
-                if (!m_compare(key, node->key))
+                if (!m_compare(key, node->key)) // node->key <= key
                 {
                     node = node->right;
                 }
@@ -314,7 +317,8 @@ namespace trb
         }
 
 
-        Node* searchInsert(Node* node, const Key& key)
+        // NOTE : looks like upper-bound search which is suitable for multiset, I guess
+        Node* searchInsertUB(Node* node, const Key& key)
         {
             Node* prev = m_nil;
             Node* curr = node;
@@ -329,38 +333,45 @@ namespace trb
             return prev;
         }
 
-        // TODO : needs to be tested, just another version of searchInsert
-        // TODO : this looks like bullshit
-        // TODO : I don't even remember what I wanted to do with that
-        // maybe i wanted to use it for set-like insertion (no duplicates) but this doesn't seem to work
-        //Node* searchInsertUnique(Node* node, const Key& key)
-        //{
-        //    Node* prev = m_nil;
-        //    Node* curr = node;
-        //    while (curr != m_nil)
-        //    {
-        //        prev = curr;
-        //        if (m_compare(key, curr->key))
-        //            curr = curr->left;            
-        //        else if (m_compare(curr->key, key))
-        //            curr = curr->right;
-        //        else
-        //            break;
-        //    }
-        //    if (curr == m_nil) // key not found or root is nil, insert position found
-        //        return prev;
-        //    return searchInsert(curr, key); // search insert position
-        //}
+        // NOTE : for set-like data structures (no duplicates)        
+        struct SearchResultLB
+        {
+            Node* lb{};
+            Node* prev{};
+        };
+
+        SearchResultLB searchInsertLB(Node* node, const Key& key)
+        {
+            Node* prev = m_nil;
+            Node* lb   = m_nil;
+            while (node != m_nil)
+            {
+                prev = node;
+                if (m_compare(node->key, key)) // node->key < key
+                {
+                    node = node->right;
+                }
+                else
+                {
+                    lb = node;
+                    node = node->left;
+                }
+            }
+            return {lb, prev};
+        }
+
 
         Node* find(Node* node, const Key& key)
         {
             Node* curr = node;
-            while (curr != m_nil && (m_compare(curr->key, key) || m_compare(key, curr->key)))
+            while (curr != m_nil)
             {
                 if (m_compare(key, curr->key))
                     curr = curr->left;            
-                else
+                else if (m_compare(curr->key, key))
                     curr = curr->right;
+                else
+                    break;
             }
             return curr;
         }
@@ -428,11 +439,26 @@ namespace trb
         }
 
         // NOTE : node != m_nil, node in default state except key
-        void insert(Node* node)
+        // TODO : test
+        bool insert(Node* node)
         {
             assert(node != m_nil);
 
-            auto prev = searchInsert(m_root, node->key);
+            Node* prev;
+            if constexpr(tree_traits_t::multi) // multiset
+            {
+                prev = searchInsertUB(m_root, node->key);
+            }
+            else // not multiset
+            {
+                auto [lb, lbPrev] = searchInsertLB(m_root, node->key);
+                if (lb != m_nil && !m_compare(node->key, lb->key))
+                    // lb->key >= node->key -> already true
+                    // !(node->key < lb->key) <=> lb->key <= node->key -> if true then equal node found
+                    return false;
+                // prev is insert position
+                prev = lbPrev;
+            }
 
             node->parent = prev;
             if constexpr(Node::threaded)
@@ -488,12 +514,15 @@ namespace trb
                         prev->right = node;
                 }
             }
+            // NOTE : can be ommited for more efficiency
             node->left  = m_nil;
             node->right = m_nil;
 
             node->color = Color::Red;
 
             fixInsert(node);
+
+            return true;
         }
 
         // NOTE : root != m_nil, after != m_nil, node != m_nil
@@ -751,6 +780,7 @@ namespace trb
         {
             return it.m_node;
         }
+
 
     protected:
         Node* m_nil{};

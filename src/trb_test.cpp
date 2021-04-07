@@ -1,19 +1,20 @@
 #include "trb_test.h"
 
 #include "core.h"
-#include "test_util.h"
 #include "trb_set.h"
+#include "test_util.h"
 
-#include <cstdlib>
-#include <vector>
-#include <algorithm>
-#include <random>
 #include <set>
-#include <iostream>
+#include <vector>
+#include <random>
 #include <numeric>
+#include <cstdlib>
+#include <iostream>
+#include <algorithm>
 
 
-using MySet = ds::Set<u32>;
+using Set = ds::Set<u32>;
+
 
 void test_set_stress()
 {
@@ -59,7 +60,7 @@ void test_my_set_stress()
     {
         shuffle(keys, gen);
 
-        MySet s;
+        Set s;
 
         auto c = clock();
         for (auto& key : keys)
@@ -87,7 +88,7 @@ void test_my_set_debug()
     {
         std::cout << "test: " << k << std::endl;
 
-        MySet ms;
+        Set ms;
 
         shuffle(keys, gen);
         for (auto& key : keys)
@@ -125,7 +126,7 @@ void test_my_set_debug()
 
 void test_structure_debug()
 {
-    MySet s;
+    Set s;
 
     for (u32 i = 0; i < 15; i++)
     {
@@ -155,7 +156,7 @@ void test_my_set0()
             std::cout << "test: " << k << std::endl;
         }
 
-        MySet ms;
+        Set ms;
 
         shuffle(keys, gen);
         for (auto& key : keys)
@@ -200,7 +201,7 @@ void test_my_set1()
             std::cout << "test: " << k << std::endl;
         }
 
-        MySet ms;
+        Set ms;
 
         shuffle(keys, gen);
         for (auto& key : keys)
@@ -235,7 +236,7 @@ void test_my_set_insert_equal()
 
     for (u32 k = 0; k < 3; k++)
     {
-        MySet ms;
+        Set ms;
 
         auto c = clock();
         for (u32 i = 0; i < 1'000'000; i++)
@@ -272,7 +273,7 @@ void test_my_set_delete_insert()
     std::vector<u32> added;
     std::vector<u32> removed;
 
-    MySet ms;
+    Set ms;
 
     for (i32 k = 0; k < 100'000; k++)
     {
@@ -397,7 +398,7 @@ namespace
 
         std::set<u32> stdset(keys.begin(), keys.end());
 
-        MySet myset;
+        Set myset;
         for (auto& key : keys)
         {
             myset.insert(key);
@@ -439,7 +440,7 @@ namespace
     {
         std::set<u32> stdset(keys.begin(), keys.end());
 
-        MySet myset;
+        Set myset;
         for (auto& key : keys)
         {
             myset.insert(key);
@@ -512,7 +513,7 @@ void test_my_set_iteration()
 
     std::vector<u32> keys{1,2,3,4,5,6};
 
-    MySet ms;
+    Set ms;
     for (u32 k = 0; k < 3; k++)
     {
         for(auto& key : keys)
@@ -544,4 +545,59 @@ void test_my_set_iteration()
     //std::cout << std::endl;
 
     std::cout << "testing ended" << std::endl << std::endl;
+}
+
+
+void test_multiset_order()
+{
+    std::cout << "********************************" << std::endl;
+    std::cout << "**** testing multiset order ****" << std::endl;
+    std::cout << "********************************" << std::endl;
+
+    using Pair = std::pair<u32, u32>;
+
+    struct Comp
+    {
+        bool operator () (const Pair& p0, const Pair& p1)
+        {
+            return p0.first < p1.first;
+        }
+    };
+
+    using Multiset = ds::Multiset<Pair, Comp>;
+
+    Multiset ms;
+    
+    std::random_device device;
+    std::minstd_rand gen(device());
+    
+    std::vector<Pair> pairs;
+    for (u32 i = 0; i < 5; i++)
+    {
+        pairs.push_back({i, 0});
+    }
+
+    auto choose = [&] ()
+    {
+        auto i = gen() % pairs.size();
+        auto pair = pairs[i];
+        if (++pairs[i].second >= 5)
+        {
+            std::swap(pairs[i], pairs.back());
+            pairs.pop_back();
+        }
+        return pair;
+    };
+
+    while (!pairs.empty())
+    {
+        ms.insert(choose());
+    }
+
+    for (auto& [k, o] : ms)
+    {
+        std::cout << "(" << k << ":" << o << ") ";
+    }
+
+    std::cout << "Testing finished." << std::endl << std::endl;
 }

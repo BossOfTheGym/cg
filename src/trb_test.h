@@ -26,3 +26,6 @@ void test_my_set_upper_bound();
 
 
 void test_my_set_iteration();
+
+
+void test_multiset_order();
