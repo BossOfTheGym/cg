@@ -363,17 +363,30 @@ namespace trb
 
         Node* find(Node* node, const Key& key)
         {
-            Node* curr = node;
-            while (curr != m_nil)
+            if constexpr(!tree_traits_t::multi) // not multiset
             {
-                if (m_compare(key, curr->key))
-                    curr = curr->left;            
-                else if (m_compare(curr->key, key))
-                    curr = curr->right;
-                else
-                    break;
+                Node* curr = node;
+                while (curr != m_nil)
+                {
+                    if (m_compare(key, curr->key))
+                        curr = curr->left;            
+                    else if (m_compare(curr->key, key))
+                        curr = curr->right;
+                    else
+                        break;
+                }
+                return curr;   
             }
-            return curr;
+            else // multiset
+            {
+                Node* lb = lowerBound(node, key);
+                if (lb != m_nil && !m_compare(key, lb->key))
+                    // lb->key >= key -> already true
+                    // !(key < lb->key) <=> lb->key <= key -> if true then equal node was found
+                    return lb;
+                // node wasm;t found
+                return m_nil;
+            }
         }
 
 
@@ -438,8 +451,7 @@ namespace trb
             m_root->color = Color::Black;
         }
 
-        // NOTE : node != m_nil, node in default state except key
-        // TODO : test
+        // NOTE : node != m_nil, node in default state except key        
         bool insert(Node* node)
         {
             assert(node != m_nil);
@@ -454,7 +466,7 @@ namespace trb
                 auto [lb, lbPrev] = searchInsertLB(m_root, node->key);
                 if (lb != m_nil && !m_compare(node->key, lb->key))
                     // lb->key >= node->key -> already true
-                    // !(node->key < lb->key) <=> lb->key <= node->key -> if true then equal node found
+                    // !(node->key < lb->key) <=> lb->key <= node->key -> if true then equal node was found
                     return false;
                 // prev is insert position
                 prev = lbPrev;
