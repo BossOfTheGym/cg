@@ -236,12 +236,12 @@ void test_my_set_insert_equal()
 
     for (u32 k = 0; k < 3; k++)
     {
-        Set ms;
+        ds::Multiset<u32> ms;
 
         auto c = clock();
         for (u32 i = 0; i < 1'000'000; i++)
         {
-            ms.insert(0);
+            ms.insert(0u);
         }
         c = clock() - c;
         std::cout << "elapsed: " << (f32)c / CLOCKS_PER_SEC << std::endl;

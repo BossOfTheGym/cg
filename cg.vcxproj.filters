@@ -51,9 +51,6 @@
     <ClInclude Include="src\trb_util.h">
       <Filter>ds</Filter>
     </ClInclude>
-    <ClInclude Include="src\ttrb.h">
-      <Filter>ds</Filter>
-    </ClInclude>
     <ClInclude Include="src\quadtree_test.h">
       <Filter>tests</Filter>
     </ClInclude>

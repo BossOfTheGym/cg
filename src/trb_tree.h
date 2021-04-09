@@ -9,18 +9,39 @@
 
 namespace trb
 {
-    // TODO : const iterator
-    // TODO : maybe I should give iterator ability to return its node
-    template<class key_t, class compare_t, bool threaded_v, bool multi_v>
+    template<class T>
+    class DefaultAllocator
+    {
+    public:
+        template<class ... Args>
+        T* alloc(Args&& ... args)
+        {
+            if constexpr(std::is_aggregate_v<T>)
+                return ::new T{std::forward<Args>(args)...};
+            else
+                return ::new T(std::forward<Args>(args)...);
+        }
+
+        void dealloc(T* ptr)
+        {
+            ::delete ptr;
+        }
+    };
+
+    // TODO : const iterator    
+    // TODO : copy
+
+    template<class key_t, class compare_t, template<class> class allocator_t, bool threaded_v, bool multi_v>
     struct TreeTraits
     {
         static constexpr const bool threaded = threaded_v;
         static constexpr const bool multi = multi_v;
 
         using NodeTraits = NodeTraits<key_t, threaded_v>;
-        using Node    = TreeNode<NodeTraits>;
-        using Key     = typename Node::Key;
-        using Compare = compare_t;
+        using Node       = TreeNode<NodeTraits>;
+        using Key        = key_t;
+        using Compare    = compare_t;
+        using Allocator  = allocator_t<Node>;
     };
 
     template<class tree_traits_t>
@@ -29,9 +50,10 @@ namespace trb
         friend class Iterator;
 
     public:
-        using Node    = typename tree_traits_t::Node;
-        using Key     = typename tree_traits_t::Key;
-        using Compare = typename tree_traits_t::Compare;
+        using Node      = typename tree_traits_t::Node;
+        using Key       = typename tree_traits_t::Key;
+        using Compare   = typename tree_traits_t::Compare;
+        using Allocator = typename tree_traits_t::Allocator;
 
         // almost corresponds to standart (even closer)
         class Iterator
@@ -97,14 +119,18 @@ namespace trb
             Iterator operator + (difference_type diff) const
             {
                 auto it{*this};
-                if (diff > 0) {
-                    while (m_tree->m_nil != m_node && diff > 0) {
+                if (diff > 0)
+                {
+                    while (m_tree->m_nil != m_node && diff > 0) 
+                    {
                         ++it;
                         --diff;
                     }
                 }
-                else {
-                    while (m_tree->m_nil != m_node && diff < 0) {
+                else 
+                {
+                    while (m_tree->m_nil != m_node && diff < 0)
+                    {
                         --it;
                         ++diff;
                     }
@@ -135,16 +161,96 @@ namespace trb
         };
 
 
-    protected:
-        Tree() = default;
+    public:
+        Tree()
+        {
+            init();
+        }
 
-        template<class Comp = Compare>
-        Tree(Comp&& compare) noexcept(std::is_nothrow_constructible_v<Compare, Comp&&>)
-            : m_compare(std::forward<Comp>(compare))
+        Tree(Allocator&& alloc) : m_allocator(std::move(alloc))
+        {
+            init();
+        }
+
+        Tree(const Allocator& alloc) : m_allocator(alloc)
+        {
+            init();
+        }
+
+        Tree(Compare&& compare) : m_compare(std::move(compare))
+        {
+            init();
+        }
+
+        Tree(const Compare& compare) : m_compare(compare)
+        {
+            init();
+        }
+
+        template<class Comp = Compare, class Alloc = Allocator>
+        Tree(Comp&& comp, Alloc&& alloc) 
+            : m_compare(std::forward<Comp>(comp))
+            , m_allocator(std::forward<Alloc>(alloc))
+        {
+            init();
+        }
+
+
+        Tree(Tree&& another) noexcept(std::is_nothrow_move_constructible_v<Compare> && std::is_nothrow_move_constructible_v<Allocator>)
+            : m_root(std::exchange(another.m_root, nullptr))
+            , m_nil(std::exchange(another.m_nil, nullptr))
+            , m_compare(std::move(another.m_compare))
+            , m_allocator(std::move(another.m_allocator))
         {}
 
+        // NOTE : simplification, see TODO
+        Tree(const Tree&) = delete;
 
-    protected:
+        ~Tree()
+        {
+            deinit();
+        }
+
+
+        Tree& operator = (Tree&& another) noexcept(std::is_nothrow_move_assignable_v<Compare> && std::is_nothrow_move_assignable_v<Allocator>)
+        {
+            if (this != &another)
+            {
+                deinit();
+
+                m_root = std::exchange(another.m_root, nullptr);
+                m_nil = std::exchange(another.m_nil, nullptr);
+
+                m_compare   = std::move(another.m_compare);
+                m_allocator = std::move(another.m_allocator);
+            }
+            return *this;
+        }
+
+        // NOTE : simplification, see TODO
+        Tree& operator = (const Tree&) = delete;
+
+    private: // m_root & m_nil init
+        void init()
+        {
+            m_nil = m_allocator.alloc();
+            m_nil->left   = m_nil;
+            m_nil->right  = m_nil;
+            m_nil->parent = m_nil;
+            m_nil->color = trb::Color::Black;
+
+            m_root = m_nil;
+        }
+
+        void deinit()
+        {
+            clear();
+
+            m_allocator.dealloc(m_nil);
+        }
+
+
+    protected: // all tree functions
         Node* min(Node* node)
         {
             while (node->left != m_nil)
@@ -317,7 +423,8 @@ namespace trb
         }
 
 
-        // NOTE : looks like upper-bound search which is suitable for multiset, I guess
+        // NOTE : looks like upper-bound search which is suitable for multiset
+        // each elemeent will be inserted after all equal
         Node* searchInsertUB(Node* node, const Key& key)
         {
             Node* prev = m_nil;
@@ -360,7 +467,28 @@ namespace trb
             return {lb, prev};
         }
 
+        // NOTE : set case: returns insertPos or nullptr if key wasn't found
+        // multiset case: returns insertPos so new node will be inserted after all nodes with equal key
+        Node* searchInsert(Node* node, const Key& key)
+        {
+            if constexpr(tree_traits_t::multi) // multiset
+            {
+                return searchInsertUB(node, key);
+            }
+            else // not multiset
+            {
+                auto [lb, lbPrev] = searchInsertLB(node, key);
+                if (lb != m_nil && !m_compare(key, lb->key))
+                    // lb->key >= node->key -> already true
+                    // !(node->key < lb->key) <=> lb->key <= node->key -> if true then equal node was found
+                    return nullptr;
+                // prev is insert position
+                return lbPrev;
+            }
+        }
 
+        // NOTE : set case: returns node or nil if key wasn't found
+        // multiset case: returns first node with equal key or nil if key wasn't found
         Node* find(Node* node, const Key& key)
         {
             if constexpr(!tree_traits_t::multi) // not multiset
@@ -384,7 +512,7 @@ namespace trb
                     // lb->key >= key -> already true
                     // !(key < lb->key) <=> lb->key <= key -> if true then equal node was found
                     return lb;
-                // node wasm;t found
+                // node wasn't found
                 return m_nil;
             }
         }
@@ -452,78 +580,64 @@ namespace trb
         }
 
         // NOTE : node != m_nil, node in default state except key        
-        bool insert(Node* node)
+        void insert(Node* insertPos, Node* node)
         {
+            assert(insertPos != nullptr);
+            assert(node != nullptr);
             assert(node != m_nil);
 
-            Node* prev;
-            if constexpr(tree_traits_t::multi) // multiset
-            {
-                prev = searchInsertUB(m_root, node->key);
-            }
-            else // not multiset
-            {
-                auto [lb, lbPrev] = searchInsertLB(m_root, node->key);
-                if (lb != m_nil && !m_compare(node->key, lb->key))
-                    // lb->key >= node->key -> already true
-                    // !(node->key < lb->key) <=> lb->key <= node->key -> if true then equal node was found
-                    return false;
-                // prev is insert position
-                prev = lbPrev;
-            }
-
-            node->parent = prev;
+            node->parent = insertPos;
             if constexpr(Node::threaded)
             {
-                if (prev == m_nil)
+                if (insertPos == m_nil)
                 {
                     m_root = node;
 
                     // list insert
-                    node->prev = m_nil;
+                    node->insertPos = m_nil;
                     node->next = m_nil;
 
                     m_nil->next = node;
-                    m_nil->prev = node;
+                    m_nil->insertPos = node;
                 }
                 else
                 {
-                    if (compare(node->key, prev->key))
+                    if (compare(node->key, insertPos->key))
                     {
-                        prev->left = node;
+                        insertPos->left = node;
 
                         // list insert
-                        node->prev = prev->prev;
-                        node->next = prev;
-                        node->prev->next = node;
+                        node->insertPos = insertPos->insertPos;
+                        node->next = insertPos;
+                        node->insertPos->next = node;
 
-                        prev->prev = node;
+                        insertPos->insertPos = node;
                     }
                     else
                     {
-                        prev->right = node;
+                        insertPos->right = node;
 
                         // list insert
-                        node->next = prev->next;
-                        node->prev = prev;
-                        node->next->prev = node;
+                        node->next = insertPos->next;
+                        node->insertPos = insertPos;
+                        node->next->insertPos = node;
 
-                        prev->next = node;
+                        insertPos->next = node;
                     }
                 }
             }
             else // not threaded
             {
-                if (prev == m_nil)
+                if (insertPos == m_nil)
                 {
                     m_root = node;
                 }
                 else
                 {
-                    if (m_compare(node->key, prev->key))
-                        prev->left = node;
+                    if (m_compare(node->key, insertPos->key))
+                        insertPos->left = node;
                     else
-                        prev->right = node;
+                        insertPos->right = node;
                 }
             }
             // NOTE : can be ommited for more efficiency
@@ -533,11 +647,10 @@ namespace trb
             node->color = Color::Red;
 
             fixInsert(node);
-
-            return true;
         }
 
         // NOTE : root != m_nil, after != m_nil, node != m_nil
+        // NOTE : method makes no assumption on the order of the elements: it is your responsability to maintain it
         void insertAfter(Node* after, Node* node)
         {        
             assert(m_root != m_nil);
@@ -572,6 +685,7 @@ namespace trb
         }
 
         // NOTE : root != m_nil, before != m_nil, node != m_nil
+        // NOTE : method makes no assumption on the order of the elements: it is your responsability to maintain it
         void insertBefore(Node* before, Node* node)
         {
             assert(m_root != m_nil);
@@ -770,14 +884,92 @@ namespace trb
             m_nil->parent = m_nil;
         }
 
-        void remove(Iterator it)
+
+    public: // methods returning iterators
+        template<class key_t>
+        bool insert(key_t&& key)
         {
-            assert(it.m_node != m_nil);
+            Node* insertPos = searchInsert(m_root, key);
+            if (insertPos != nullptr)
+            {
+                Node* node = m_allocator.alloc(std::forward<key_t>(key));
+                insert(insertPos, node);
+                return true;
+            }
+            return false;
+        }
+
+        template<class key_t>
+        void erase(key_t&& key)
+        {
+            if (auto node = find(m_root, key); node != m_nil)
+            {
+                remove(node);
+
+                m_allocator.dealloc(node);
+            }
+        }
+
+        void erase(Iterator it)
+        {
+            assert(it != end());
 
             remove(it.m_node);
+
+            m_allocator.dealloc(it.m_node);
+        }
+
+        template<class key_t>
+        bool contains(key_t&& key)
+        {
+            return find(m_root, key) != m_nil;
+        }
+
+        void clear()
+        {
+            Node* curr = min(m_root);
+            while (curr != m_nil)
+            {
+                Node* next = successor(curr);
+                remove(curr);
+                m_allocator.dealloc(curr);
+                curr = next;
+            }
+        }
+
+        bool empty() const
+        {
+            return m_root == m_nil;
         }
 
 
+        Iterator find(const Key& key)
+        {
+            return Iterator{this, find(m_root, key)};
+        }
+        
+        Iterator lowerBound(const Key& key)
+        {
+            return Iterator{this, lowerBound(m_root, key)};
+        }
+
+        Iterator upperBound(const Key& key)
+        {
+            return Iterator{this, upperBound(m_root, key)};
+        }
+
+        Iterator begin()
+        {
+            return Iterator{this, min(m_root)};
+        }
+
+        Iterator end()
+        {
+            return Iterator{this, m_nil};
+        }
+
+
+    protected: // utilities for inheriting classes
         Iterator iter(Node* node)
         {
             return Iterator{this, node};
@@ -798,6 +990,7 @@ namespace trb
         Node* m_nil{};
         Node* m_root{};
 
-        Compare m_compare;
+        Compare   m_compare;
+        Allocator m_allocator;
     };
 }

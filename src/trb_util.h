@@ -6,7 +6,9 @@
 #include <utility>
 
 namespace trb
-{    
+{   
+    // TODO : transfer some functions from "trb_tree.h"
+
     template<class NodeT>
     NodeT* tree_min(NodeT* nil, NodeT* root)
     {
