@@ -97,13 +97,13 @@ namespace prim
 
 	Status intersectLineLine(const Line2& l0, const Line2& l1, vec2& v, Float eps = default_eps);
 
-	Status intersectsSegX(const Line2& s, Float x, vec2& v, Float eps = default_eps);
+	Status intersectsSegX(const Line2& s, Float x, Float& yi, Float eps = default_eps);
 
-	Status intersectsSegY(const Line2& s, Float y, vec2& v, Float eps = default_eps);
+	Status intersectsSegY(const Line2& s, Float y, Float& xi, Float eps = default_eps);
 
-	Status intersectsLineX(const Line2& l, Float x, vec2& v, Float eps = default_eps);
+	Status intersectsLineX(const Line2& l, Float x, Float& yi, Float eps = default_eps);
 
-	Status intersectsLineY(const Line2& l, Float y, vec2& v, Float eps = default_eps);
+	Status intersectsLineY(const Line2& l, Float y, Float& xi, Float eps = default_eps);
 
 
 	// predicates

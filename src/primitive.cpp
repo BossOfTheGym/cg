@@ -199,7 +199,7 @@ namespace prim
 		return Status::NoIntersection;
 	}
 
-	Status intersectsSegX(const Line2& seg, Float x, vec2& v, Float eps)
+	Status intersectsSegX(const Line2& seg, Float x, Float& yi, Float eps)
 	{
 		Float x0 = seg.v0.x;
 		Float x1 = seg.v1.x;
@@ -216,8 +216,7 @@ namespace prim
 			Float y1 = seg.v1.y;
 			Float dy = y1 - y0;
 
-			v.x = x;
-			v.y = dy / dx * (x - x0) + y0;
+			yi = dy / dx * (x - x0) + y0;
 
 			return Status::Intersection;
 		}
@@ -227,7 +226,7 @@ namespace prim
 		return Status::Overlap;
 	}
 
-	Status intersectsSegY(const Line2& seg, Float y, vec2& v, Float eps)
+	Status intersectsSegY(const Line2& seg, Float y, Float& xi, Float eps)
 	{
 		Float y0 = seg.v0.y;
 		Float y1 = seg.v1.y;
@@ -244,8 +243,7 @@ namespace prim
 			Float x1 = seg.v1.x;
 			Float dx = x1 - x0;
 
-			v.x = dx / dy * (y - y0) + x0;
-			v.y = y;
+			xi = dx / dy * (y - y0) + x0;			
 
 			return Status::Intersection;
 		}
@@ -255,7 +253,7 @@ namespace prim
 		return Status::Overlap;
 	}
 
-	Status intersectsLineX(const Line2& l, Float x, vec2& v, Float eps)
+	Status intersectsLineX(const Line2& l, Float x, Float& yi, Float eps)
 	{
 		Float x0 = l.v0.x;
 		Float x1 = l.v1.x;
@@ -269,8 +267,7 @@ namespace prim
 			Float y1 = l.v1.y;
 			Float dy = y1 - y0;
 
-			v.x = x;
-			v.y = dy / dx * (x - x0) + y0;
+			yi = dy / dx * (x - x0) + y0;
 
 			return Status::Intersection;
 		}
@@ -280,7 +277,7 @@ namespace prim
 		return Status::Overlap;
 	}
 
-	Status intersectsLineY(const Line2& l, Float y, vec2& v, Float eps)
+	Status intersectsLineY(const Line2& l, Float y, Float& xi, Float eps)
 	{
 		Float y0 = l.v0.y;
 		Float y1 = l.v1.y;
@@ -294,8 +291,7 @@ namespace prim
 			Float x1 = l.v1.x;
 			Float dx = x1 - x0;
 
-			v.x = dx / dy * (y - y0) + x0;
-			v.y = y;
+			xi = dx / dy * (y - y0) + x0;
 
 			return Status::Intersection;
 		}

@@ -178,7 +178,7 @@ struct LineTestP
 
 bool test_intersectionX(const LineTestP& test)
 {
-	prim::vec2 v;
+	prim::Float v;
 	auto status = prim::intersectsSegX(test.line, test.p, v);
 
 	return status == test.status;
@@ -186,7 +186,7 @@ bool test_intersectionX(const LineTestP& test)
 
 bool test_intersectionY(const LineTestP& test)
 {
-	prim::vec2 v;
+	prim::Float v;
 	auto status = prim::intersectsSegY(test.line, test.p, v);
 
 	return status == test.status;
