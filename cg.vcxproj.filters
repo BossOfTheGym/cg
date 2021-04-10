@@ -42,9 +42,6 @@
     <ClInclude Include="src\trb_test.h">
       <Filter>tests</Filter>
     </ClInclude>
-    <ClInclude Include="src\ttrb_test.h">
-      <Filter>tests</Filter>
-    </ClInclude>
     <ClInclude Include="src\primitive.h">
       <Filter>primitive</Filter>
     </ClInclude>

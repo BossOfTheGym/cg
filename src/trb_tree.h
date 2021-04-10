@@ -30,6 +30,7 @@ namespace trb
 
     // TODO : const iterator    
     // TODO : copy
+    // TODO : insert must return pair<iterator, bool>
 
     template<class key_t, class compare_t, template<class> class allocator_t, bool threaded_v, bool multi_v>
     struct TreeTraits
@@ -79,11 +80,15 @@ namespace trb
         public:
             reference operator * () const
             {
+                assert(m_node != m_tree->m_nil);
+
                 return m_node->key;
             }
 
             pointer operator -> () const
             {
+                assert(m_node != m_tree->m_nil);
+
                 return &m_node->key;
             }
 
@@ -315,7 +320,8 @@ namespace trb
             }
         }
 
-        Node* lowerBound(Node* node, const Key& key)
+        template<class key_t>
+        Node* lowerBound(Node* node, key_t&& key)
         {
             Node* lb = m_nil;
             while (node != m_nil)
@@ -333,7 +339,8 @@ namespace trb
             return lb;
         }
 
-        Node* upperBound(Node* node, const Key& key)
+        template<class key_t>
+        Node* upperBound(Node* node, key_t&& key)
         {
             Node* ub = m_nil;
             while (node != m_nil)
@@ -425,7 +432,8 @@ namespace trb
 
         // NOTE : looks like upper-bound search which is suitable for multiset
         // each elemeent will be inserted after all equal
-        Node* searchInsertUB(Node* node, const Key& key)
+        template<class key_t>
+        Node* searchInsertUB(Node* node, key_t&& key)
         {
             Node* prev = m_nil;
             Node* curr = node;
@@ -447,7 +455,8 @@ namespace trb
             Node* prev{};
         };
 
-        SearchResultLB searchInsertLB(Node* node, const Key& key)
+        template<class key_t>
+        SearchResultLB searchInsertLB(Node* node, key_t&& key)
         {
             Node* prev = m_nil;
             Node* lb   = m_nil;
@@ -467,29 +476,33 @@ namespace trb
             return {lb, prev};
         }
 
-        // NOTE : set case: returns insertPos or nullptr if key wasn't found
-        // multiset case: returns insertPos so new node will be inserted after all nodes with equal key
-        Node* searchInsert(Node* node, const Key& key)
+        // NOTE : set case: returns insertPos and flag
+        // if flag is false then element was found, returned node has this element(not multiset case)
+        // for multiset flag is always true? element is always inserted
+        // returned node can be nil (tree is empty)
+        template<class key_t>
+        std::pair<Node*, bool> searchInsert(Node* node, key_t&& key)
         {
             if constexpr(tree_traits_t::multi) // multiset
             {
-                return searchInsertUB(node, key);
+                return {searchInsertUB(node, std::forward<key_t>(key)), true};
             }
             else // not multiset
             {
-                auto [lb, lbPrev] = searchInsertLB(node, key);
+                auto [lb, lbPrev] = searchInsertLB(node, std::forward<key_t>(key));
                 if (lb != m_nil && !m_compare(key, lb->key))
                     // lb->key >= node->key -> already true
                     // !(node->key < lb->key) <=> lb->key <= node->key -> if true then equal node was found
-                    return nullptr;
+                    return {lb, false};
                 // prev is insert position
-                return lbPrev;
+                return {lbPrev, true};
             }
         }
 
         // NOTE : set case: returns node or nil if key wasn't found
         // multiset case: returns first node with equal key or nil if key wasn't found
-        Node* find(Node* node, const Key& key)
+        template<class key_t>
+        Node* find(Node* node, key_t&& key)
         {
             if constexpr(!tree_traits_t::multi) // not multiset
             {
@@ -887,16 +900,32 @@ namespace trb
 
     public: // methods returning iterators
         template<class key_t>
-        bool insert(key_t&& key)
+        std::pair<Iterator, bool> insert(key_t&& key)
         {
-            Node* insertPos = searchInsert(m_root, key);
-            if (insertPos != nullptr)
+            auto [insertPos, canInsert] = searchInsert(m_root, std::forward<key_t>(key));
+            if (canInsert)
             {
                 Node* node = m_allocator.alloc(std::forward<key_t>(key));
                 insert(insertPos, node);
-                return true;
+                return {Iterator{this, node}, true};
             }
-            return false;
+            return {Iterator{this, insertPos}, false};
+        }
+
+        template<class key_t>
+        Iterator insertAfter(Iterator it, key_t&& key)
+        {
+            Node* node = m_allocator.alloc(std::forward<key_t>(key));
+            insertAfter(it.m_node, node);
+            return Iterator{this, node};
+        }
+
+        template<class key_t>
+        Iterator insertBefore(Iterator it, key_t&& key)
+        {
+            Node* node = m_allocator.alloc(std::forward<key_t>(key));
+            insertBefore(it.m_node, node);
+            return Iterator{this, node};
         }
 
         template<class key_t>
@@ -922,7 +951,7 @@ namespace trb
         template<class key_t>
         bool contains(key_t&& key)
         {
-            return find(m_root, key) != m_nil;
+            return find(m_root, std::forward<key_t>(key)) != m_nil;
         }
 
         void clear()
@@ -942,20 +971,22 @@ namespace trb
             return m_root == m_nil;
         }
 
-
-        Iterator find(const Key& key)
+        template<class key_t>
+        Iterator find(key_t&& key)
         {
-            return Iterator{this, find(m_root, key)};
+            return Iterator{this, find(m_root, std::forward<key_t>(key))};
         }
         
-        Iterator lowerBound(const Key& key)
+        template<class key_t>
+        Iterator lowerBound(key_t&& key)
         {
-            return Iterator{this, lowerBound(m_root, key)};
+            return Iterator{this, lowerBound(m_root, std::forward<key_t>(key))};
         }
 
-        Iterator upperBound(const Key& key)
+        template<class key_t>
+        Iterator upperBound(key_t&& key)
         {
-            return Iterator{this, upperBound(m_root, key)};
+            return Iterator{this, upperBound(m_root, std::forward<key_t>(key))};
         }
 
         Iterator begin()

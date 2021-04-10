@@ -162,7 +162,6 @@
     <ClInclude Include="src\trb_node.h" />
     <ClInclude Include="src\trb_set.h" />
     <ClInclude Include="src\trb_test.h" />
-    <ClInclude Include="src\ttrb_test.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="src\main.cpp" />
