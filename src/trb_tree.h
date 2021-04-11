@@ -30,8 +30,7 @@ namespace trb
 
     // TODO : const iterator    
     // TODO : copy
-    // TODO : insert must return pair<iterator, bool>
-
+    
     template<class key_t, class compare_t, template<class> class allocator_t, bool threaded_v, bool multi_v>
     struct TreeTraits
     {
@@ -662,17 +661,17 @@ namespace trb
             fixInsert(node);
         }
 
-        // NOTE : root != m_nil, after != m_nil, node != m_nil
+        // NOTE : node != m_nil, m_root != m_nil, after != m_nil
         // NOTE : method makes no assumption on the order of the elements: it is your responsability to maintain it
         void insertAfter(Node* after, Node* node)
-        {        
+        {
             assert(m_root != m_nil);
             assert(after != m_nil);
             assert(node != m_nil);
 
             if (after->right != m_nil)
             {
-                Node* succ = successor(m_nil, after);
+                Node* succ = successor(after);
 
                 succ->left = node;
                 node->parent = succ;
@@ -697,17 +696,17 @@ namespace trb
             fixInsert(node);
         }
 
-        // NOTE : root != m_nil, before != m_nil, node != m_nil
+        // NOTE : node != m_nil, m_root != m_nil, before != m_nil 
         // NOTE : method makes no assumption on the order of the elements: it is your responsability to maintain it
         void insertBefore(Node* before, Node* node)
-        {
+        {       
             assert(m_root != m_nil);
             assert(before != m_nil);
             assert(node != m_nil);
 
             if (before->left != m_nil)
             {
-                Node* pred = predecessor(m_nil, before);
+                Node* pred = predecessor(before);
 
                 pred->right= node;
                 node->parent = pred;
@@ -916,7 +915,23 @@ namespace trb
         Iterator insertAfter(Iterator it, key_t&& key)
         {
             Node* node = m_allocator.alloc(std::forward<key_t>(key));
+
+            if (empty())
+            {
+                insert(m_nil, node);
+
+                return Iterator{this, node};
+            }
+
+            if (it == end())
+            {
+                insertBefore(min(m_root), node);
+
+                return Iterator{this, node};
+            }
+
             insertAfter(it.m_node, node);
+
             return Iterator{this, node};
         }
 
@@ -924,6 +939,21 @@ namespace trb
         Iterator insertBefore(Iterator it, key_t&& key)
         {
             Node* node = m_allocator.alloc(std::forward<key_t>(key));
+
+            if (empty())
+            {
+                insert(m_nil, node);
+
+                return Iterator{this, node};
+            }
+
+            if (it == end())
+            {
+                insertAfter(max(m_root), node);
+
+                return Iterator{this, node};
+            }
+
             insertBefore(it.m_node, node);
             return Iterator{this, node};
         }
