@@ -15,6 +15,7 @@ namespace sect
 		using namespace prim;
 
 		// NOTE : simplification, no horizontal segments allowed for now
+		// NOTE : no overlapping lines allowed
 		// NOTE : sweeping from up to down (from upper y to lower), from left to right (from left x to right)
 		// NOTE : segments are stored from left to right in what order they intersect the sweep line
 
@@ -26,6 +27,10 @@ namespace sect
 			return l;
 		}
 
+		Float polar_y(const vec2& point)
+		{
+			return point.x / point.y;
+		}
 
 		struct SweepLineComparator
 		{
@@ -36,33 +41,33 @@ namespace sect
 				assert(!horiz(l0));
 				assert(!horiz(l1));
 
-				Float i0;
-				intersectsLineY(l0, sweepY, i0);
+				Float x0;
+				intersectsLineY(l0, sweepY, x0);
 
-				Float i1;
-				intersectsLineY(l1, sweepY, i1);
+				Float x1;
+				intersectsLineY(l1, sweepY, x1);
 
-				return i0 < i1;
+				return x0 < x1;
 			}
 
 			bool operator() (const Line2& l, Float x)
 			{
 				assert(!horiz(l));
 
-				Float i;
-				intersectsLineY(l, sweepY, i);
+				Float xi;
+				intersectsLineY(l, sweepY, xi);
 
-				return i < x;
+				return xi < x;
 			}
 				
 			bool operator() (Float x, const Line2& l)
 			{
 				assert(!horiz(l));
 
-				Float i;
-				intersectsLineY(l, sweepY, i);
+				Float xi;
+				intersectsLineY(l, sweepY, xi);
 
-				return x < i;
+				return x < xi;
 			}
 
 			Float sweepY{};
@@ -78,15 +83,6 @@ namespace sect
 			bool preceds(const Line2& l0, const Line2& l1)
 			{
 				return m_compare(l0, l1);
-			}
-
-			bool preceds(Iterator l0, Iterator l1)
-			{
-				if (l0 == end())
-					return false;
-				if (l1 == end())
-					return true;
-				return preceds(*l0, *l1);
 			}
 
 			Float sweepY() const
@@ -111,12 +107,11 @@ namespace sect
 
 			// segments that have their lower end in the point
 			// they will be deleted, added after upper ends are processed, order is not neccessary
-			std::vector<Line2> lowerEnd;
+			std::vector<SweepOrderIt> lowerEnd;
 
-			// segments that purely intersect in the point
-			// their order in sweep line will be reversed
-			SweepOrderIt l0; // leftmost of the bundle
-			SweepOrderIt l1; // rightmost of the bundle
+			// segments that intersect in the point will not be stored expliitly
+			// their order in sweep line will be reversed after event is processed
+			u32 intersections{};
 
 			// segments that have their upper end in the point
 			// they will be inserted, I will search next lower y (if there is no so it can be chosen arbitrarly)
@@ -128,7 +123,7 @@ namespace sect
 			// for searching & insertion
 			bool operator () (const PointEvent& e0, const PointEvent& e1)
 			{
-				if (std::abs(e0.point.y - e1.point.y) <= eps)
+				if (std::abs(e0.point.y - e1.point.y) > eps)
 					return e0.point.y > e1.point.y;
 				return e0.point.x < e1.point.x;
 			}
@@ -136,14 +131,14 @@ namespace sect
 			// for searching & insertion
 			bool operator () (const PointEvent& e0, const vec2& v0)
 			{
-				if (std::abs(e0.point.y - v0.y) <= eps)
+				if (std::abs(e0.point.y - v0.y) > eps)
 					return e0.point.y > v0.y;
 				return e0.point.x < v0.x;
 			}
 
 			bool operator () (const vec2& v0, const PointEvent& e0)
 			{
-				if (std::abs(v0.y - e0.point.y) <= eps)
+				if (std::abs(v0.y - e0.point.y) > eps)
 					return v0.y > e0.point.y;
 				return v0.x < e0.point.x;
 			}
@@ -151,12 +146,12 @@ namespace sect
 			// for finding safe y
 			bool operator () (const PointEvent& e0, Float y)
 			{
-				return e0.point.y < y;
+				return e0.point.y > y;
 			}
 
 			bool operator () (Float y, const PointEvent& e0)
 			{
-				return y < e0.point.y;
+				return y > e0.point.y;
 			}
 
 			Float eps = default_eps;
@@ -195,34 +190,6 @@ namespace sect
 
 				return m_compare(*it, point);
 			}
-
-			// NOTE : special upper-bound method to find safe y that will be used to insert upperEnd segments into sweep line
-			Float lowerY(Float y)
-			{
-				/*
-				Node* ub = m_nil;
-				Node* node = m_root;
-				while (node != m_nil)
-				{
-				if (node->key.point.y <= y)
-				{
-				node = node->right;
-				}
-				else
-				{
-				ub = node;
-				node = node->left;
-				}
-				}
-
-				if (ub != m_nil)
-				return y + (ub->key.point.y - y) / 2;
-				return y + std::abs(y);
-				*/
-				if (auto ub = upperBound(y); ub != end())
-					return y + (ub->point.y - y) / 2;
-				return y + std::abs(y);
-			}
 		};
 
 
@@ -235,11 +202,13 @@ namespace sect
 		public:
 			std::vector<Intersection> sect(const std::vector<Line2>& lines)
 			{
+				std::cout << "*** init ***" << std::endl;
 				initialize(lines);
 				while (!m_queue.empty())
 				{
 					auto it = m_queue.front();
 
+					std::cout << "*** event ***" << std::endl;
 					handlePointEvent(it);
 
 					m_queue.pop();
@@ -258,166 +227,157 @@ namespace sect
 			}
 
 
-			// NOTE : called only from initialization step,
+			// NOTE : called only from initialization step, line hasn't been inserted yet, so pure line is passed
 			void insertUpperEndEvent(const Line2& line)
 			{
 				auto [v0, v1] = reorder_line(line);
 
-				auto [it, inserted] = m_queue.insert(v0);
-				if (inserted)
-				{
-					it->l0 = m_sweepLine.end();
-					it->l1 = m_sweepLine.end();
-				}
+				auto [it, _] = m_queue.insert(v0);
 				it->upperEnd.push_back(line);
+
+				std::cout << "upper: " << v0.x << " " << v0.y << std::endl;
 			}
 
-			// NOTE : called after upper-end of a segment was processed
-			void insertLowerEndEvent(const Line2& line)
+			// NOTE : called after upper-end of a segment was processed so existing position is passed
+			void insertLowerEndEvent(SweepOrderIt line)
 			{
-				auto [v0, v1] = reorder_line(line);
+				auto [v0, v1] = reorder_line(*line);
 
-				auto [it, inserted] = m_queue.insert(v1);
-				if (inserted)
-				{
-					it->l0 = m_sweepLine.end();
-					it->l1 = m_sweepLine.end();
-				}
+				auto [it, _] = m_queue.insert(v1);
 				it->lowerEnd.push_back(line);
+
+				std::cout << "lower: " << v1.x << " " << v1.y << std::endl;
 			}
 
 			// NOTE : called if intersection was found
-			// NOTE : l0 preceds l1
-			void insertIntersectionEvent(SweepOrderIt l0, SweepOrderIt l1, const vec2& point)
+			void insertIntersectionEvent(const vec2& point)
 			{
 				auto [it, inserted] = m_queue.insert(point);
-				if (inserted)
-				{
-					it->l0 = m_sweepLine.end();
-					it->l1 = m_sweepLine.end();
-				}
-				if (m_sweepLine.preceds(l0, it->l0))
-					it->l0 = l0;
-				if (m_sweepLine.preceds(it->l1, l1))
-					it->l1 = l1;
+				if (!inserted)
+					it->intersections += 1; // new intersecting line
+				else
+					it->intersections = 2; // newly created
+
+				std::cout << "inter: " << point.x << " " << point.y << std::endl;
 			}
 
 
 			void handlePointEvent(PointEventIt event)
 			{
+				std::cout << "event: " << event->point.x << " " << event->point.y << std::endl;
+
 				m_sweepLine.sweepY(event->point.y);
 
-				u32 interCount = countIntersections(event);
+				if (event->intersections + event->lowerEnd.size() + event->upperEnd.size() > 1)				
+					reportIntersection(event);
 
-				if (interCount + event->lowerEnd.size() + event->upperEnd.size() != 0)				
-					reportIntersection(event, interCount);
+				if (!event->lowerEnd.empty())
+					removeLowerEndSegments(event);
 
-				reverseIntersectionOrder(event, interCount);
+				if (event->intersections > 0)
+					reverseIntersectionOrder(event);
 
-				insertUpperEndSegments(event, interCount);
+				if (!event->upperEnd.empty())
+					insertUpperEndSegments(event);
 
-				findNewEventPoints(event, interCount);
+				findNewEventPoints(event);
 			}
 
-			u32 countIntersections(PointEventIt event)
+			void reportIntersection(PointEventIt event)
 			{
-				u32 count = 0;
-				auto l0 = event->l0;
-				auto l1 = event->l1;
-				if (l0 != m_sweepLine.end())
-					for (count = 1; l0 != l1; ++count, ++l0);
-				return count;
-			}
-
-			void reportIntersection(PointEventIt event, u32 interCount)
-			{
+				// lowed-end segments are already inserted
+				// intersecting too
+				// so we add all segments from lower bound to upper bound of an intersection
 				Intersection inter{event->point};
-				for (auto& line : event->lowerEnd)
-					inter.lines.push_back(line);
+				
+				auto l0 = m_sweepLine.lowerBound(event->point.x);
+				auto l1 = m_sweepLine.upperBound(event->point.x);
+				while (l0 != l1)
+					inter.lines.push_back(*l0++);
 
 				for (auto& line : event->upperEnd)
 					inter.lines.push_back(line);
 
-				auto l0 = event->l0;
-				for (u32 i = 0; i < interCount; i++)
-					inter.lines.push_back(*l0);
-
 				m_intersections.push_back(std::move(inter));
 			}
 
-			void reverseIntersectionOrder(PointEventIt event, u32 interCount)
+			void removeLowerEndSegments(PointEventIt event)
 			{
-				auto l0 = event->l0;
-				auto l1 = event->l1;
-				for (u32 i = 0; i < interCount / 2; i++)
+				for (auto& it : event->lowerEnd)
+					m_sweepLine.erase(it);
+			}
+
+			void reverseIntersectionOrder(PointEventIt event)
+			{
+				auto l0 = m_sweepLine.lowerBound(event->point.x);
+				auto l1 = m_sweepLine.upperBound(event->point.x) - 1;
+				for (u32 i = 0 ; i < event->intersections / 2; i++)
 					std::swap(*l0++, *l1--);
-				std::swap(event->l0, event->l1);
 			}
 
-			void insertUpperEndSegments(PointEventIt event, u32 interCount)
+			void insertUpperEndSegments(PointEventIt event)
 			{
-				if (!event->upperEnd.empty())
+				auto pred = [] (const auto& l0, const auto& l1)
 				{
-					m_sweepLine.sweepY(m_queue.lowerY(event->point.y));
-					for (auto& line : event->upperEnd)
-					{
-						auto [it, _] = m_sweepLine.insert(line);
+					auto& [v00, v01] = l0;
+					auto& [v10, v11] = l1;
 
-						insertLowerEndEvent(line);
-						if (m_sweepLine.preceds(it, event->l0))
-							event->l0 = it;
-						if (m_sweepLine.preceds(event->l1, it))
-							event->l1 = it;
-					}
-					m_sweepLine.sweepY(event->point.y);
+					auto dv0 = v01 - v00;
+					auto dv1 = v10 - v11;
 
-					event->upperEnd.clear();
+					return polar_y(dv0) < polar_y(dv1);
+				};
+
+				std::sort(event->upperEnd.begin(), event->upperEnd.end(), pred);
+
+				auto l0 = m_sweepLine.lowerBound(event->point.x);
+				if (l0)
+				{
+					
 				}
+
+				//for (auto& line : event->upperEnd)
+				//{
+				//	auto [it, _] = m_sweepLine.insert(line);
+				//
+				//	insertLowerEndEvent(it);
+				//}
 			}
 
-			void findNewEventPoints(PointEventIt event, u32 interCount)
+			void findNewEventPoints(PointEventIt event)
 			{
 				auto end = m_sweepLine.end();
 				auto beg = m_sweepLine.begin();
-				if (interCount + event->upperEnd.size() == 0)
+
+				auto l0 = m_sweepLine.lowerBound(event->point.x);
+				auto l1 = m_sweepLine.upperBound(event->point.x);
+				if (event->intersections + event->upperEnd.size() == 0) // only lower-end lines were in event
 				{
-					auto l0 = m_sweepLine.lowerBound(event->point.x);
-					if (l0 != beg && l0 != end) // I check if iterator equals begin() because of standart: begin() must not be decrementable
-						--l0;
+					if (l0 == beg || l0 == end)
+						return;
 
-					auto l1 = m_sweepLine.upperBound(event->point.x);
-
-					findNewEvent(l0, l1, event);
+					findNewEvent(l0 - 1, l0, event);
 				}
 				else
 				{
-					auto l0 = event->l0;
-					if (l0 != beg) // I check if iterator equals begin() because of standart: begin() must not be decrementable
-						--l0;
+					if (l0 != beg)
+						findNewEvent(l0 - 1, l0, event);
 
-					auto l1 = event->l1;
 					if (l1 != end)
-						++l0;
-
-					findNewEvent(l0, event->l0, event);
-					findNewEvent(event->l1, l1, event);
+						findNewEvent(l1 - 1, l1, event);
 				}
 			}
 
-			// NOTE : l0 preceds l1
+			// NOTE : l0 preceds l1, l0 != end(), l1 != end()
 			void findNewEvent(SweepOrderIt l0, SweepOrderIt l1, PointEventIt event)
-			{
-				auto end = m_sweepLine.end();
-				if (l0 == end || l1 == end)
-					return;
-
+			{				
 				vec2 i0;
 				vec2 i1;
 				auto status = intersectSegSeg(*l0, *l1, i0, i1); 
 				if (status == Status::Intersection)
 				{
 					if (m_queue.preceds(event, i0))
-						insertIntersectionEvent(l0, l1, i0);
+						insertIntersectionEvent(i0);
 				}
 				else if (status == Status::Overlap)
 				{
