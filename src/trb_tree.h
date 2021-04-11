@@ -607,24 +607,24 @@ namespace trb
                     m_root = node;
 
                     // list insert
-                    node->insertPos = m_nil;
+                    node->prev = m_nil;
                     node->next = m_nil;
 
                     m_nil->next = node;
-                    m_nil->insertPos = node;
+                    m_nil->prev = node;
                 }
                 else
                 {
-                    if (compare(node->key, insertPos->key))
+                    if (m_compare(node->key, insertPos->key))
                     {
                         insertPos->left = node;
 
                         // list insert
-                        node->insertPos = insertPos->insertPos;
+                        node->prev = insertPos->prev;
                         node->next = insertPos;
-                        node->insertPos->next = node;
+                        node->prev->next = node;
 
-                        insertPos->insertPos = node;
+                        insertPos->prev = node;
                     }
                     else
                     {
@@ -632,8 +632,8 @@ namespace trb
 
                         // list insert
                         node->next = insertPos->next;
-                        node->insertPos = insertPos;
-                        node->next->insertPos = node;
+                        node->prev = insertPos;
+                        node->next->prev = node;
 
                         insertPos->next = node;
                     }
