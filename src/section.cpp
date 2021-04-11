@@ -32,6 +32,13 @@ namespace sect
 			return point.x / point.y;
 		}
 
+		Float polar_y(const Line2& line)
+		{
+			auto& [v0, v1] = line;
+
+			return polar_y(v1 - v0);
+		}
+
 		struct SweepLineComparator
 		{
 			// l0 < l1
@@ -310,7 +317,9 @@ namespace sect
 			void reverseIntersectionOrder(PointEventIt event)
 			{
 				auto l0 = m_sweepLine.lowerBound(event->point.x);
-				auto l1 = m_sweepLine.upperBound(event->point.x) - 1;
+				auto l1 = m_sweepLine.upperBound(event->point.x);
+
+				--l1;
 				for (u32 i = 0 ; i < event->intersections / 2; i++)
 					std::swap(*l0++, *l1--);
 			}
@@ -319,48 +328,70 @@ namespace sect
 			{
 				auto pred = [] (const auto& l0, const auto& l1)
 				{
-					auto& [v00, v01] = l0;
-					auto& [v10, v11] = l1;
-
-					auto dv0 = v01 - v00;
-					auto dv1 = v10 - v11;
-
-					return polar_y(dv0) < polar_y(dv1);
+					return polar_y(l0) < polar_y(l1);
 				};
 
+				// sort with prioruty to polar angle
 				std::sort(event->upperEnd.begin(), event->upperEnd.end(), pred);
 
-				auto l0 = m_sweepLine.lowerBound(event->point.x);
-				if (l0)
+				// iterators
+				auto u0 = event->upperEnd.begin();
+				auto u1 = event->upperEnd.end();
+				auto i0 = m_sweepLine.lowerBound(event->point.x);
+				auto i1 = m_sweepLine.upperBound(event->point.x);
+				
+				// CRASH CRASH CRASH CRASH CRASH CRASH CRASH CRASH CRASH CRASH CRASH CRASH CRASH CRASH
+				// TODO : crashes because l0 can be equal l1 so segments are inserted in qrong order
+				// CRASH CRASH CRASH CRASH CRASH CRASH CRASH CRASH CRASH CRASH CRASH CRASH CRASH CRASH
+
+				auto last = i0; // position after that we will insert the rest
+				while (i0 != i1 && u0 != u1) // mix-in upper-ends into sweep line
 				{
-					
+					auto pi = polar_y(*i0);
+					auto pu = polar_y(*u0);
+
+					if (pi > pu) // if polar angle of an upper-end is less then insert before current position
+					{
+						auto inserted = m_sweepLine.insertBefore(i0, *u0++);
+						insertLowerEndEvent(inserted);
+					}
+					else if (pi < pu) // else increase current position
+					{
+						last = i0++;
+					}
+					else
+					{
+						std::cout << "[WARNING] : overlapping segments deetected." << std::endl;
+					}
 				}
 
-				//for (auto& line : event->upperEnd)
-				//{
-				//	auto [it, _] = m_sweepLine.insert(line);
-				//
-				//	insertLowerEndEvent(it);
-				//}
+				if (last == m_sweepLine.end() && !m_sweepLine.empty())
+					last = --m_sweepLine.end();
+
+				while (u0 != u1) // insert the remaining after last
+				{
+					last = m_sweepLine.insertAfter(last, *u0++);
+					insertLowerEndEvent(last);
+				}
 			}
 
 			void findNewEventPoints(PointEventIt event)
 			{
-				auto end = m_sweepLine.end();
 				auto beg = m_sweepLine.begin();
+				auto end = m_sweepLine.end();
 
 				auto l0 = m_sweepLine.lowerBound(event->point.x);
 				auto l1 = m_sweepLine.upperBound(event->point.x);
 				if (event->intersections + event->upperEnd.size() == 0) // only lower-end lines were in event
 				{
-					if (l0 == beg || l0 == end)
+					if (l0 == beg || l0 == end) // seems legit
 						return;
 
 					findNewEvent(l0 - 1, l0, event);
 				}
-				else
+				else // intersecting segments are still in event
 				{
-					if (l0 != beg)
+					if (l0 != beg) // seems legit
 						findNewEvent(l0 - 1, l0, event);
 
 					if (l1 != end)
