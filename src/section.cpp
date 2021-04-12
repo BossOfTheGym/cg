@@ -52,10 +52,9 @@ namespace sect
 
 		struct SweepLineComparator
 		{
-			// l0 < l1
 			bool operator () (const Line2& l0, const Line2& l1)
 			{
-				// simplification for now
+				// simplification
 				assert(!horiz(l0));
 				assert(!horiz(l1));
 
@@ -64,31 +63,34 @@ namespace sect
 
 				Float x1;
 				intersectsLineY(l1, sweepY, x1);
-
-				return x0 < x1;
+				
+				return std::abs(x0 - x1) > eps && x0 < x1;
 			}
 
 			bool operator() (const Line2& l, Float x)
 			{
+				// simplification
 				assert(!horiz(l));
 
 				Float xi;
 				intersectsLineY(l, sweepY, xi);
-
-				return xi < x;
+				
+				return std::abs(xi - x) > eps && xi < x;
 			}
 				
 			bool operator() (Float x, const Line2& l)
 			{
+				// simplification
 				assert(!horiz(l));
 
 				Float xi;
 				intersectsLineY(l, sweepY, xi);
-
-				return x < xi;
+				
+				return std::abs(x - xi) > eps && x < xi;
 			}
 
 			Float sweepY{};
+			Float eps = default_eps;
 		};
 
 		// multiset-like
@@ -153,7 +155,7 @@ namespace sect
 			{
 				if (std::abs(e0.point.y - e1.point.y) > eps)
 					return e0.point.y > e1.point.y;
-				return e0.point.x < e1.point.x;
+				return std::abs(e0.point.x - e1.point.x) > eps && e0.point.x < e1.point.x;
 			}
 
 			// for searching & insertion
@@ -161,25 +163,25 @@ namespace sect
 			{
 				if (std::abs(e0.point.y - v0.y) > eps)
 					return e0.point.y > v0.y;
-				return e0.point.x < v0.x;
+				return std::abs(e0.point.x - v0.x) > eps && e0.point.x < v0.x;
 			}
 
 			bool operator () (const vec2& v0, const PointEvent& e0)
 			{
 				if (std::abs(v0.y - e0.point.y) > eps)
 					return v0.y > e0.point.y;
-				return v0.x < e0.point.x;
+				return std::abs(v0.x - e0.point.x) > eps && v0.x < e0.point.x;
 			}
 
 			// for finding safe y
 			bool operator () (const PointEvent& e0, Float y)
 			{
-				return e0.point.y > y;
+				return std::abs(e0.point.y - y) > eps && e0.point.y > y;
 			}
 
 			bool operator () (Float y, const PointEvent& e0)
 			{
-				return y > e0.point.y;
+				return std::abs(y - e0.point.x) > eps && y > e0.point.y;
 			}
 
 			Float eps = default_eps;
@@ -295,7 +297,7 @@ namespace sect
 
 				m_sweepLine.debug();
 
-				if (event->intersections + event->lowerEnd.size() + event->upperEnd.size() > 1)				
+				if (event->intersections != 0 || event->lowerEnd.size() + event->upperEnd.size() > 1)				
 					reportIntersection(event);
 
 				if (!event->lowerEnd.empty())
@@ -353,6 +355,7 @@ namespace sect
 
 			void reverseIntersectionOrder(PointEventIt event)
 			{
+				// TODO : check possible impossible
 				auto l0 = m_sweepLine.lowerBound(event->point.x);
 				auto l1 = m_sweepLine.upperBound(event->point.x);
 
@@ -362,9 +365,7 @@ namespace sect
 			// NOTE : upperEnd count is not zero
 			void insertUpperEndSegments(PointEventIt event)
 			{
-				// CRASH CRASH CRASH CRASH CRASH CRASH CRASH CRASH CRASH CRASH CRASH CRASH CRASH CRASH
-				// TODO : crashes because l0 can be equal l1 so segments are inserted in qrong order
-				// CRASH CRASH CRASH CRASH CRASH CRASH CRASH CRASH CRASH CRASH CRASH CRASH CRASH CRASH
+				// TODO : check possible impossible
 
 				auto pred = [] (const auto& l0, const auto& l1)
 				{
@@ -403,22 +404,25 @@ namespace sect
 					return;
 
 				// i0 == i1, all remaining can be inserted before i0 now but it will less constly to find insert pos and insert after it
-				auto ins = m_sweepLine.insertBefore(i0, *u0++); // guaranteed to exist at least one uninserted
+				auto inserted = m_sweepLine.insertBefore(i0, *u0++); // guaranteed to exist at least one uninserted
+				insertLowerEndEvent(inserted);
 				while (u0 != u1)
 				{
-					ins = m_sweepLine.insertAfter(ins, *u0++);
-					insertLowerEndEvent(ins);
+					inserted = m_sweepLine.insertAfter(inserted, *u0++);
+					insertLowerEndEvent(inserted);
 				}
 			}
 
 			void findNewEventPoints(PointEventIt event)
 			{
+				// TODO : check possible impossible
+
 				auto beg = m_sweepLine.begin();
 				auto end = m_sweepLine.end();
 
 				auto l0 = m_sweepLine.lowerBound(event->point.x);
 				auto l1 = m_sweepLine.upperBound(event->point.x);
-				if (event->intersections + event->upperEnd.size() == 0) // only lower-end lines were in event
+				if (event->intersections == 0 && event->upperEnd.empty()) // only lower-end lines were in event
 				{
 					if (l0 == beg || l0 == end)
 						return;
@@ -437,7 +441,9 @@ namespace sect
 
 			// NOTE : l0 preceds l1, l0 != end(), l1 != end()
 			void findNewEvent(SweepOrderIt l0, SweepOrderIt l1, PointEventIt event)
-			{				
+			{			
+				// TODO : check possible impossible
+
 				vec2 i0;
 				vec2 i1;
 				auto status = intersectSegSeg(*l0, *l1, i0, i1); 
