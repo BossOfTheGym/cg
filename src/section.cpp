@@ -19,6 +19,7 @@ namespace sect
 		// NOTE : sweeping from up to down (from upper y to lower), from left to right (from left x to right)
 		// NOTE : segments are stored from left to right in what order they intersect the sweep line
 
+
 		// NOTE : returns line in which v0 is upper vertex and v1 is lower vertex
 		Line2 reorder_line(const Line2& l)
 		{
