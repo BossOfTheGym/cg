@@ -5,6 +5,8 @@
 #include <vector>
 #include <iostream>
 
+// TODO : add variaty to tests, add reversed lines (v0, v1) -> (v1, v0)
+
 struct LineTest
 {
 	prim::Line2 l0;

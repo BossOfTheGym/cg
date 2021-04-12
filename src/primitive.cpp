@@ -201,102 +201,86 @@ namespace prim
 
 	Status intersectsSegX(const Line2& seg, Float x, Float& yi, Float eps)
 	{
-		Float x0 = seg.v0.x;
-		Float x1 = seg.v1.x;
-		if (x0 > x1)
-			std::swap(x0, x1);
+		auto [v0, v1] = seg;
+		if (v0.x > v1.x)
+			std::swap(v0, v1);
 
-		Float dx = x1 - x0;
+		Float dx = v1.x - v0.x;
 		if (std::abs(dx) > eps)
 		{
-			if (x < x0 || x1 < x)
+			if (x < v0.x || v1.x < x)
 				return Status::NoIntersection;
 
-			Float y0 = seg.v0.y;
-			Float y1 = seg.v1.y;
-			Float dy = y1 - y0;
+			Float dy = v1.y - v0.y;
 
-			yi = dy / dx * (x - x0) + y0;
+			yi = dy / dx * (x - v0.x) + v0.y;
 
 			return Status::Intersection;
 		}
 
-		if (std::abs(x - x0) > eps)
+		if (std::abs(x - v0.x) > eps)
 			return Status::NoIntersection;
 		return Status::Overlap;
 	}
 
 	Status intersectsSegY(const Line2& seg, Float y, Float& xi, Float eps)
 	{
-		Float y0 = seg.v0.y;
-		Float y1 = seg.v1.y;
-		if (y0 > y1)
-			std::swap(y0, y1);
+		auto [v0, v1] = seg;
+		if (v0.y > v1.y)
+			std::swap(v0, v1);
 
-		Float dy = y1 - y0;
+		Float dy = v1.y - v0.y;
 		if (std::abs(dy) > eps) 
 		{
-			if (y < y0 || y1 < y)
+			if (y < v0.y || v1.y < y)
 				return Status::NoIntersection;
 
-			Float x0 = seg.v0.x;
-			Float x1 = seg.v1.x;
-			Float dx = x1 - x0;
+			Float dx = v1.x - v0.x;
 
-			xi = dx / dy * (y - y0) + x0;			
+			xi = dx / dy * (y - v0.y) + v0.x;			
 
 			return Status::Intersection;
 		}
 
-		if (std::abs(y - y0) > eps)
+		if (std::abs(y - v0.y) > eps)
 			return Status::NoIntersection;
 		return Status::Overlap;
 	}
 
 	Status intersectsLineX(const Line2& l, Float x, Float& yi, Float eps)
 	{
-		Float x0 = l.v0.x;
-		Float x1 = l.v1.x;
-		if (x0 > x1)
-			std::swap(x0, x1);
+		auto& [v0, v1] = l;
 
-		Float dx = x1 - x0;
+		Float dx = v1.x - v0.x;
 		if (std::abs(dx) > eps)
 		{
-			Float y0 = l.v0.y;
-			Float y1 = l.v1.y;
-			Float dy = y1 - y0;
+			Float dy = v1.y - v0.y;
 
-			yi = dy / dx * (x - x0) + y0;
+			yi = dy / dx * (x - v0.x) + v0.y;
 
 			return Status::Intersection;
 		}
 
-		if (std::abs(x - x0) > eps)
+		if (std::abs(x - v0.x) > eps)
 			return Status::NoIntersection;
 		return Status::Overlap;
 	}
 
 	Status intersectsLineY(const Line2& l, Float y, Float& xi, Float eps)
 	{
-		Float y0 = l.v0.y;
-		Float y1 = l.v1.y;
-		if (y0 > y1)
-			std::swap(y0, y1);
-
-		Float dy = y1 - y0;
+		auto& [v0, v1] = l;
+			
+		Float dy = v1.y - v0.y;
 		if (std::abs(dy) > eps) 
 		{
-			Float x0 = l.v0.x;
-			Float x1 = l.v1.x;
-			Float dx = x1 - x0;
+			Float dx = v1.x - v0.x;
 
-			xi = dx / dy * (y - y0) + x0;
+			xi = dx / dy * (y - v0.y) + v0.x;
 
 			return Status::Intersection;
 		}
 
-		if (std::abs(y - y0) > eps)
+		if (std::abs(y - v0.y) > eps)
 			return Status::NoIntersection;
 		return Status::Overlap;
 	}
