@@ -28,7 +28,7 @@ namespace sect
 			return l;
 		}
 
-		Float polar_y(const vec2& point)
+		Float polar_y(const Vec2& point)
 		{
 			return point.x / point.y;
 		}
@@ -40,7 +40,7 @@ namespace sect
 			return polar_y(v1 - v0);
 		}
 
-		std::ostream& operator << (std::ostream& out, const prim::vec2& p)
+		std::ostream& operator << (std::ostream& out, const prim::Vec2& p)
 		{
 			return out << "(" <<  p.x << " " << p.y << ")";	
 		}
@@ -95,7 +95,7 @@ namespace sect
 		};
 
 		// multiset-like
-		using sweep_order_traits_t = trb::TreeTraits<Line2, SweepLineComparator, trb::DefaultAllocator, true, true>;
+		using sweep_order_traits_t = trb::TreeTraits<Line2, SweepLineComparator, trb::DefaultAllocator, false, true>;
 
 		class SweepOrder : public trb::Tree<sweep_order_traits_t>
 		{
@@ -134,7 +134,7 @@ namespace sect
 
 			// event point : lower point event, upper point event, intersection point event
 			// can be all together
-			vec2 point;
+			Vec2 point;
 
 			// segments that have their lower end in the point
 			// they will be deleted, added after upper ends are processed, order is not neccessary
@@ -160,14 +160,14 @@ namespace sect
 			}
 
 			// for searching & insertion
-			bool operator () (const PointEvent& e0, const vec2& v0)
+			bool operator () (const PointEvent& e0, const Vec2& v0)
 			{
 				if (std::abs(e0.point.y - v0.y) > eps)
 					return e0.point.y > v0.y;
 				return std::abs(e0.point.x - v0.x) > eps && e0.point.x < v0.x;
 			}
 
-			bool operator () (const vec2& v0, const PointEvent& e0)
+			bool operator () (const Vec2& v0, const PointEvent& e0)
 			{
 				if (std::abs(v0.y - e0.point.y) > eps)
 					return v0.y > e0.point.y;
@@ -200,7 +200,7 @@ namespace sect
 
 
 		public: // utility functions
-			void push(const vec2& point)
+			void push(const Vec2& point)
 			{
 				insert(point);
 			}
@@ -215,7 +215,7 @@ namespace sect
 				return begin();
 			}
 
-			bool preceds(Iterator it, const vec2& point)
+			bool preceds(Iterator it, const Vec2& point)
 			{
 				assert(it != end());
 
@@ -245,6 +245,7 @@ namespace sect
 
 					m_queue.pop();
 				}
+				assert(m_sweepLine.empty());
 
 				return std::move(m_intersections);
 			}
@@ -282,7 +283,7 @@ namespace sect
 			}
 
 			// NOTE : called if intersection was found
-			void insertIntersectionEvent(const vec2& point)
+			void insertIntersectionEvent(const Vec2& point)
 			{
 				auto [it, _] = m_queue.insert(point);
 				it->intersections = 1; // just to note that intersection occured
@@ -445,8 +446,8 @@ namespace sect
 			{			
 				// TODO : check possible impossible
 
-				vec2 i0;
-				vec2 i1;
+				Vec2 i0;
+				Vec2 i1;
 				auto status = intersectSegSeg(*l0, *l1, i0, i1); 
 				if (status == Status::Intersection)
 				{

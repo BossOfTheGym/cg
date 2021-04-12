@@ -44,14 +44,14 @@ namespace
 
 void test_simple_quadtree()
 {
-	using vec2 = qtree::vec2;
+	using Vec2 = qtree::Vec2;
 
 	i32 div = 512;
 
-	vec2 v0{-1.0, -1.0};
-	vec2 v1{+1.0, +1.0};
+	Vec2 v0{-1.0, -1.0};
+	Vec2 v1{+1.0, +1.0};
 
-	using Helper = qtree::Helper<vec2, Position<vec2>, Allocator>;
+	using Helper = qtree::Helper<Vec2, Position<Vec2>, Allocator>;
 
 	Helper::Tree qtr({{-1.0,-1.0}, {+1.0, +1.0}});
 

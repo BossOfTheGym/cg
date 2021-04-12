@@ -16,8 +16,8 @@ struct LineTest
 
 bool test_intersection_seg_seg(const LineTest& test)
 {
-	prim::vec2 p0;
-	prim::vec2 p1;
+	prim::Vec2 p0;
+	prim::Vec2 p1;
 
 	auto status = prim::intersectSegSeg(test.l0, test.l1, p0, p1);
 
@@ -26,7 +26,7 @@ bool test_intersection_seg_seg(const LineTest& test)
 
 bool test_intersection_seg_line(const LineTest& test)
 {
-	prim::vec2 p0;
+	prim::Vec2 p0;
 
 	auto status = prim::intersectSegLine(test.l0, test.l1, p0);
 

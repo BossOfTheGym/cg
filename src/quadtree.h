@@ -15,7 +15,7 @@
 
 namespace qtree
 {
-	using vec2 = prim::vec2;
+	using Vec2 = prim::Vec2;
 	using AABB = prim::AABB2;
 
 	enum class Leaf : u32
@@ -28,7 +28,7 @@ namespace qtree
 
 	AABB leaf_AABB(Leaf leaf, const AABB& aabb)
 	{
-		auto dv = (aabb.v1 - aabb.v0) * 0.5f;
+		auto dv = (aabb.v1 - aabb.v0) * Vec2::value_type(0.5);
 
 		auto v0 = aabb.v0;
 		v0.x += dv.x * ((u32)leaf & 0x01);
@@ -121,7 +121,7 @@ namespace qtree
 	// 1) T* alloc(Args&& ... args) - constructs an object from args and returns pointer to it
 	// 2) void dealloc(T* object) - deconstructs an object under the pointer
 	// 
-	// position_t is a functor mapping element_t to vec2 (so you can store whatever you want here)
+	// position_t is a functor mapping element_t to Vec2 (so you can store whatever you want here)
 	// TODO : maybe I need to do deduction guides
 	template<class element_t, class position_t, template<class T> class allocator_t>
 	class QuadTree

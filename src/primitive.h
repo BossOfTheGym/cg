@@ -11,43 +11,45 @@ namespace prim
 	// points v0, v1, v2 are listed in counterclockwise order
 	using namespace glm;
 
-	using Float = f32;
+	using Float = f64;
+
+	using Vec2 = dvec2;
 
 	struct Line2
 	{
-		vec2 v0{};
-		vec2 v1{};
+		Vec2 v0{};
+		Vec2 v1{};
 	};
 
 	struct AABB2
 	{
-		vec2 v0{};
-		vec2 v1{};
+		Vec2 v0{};
+		Vec2 v1{};
 	};
 
 	struct Triangle2
 	{
-		vec2 v0{};
-		vec2 v1{};
-		vec2 v2{};
+		Vec2 v0{};
+		Vec2 v1{};
+		Vec2 v2{};
 	};
 
 	struct Circle3V2
 	{
-		vec2 v0{};
-		vec2 v1{};
-		vec2 v2{};
+		Vec2 v0{};
+		Vec2 v1{};
+		Vec2 v2{};
 	};
 
 	struct CircleRV2
 	{
-		vec2  c{};
+		Vec2  c{};
 		Float r{};
 	};
 
 	// abs() <= eps => equal
 	// abs() > eps => not equal
-	static constexpr Float default_eps = 1e-6;
+	static constexpr Float default_eps = 1e-15;
 
 	// math
 	// computes 2x2 determinant (ad - bc)
@@ -55,17 +57,17 @@ namespace prim
 	// | c d |
 	Float det4(Float a, Float b, Float c, Float d);
 
-	Float dot2(const vec2& v0);
+	Float dot2(const Vec2& v0);
 
-	Float cross_z(const vec2& v0, const vec2& v1);
+	Float cross_z(const Vec2& v0, const Vec2& v1);
 
-	Float len(const vec2& v);
+	Float len(const Vec2& v);
 	
 
 	// orientation
-	bool inAABB(const AABB2& aabb, const vec2& vec);
+	bool inAABB(const AABB2& aabb, const Vec2& vec);
 
-	bool inTriangle(const Triangle2& tri, const vec2& vec);
+	bool inTriangle(const Triangle2& tri, const Vec2& vec);
 
 	bool overlaps(const AABB2& a, const AABB2& b);
 
@@ -73,11 +75,11 @@ namespace prim
 
 	bool overlaps_checked(Float a, Float b, Float c, Float d);
 
-	bool equal(const vec2& v0, const vec2& v1, Float eps = default_eps);
+	bool equal(const Vec2& v0, const Vec2& v1, Float eps = default_eps);
 
-	bool either_end(const vec2& v, const Line2& line, Float eps = default_eps);
+	bool either_end(const Vec2& v, const Line2& line, Float eps = default_eps);
 
-	bool belongs(const vec2& v, const Line2& l, Float eps = default_eps);
+	bool belongs(const Vec2& v, const Line2& l, Float eps = default_eps);
 
 	bool horiz(const Line2& l, Float eps = default_eps);
 
@@ -92,11 +94,11 @@ namespace prim
 		Overlap,
 	};
 
-	Status intersectSegSeg(const Line2& s0, const Line2& s1, vec2& v0, vec2& v1, Float eps = default_eps);
+	Status intersectSegSeg(const Line2& s0, const Line2& s1, Vec2& v0, Vec2& v1, Float eps = default_eps);
 
-	Status intersectSegLine(const Line2& s, const Line2& l, vec2& v, Float eps = default_eps);
+	Status intersectSegLine(const Line2& s, const Line2& l, Vec2& v, Float eps = default_eps);
 
-	Status intersectLineLine(const Line2& l0, const Line2& l1, vec2& v, Float eps = default_eps);
+	Status intersectLineLine(const Line2& l0, const Line2& l1, Vec2& v, Float eps = default_eps);
 
 	Status intersectsSegX(const Line2& s, Float x, Float& yi, Float eps = default_eps);
 
@@ -123,9 +125,9 @@ namespace prim
 	};
 
 
-	Turn turn(const vec2& v0, const vec2& v1, const vec2& v2, Float eps = default_eps);
+	Turn turn(const Vec2& v0, const Vec2& v1, const Vec2& v2, Float eps = default_eps);
 
-	bool leftTurn(const vec2& v0, const vec2& v1, const vec2& v2, Float eps = default_eps);
+	bool leftTurn(const Vec2& v0, const Vec2& v1, const Vec2& v2, Float eps = default_eps);
 
-	Orient circleOrient(const vec2& v0, const vec2& v1, const vec2& v2, const vec2& v3, Float eps = default_eps);
+	Orient circleOrient(const Vec2& v0, const Vec2& v1, const Vec2& v2, const Vec2& v3, Float eps = default_eps);
 }
