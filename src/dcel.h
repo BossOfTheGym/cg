@@ -10,7 +10,7 @@
 
 // just general description
 // TODO : this is little bit primitive representation of dcel
-// TODO : mayby go full adjacency?
+// TODO : maybe go full adjacency?
 namespace ds
 {
 	using vec2 = prim::vec2;
@@ -19,7 +19,7 @@ namespace ds
 	struct HalfEdge;
 	struct Face;
 
-	// TODO : mayby go full adjacency?
+	// TODO : maybe go full adjacency?
 	struct Vertex
 	{
 		vec2* pos{};
