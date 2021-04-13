@@ -30,7 +30,7 @@ namespace trb
 
     // TODO : const iterator    
     // TODO : copy
-    
+    // TODO : extended tree (move there insertAfter, insertBefore, etc..)
     template<class key_t, class compare_t, template<class> class allocator_t, bool threaded_v, bool multi_v>
     struct TreeTraits
     {
@@ -159,7 +159,7 @@ namespace trb
             }
 
 
-        private:
+        protected:
             Tree* m_tree{nullptr};
             Node* m_node{nullptr};
         };
@@ -661,6 +661,7 @@ namespace trb
             fixInsert(node);
         }
 
+        // TODO : maybe move to tree_ext
         // NOTE : node != m_nil, m_root != m_nil, after != m_nil
         // NOTE : method makes no assumption on the order of the elements: it is your responsability to maintain it
         void insertAfter(Node* after, Node* node)
@@ -696,6 +697,7 @@ namespace trb
             fixInsert(node);
         }
 
+        // TODO : maybe move to tree_ext
         // NOTE : node != m_nil, m_root != m_nil, before != m_nil 
         // NOTE : method makes no assumption on the order of the elements: it is your responsability to maintain it
         void insertBefore(Node* before, Node* node)
@@ -912,53 +914,6 @@ namespace trb
         }
 
         template<class key_t>
-        Iterator insertAfter(Iterator it, key_t&& key)
-        {
-            Node* node = m_allocator.alloc(std::forward<key_t>(key));
-
-            if (empty())
-            {
-                insert(m_nil, node);
-
-                return Iterator{this, node};
-            }
-
-            if (it == end())
-            {
-                insertBefore(min(m_root), node);
-
-                return Iterator{this, node};
-            }
-
-            insertAfter(it.m_node, node);
-
-            return Iterator{this, node};
-        }
-
-        template<class key_t>
-        Iterator insertBefore(Iterator it, key_t&& key)
-        {
-            Node* node = m_allocator.alloc(std::forward<key_t>(key));
-
-            if (empty())
-            {
-                insert(m_nil, node);
-
-                return Iterator{this, node};
-            }
-
-            if (it == end())
-            {
-                insertAfter(max(m_root), node);
-
-                return Iterator{this, node};
-            }
-
-            insertBefore(it.m_node, node);
-            return Iterator{this, node};
-        }
-
-        template<class key_t>
         void erase(key_t&& key)
         {
             if (auto node = find(m_root, key); node != m_nil)
@@ -1001,6 +956,7 @@ namespace trb
             return m_root == m_nil;
         }
 
+
         template<class key_t>
         Iterator find(key_t&& key)
         {
@@ -1027,6 +983,103 @@ namespace trb
         Iterator end()
         {
             return Iterator{this, m_nil};
+        }
+
+
+    public: // TODO : maybe move to tree_ext this extended functionality
+        class Extract : public Iterator
+        {
+            friend class Tree;
+
+            using Iterator::m_node;
+            using Iterator::m_tree;
+
+            Node* snatch()
+            {
+                Node* node = m_node;
+                m_node = m_tree->m_nil;
+                return node;
+            }
+
+        public:
+            using Iterator::Iterator;
+
+            Extract(const Extract&) = delete;
+            Extract(Extract&&) noexcept = default;
+            Extract& operator = (const Extract&) = delete;
+            Extract& operator = (Extract&&) noexcept = default;
+        };
+        
+        // NOTE : it != end()
+        template<class key_t>
+        Iterator insertAfter(Iterator it, key_t&& key)
+        {
+            assert(it != end());
+
+            Node* node = m_allocator.alloc(std::forward<key_t>(key));
+            insertAfter(it.m_node, node);
+            return Iterator{this, node};
+        }
+
+        // NOTE : it != end()
+        template<class key_t>
+        Iterator insertBefore(Iterator it, key_t&& key)
+        {
+            Node* node = m_allocator.alloc(std::forward<key_t>(key));
+            insertBefore(it.m_node, node);
+            return Iterator{this, node};
+        }
+
+        // NOTE : extracted not empty
+        std::pair<Iterator, bool> insert(Extract&& extracted)
+        {
+            Node* node = extracted.snatch();
+
+            assert(node != nullptr);
+
+            auto [insertPos, canInsert] = searchInsert(m_root, node->key);
+            if (canInsert)
+            {
+                insert(insertPos, node);
+                return {Iterator{this, node}, true};
+            }
+            m_allocator.dealloc(node);
+            return {Iterator{this, insertPos}, false};
+        }
+
+        // NOTE : it != end()
+        // NOTE : extracted not empty
+        Iterator insertAfter(Iterator it, Extract&& extracted)
+        {
+            Node* node = extracted.snatch();
+
+            assert(node != nullptr);
+            assert(it != end());
+
+            insertAfter(it.m_node, node);
+            return Iterator{this, node};
+        }
+
+        // NOTE : it != end()
+        // NOTE : extracted not empty
+        Iterator insertBefore(Iterator it, Extract&& extracted)
+        {
+            Node* node = extracted.snatch();
+
+            assert(node != nullptr);
+            assert(it != end());
+
+            insertBefore(it.m_node, node);
+            return Iterator{this, node};
+        }
+
+        Extract extract(Iterator it)
+        {
+            assert(it != end());
+
+            remove(it.m_node);
+
+            return Extract{this, it.m_node};
         }
 
 
