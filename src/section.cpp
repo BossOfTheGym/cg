@@ -19,7 +19,6 @@ namespace sect
 		// NOTE : sweeping from up to down (from upper y to lower), from left to right (from left x to right)
 		// NOTE : segments are stored from left to right in what order they intersect the sweep line
 
-
 		// NOTE : returns line in which v0 is upper vertex and v1 is lower vertex
 		Line2 reorder_line(const Line2& l)
 		{
@@ -40,11 +39,14 @@ namespace sect
 			return polar_y(v1 - v0);
 		}
 
+
+		// [DEBUG]
 		std::ostream& operator << (std::ostream& out, const prim::Vec2& p)
 		{
 			return out << "(" <<  p.x << " " << p.y << ")";	
 		}
 
+		// [DEBUG]
 		std::ostream& operator << (std::ostream& out, const prim::Line2& l)
 		{
 			return out << l.v0 << l.v1;
@@ -100,12 +102,6 @@ namespace sect
 		class SweepOrder : public trb::Tree<sweep_order_traits_t>
 		{
 		public:
-			// insert, erase and empty already in tree
-			bool preceds(const Line2& l0, const Line2& l1)
-			{
-				return m_compare(l0, l1);
-			}
-
 			Vec2 sweep() const
 			{
 				return m_compare.sweep;
@@ -116,6 +112,7 @@ namespace sect
 				m_compare.sweep = sw;
 			}
 
+			// [DEBUG]
 			void debug()
 			{
 				std::cout << "sweep: ";
@@ -172,17 +169,6 @@ namespace sect
 				return std::abs(v0.x - e0.point.x) > eps && v0.x < e0.point.x;
 			}
 
-			// for finding safe y
-			bool operator () (const PointEvent& e0, Float y)
-			{
-				return std::abs(e0.point.y - y) > eps && e0.point.y > y;
-			}
-
-			bool operator () (Float y, const PointEvent& e0)
-			{
-				return std::abs(y - e0.point.x) > eps && y > e0.point.y;
-			}
-
 			Float eps = default_eps;
 		};
 
@@ -222,6 +208,9 @@ namespace sect
 		};
 
 
+		// TODO : create insert-only version. No advanced operations can be used but insert(Extract&&)
+		// TODO : check possible impossible
+		// TODO : horizontal segments
 		class Sector
 		{
 		public:
@@ -252,11 +241,13 @@ namespace sect
 			// lower-end segments will be inserted after upper-end is processed
 			void initialize(const std::vector<Line2>& lines)
 			{
+				// [DEBUG]
 				std::cout << "*** init ***" << std::endl;
 
 				for (auto& line : lines)
 					insertUpperEndEvent(line);
 
+				// [DEBUG]
 				std::cout << std::endl;
 			}
 
@@ -269,6 +260,7 @@ namespace sect
 				auto [it, _] = m_queue.insert(v0);
 				it->upperEnd.push_back(line);
 
+				// [DEBUG]
 				std::cout << "upper: " << v0 << std::endl;
 			}
 
@@ -280,6 +272,7 @@ namespace sect
 				auto [it, _] = m_queue.insert(v1);
 				it->lowerEnd.push_back(line);
 
+				// [DEBUG]
 				std::cout << "lower: " << v1 << std::endl;
 			}
 
@@ -289,12 +282,14 @@ namespace sect
 				auto [it, _] = m_queue.insert(point);
 				it->intersections = 1; // just to note that intersection occured
 
+				// [DEBUG]
 				std::cout << "inter: " << point << std::endl;
 			}
 
 
 			void handlePointEvent(PointEventIt event)
 			{
+				// [DEBUG]
 				std::cout << "event: " << event->point << std::endl;
 
 				m_sweepLine.sweep(event->point);
@@ -308,6 +303,7 @@ namespace sect
 				{
 					removeLowerEndSegments(event);
 
+					// [DEBUG]
 					std::cout << "le rem ";
 					m_sweepLine.debug();
 				}
@@ -316,6 +312,7 @@ namespace sect
 				{
 					reverseIntersectionOrder(event);
 				
+					// [DEBUG]
 					std::cout << "int rev ";
 					m_sweepLine.debug();
 				}
@@ -324,14 +321,14 @@ namespace sect
 				{
 					insertUpperEndSegments(event);
 				
+					// [DEBUG]
 					std::cout << "ue add ";
 					m_sweepLine.debug();
 				}
-				
-				//reorderInterInsertUpper(event);
 
 				findNewEventPoints(event);
 
+				// [DEBUG]
 				std::cout << std::endl;
 			}
 
@@ -479,12 +476,6 @@ namespace sect
 				}
 			}
 
-			void reorderInterInsertUpper(PointEventIt event)
-			{
-				// TODO : insert only version of reverseUpperEndSegments + insertUpperEndSegments
-
-			}
-
 			void findNewEventPoints(PointEventIt event)
 			{
 				// TODO : check possible impossible
@@ -526,6 +517,7 @@ namespace sect
 				}
 				else if (status == Status::Overlap)
 				{
+					// [DEBUG]
 					std::cout << "[WARNING]: segments overlap" << std::endl;
 				}
 			}
