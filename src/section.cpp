@@ -20,21 +20,29 @@ namespace sect
 		// NOTE : segments are stored from left to right in what order they intersect the sweep line
 
 		// NOTE : returns line in which v0 is upper vertex and v1 is lower vertex
-		Line2 reorder_line(const Line2& l)
+		Line2 reorder_line(const Line2& l, Float eps = default_eps)
 		{
+			assert(!horiz(l, eps));
+
 			if (l.v0.y < l.v1.y)
 				return {l.v1, l.v0};
 			return l;
 		}
 
-		Float polar_y(const Vec2& point)
+		// ctan
+		Float polar_y(const Vec2& point, Float eps = default_eps)
 		{
+			assert(std::abs(point.y) > eps);
+
 			return point.x / point.y;
 		}
 
-		Float polar_y(const Line2& line)
+		// ctan
+		Float polar_y(const Line2& line, Float eps = default_eps)
 		{
-			auto& [v0, v1] = line;
+			assert(!horiz(line, eps));
+
+			auto [v0, v1] = reorder_line(line, eps);
 
 			return polar_y(v1 - v0);
 		}
@@ -135,9 +143,9 @@ namespace sect
 			// they will be deleted, added after upper ends are processed, order is not neccessary
 			std::vector<SweepOrderIt> lowerEnd;
 
-			// segments that intersect in the point will not be stored expliitly
+			// segments that intersect in the point will not be stored explitly
 			// their order in sweep line will be reversed after event is processed
-			u32 intersections{};
+			// intersection count is not stored explicitly
 
 			// segments that have their upper end in the point
 			// they will be inserted, I will search next lower y (if there is no so it can be chosen arbitrarly)
@@ -211,6 +219,7 @@ namespace sect
 		// TODO : create insert-only version. No advanced operations can be used but insert(Extract&&)
 		// TODO : check possible impossible
 		// TODO : horizontal segments
+		// TODO : maybe passing iterator by reference will be more efficient (micro optimization)
 		class Sector
 		{
 		public:
@@ -255,7 +264,7 @@ namespace sect
 			// NOTE : called only from initialization step, line hasn't been inserted yet, so pure line is passed
 			void insertUpperEndEvent(const Line2& line)
 			{
-				auto [v0, v1] = reorder_line(line);
+				auto [v0, v1] = reorder_line(line, m_eps);
 
 				auto [it, _] = m_queue.insert(v0);
 				it->upperEnd.push_back(line);
@@ -267,7 +276,7 @@ namespace sect
 			// NOTE : called after upper-end of a segment was processed so existing position is passed
 			void insertLowerEndEvent(SweepOrderIt line)
 			{
-				auto [v0, v1] = reorder_line(*line);
+				auto [v0, v1] = reorder_line(*line, m_eps);
 
 				auto [it, _] = m_queue.insert(v1);
 				it->lowerEnd.push_back(line);
@@ -280,7 +289,6 @@ namespace sect
 			void insertIntersectionEvent(const Vec2& point)
 			{
 				auto [it, _] = m_queue.insert(point);
-				it->intersections = 1; // just to note that intersection occured
 
 				// [DEBUG]
 				std::cout << "inter: " << point << std::endl;
@@ -294,9 +302,12 @@ namespace sect
 
 				m_sweepLine.sweep(event->point);
 
+				// [DEBUG]
 				m_sweepLine.debug();
 
-				if (event->intersections != 0 || event->lowerEnd.size() + event->upperEnd.size() > 1)	
+				u32 lowerInter = countLowerInter(event);
+
+				if (lowerInter + event->upperEnd.size() > 1)
 					reportIntersection(event);
 
 				if (!event->lowerEnd.empty())
@@ -308,7 +319,7 @@ namespace sect
 					m_sweepLine.debug();
 				}
 
-				if (event->intersections != 0)
+				if (lowerInter != event->lowerEnd.size()) // not only lower-ends were in intersection
 				{
 					reverseIntersectionOrder(event);
 				
@@ -326,10 +337,21 @@ namespace sect
 					m_sweepLine.debug();
 				}
 
-				findNewEventPoints(event);
+				findNewEventPoints(event, lowerInter);
 
 				// [DEBUG]
 				std::cout << std::endl;
+			}
+
+			u32 countLowerInter(PointEventIt event)
+			{
+				auto l0 = m_sweepLine.lowerBound(event->point.x);
+				auto l1 = m_sweepLine.upperBound(event->point.x);
+
+				u32 inters = 0u;
+				if (l0 != m_sweepLine.end())
+					inters += std::distance(l0, l1);
+				return inters;
 			}
 
 			void reportIntersection(PointEventIt event)
@@ -409,8 +431,8 @@ namespace sect
 				// sort with priority to polar angle
 				auto pred = [=] (const auto& l0, const auto& l1)
 				{
-					auto p0 = polar_y(l0);
-					auto p1 = polar_y(l1);
+					auto p0 = -polar_y(l0, m_eps);
+					auto p1 = -polar_y(l1, m_eps);
 
 					return std::abs(p0 - p1) > m_eps && p0 < p1;
 				};
@@ -424,8 +446,8 @@ namespace sect
 				auto u1 = event->upperEnd.end();
 				while (l0 != l1 && u0 != u1) // l0 == l1 => no intersecting segments were in sweep line or we can't insert anymore
 				{
-					auto pl = polar_y(*l0);
-					auto pu = polar_y(*u0);
+					auto pl = -polar_y(*l0, m_eps);
+					auto pu = -polar_y(*u0, m_eps);
 
 					if (pl < pu)
 					{
@@ -476,7 +498,56 @@ namespace sect
 				}
 			}
 
-			void findNewEventPoints(PointEventIt event)
+			void reorderInsert_test(PointEventIt event)
+			{
+				// TODO : check possible impossible
+
+				auto newOrder = [&] () 
+				{
+					auto l0 = m_sweepLine.lowerBound(event->point.x);
+					auto l1 = m_sweepLine.upperBound(event->point.x);
+
+					// extract and reverse, extracts all intersecting(including lower-end if we don't want to remove them firstly)
+					std::vector<SweepOrder::Extract> extracted;
+					while (l0 != l1)
+						extracted.push_back(m_sweepLine.extract(l0++));
+					std::reverse(extracted.begin(), extracted.end());
+
+					return extracted;
+				} ();
+
+				// simple merge
+				auto n0 = newOrder.begin();
+				auto n1 = newOrder.end();
+				auto u0 = event->upperEnd.begin();
+				auto u1 = event->upperEnd.end();
+				while (n0 != n1 && u0 != u1)
+				{
+					auto pn = polar_y(**n0); // double pointer
+					auto pu = polar_y(*u0);
+
+					if (pn < pu)
+					{
+						m_sweepLine.insert(std::move(*n0++));
+					}
+					else
+					{
+						auto [inserted, _] = m_sweepLine.insert(*u0++);
+						insertLowerEndEvent(inserted);
+					}
+				}
+				while (n0 != n1)
+				{
+					m_sweepLine.insert(std::move(*n0++));
+				}
+				while (u0 != u1)
+				{
+					auto [inserted, _] = m_sweepLine.insert(*u0++);
+					insertLowerEndEvent(inserted);
+				}
+			}
+
+			void findNewEventPoints(PointEventIt event, u32 lowerInter)
 			{
 				// TODO : check possible impossible
 
@@ -485,7 +556,7 @@ namespace sect
 
 				auto l0 = m_sweepLine.lowerBound(event->point.x);
 				auto l1 = m_sweepLine.upperBound(event->point.x);
-				if (event->intersections == 0 && event->upperEnd.empty()) // only lower-end lines were in event
+				if (lowerInter == event->lowerEnd.size()) // only lower-end lines were in event
 				{
 					if (l0 == beg || l0 == end)
 						return;
