@@ -128,7 +128,7 @@ void test_intersections_with_horiz()
 {
 	std::vector<std::vector<prim::Line2>> tests
 	{
-		// 4 intersections
+		// 6 intersections
 		{
 			{{1.0, 8.0}, {5.0, 2.0}},
 			{{3.0, 9.0}, {3.0, 1.0}},
@@ -171,6 +171,7 @@ void test_intersections_with_horiz()
 
 int main()
 {
+	test_intersections();
 	test_intersections_with_horiz();
 
 	return 0;

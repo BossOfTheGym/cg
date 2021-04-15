@@ -8,7 +8,7 @@
 #include <algorithm>
 
 
-#define DEBUG_SEGMENTS
+//#define DEBUG_SEGMENTS
 
 #ifdef DEBUG_SEGMENTS
 #include <iostream>
@@ -326,9 +326,9 @@ namespace sect
 				m_sweepLine.debug();
 				#endif
 
-				u32 lowerInter = countLowerInter(event);
+				u32 intersections = countIntersections(event);
 
-				if (lowerInter + event->upperEnd.size() > 1)
+				if (intersections + event->lowerEnd.size() + event->upperEnd.size() > 1)
 					reportIntersection(event);
 
 				if (!event->lowerEnd.empty())
@@ -341,7 +341,7 @@ namespace sect
 					#endif
 				}
 
-				if (lowerInter != event->lowerEnd.size()) // not only lower-ends were in intersection
+				if (intersections != 0) // not only lower-ends were in intersection
 				{
 					reverseIntersectionOrder(event);
 				
@@ -361,22 +361,25 @@ namespace sect
 					#endif
 				}
 
-				findNewEventPoints(event, lowerInter);
+				findNewEventPoints(event, intersections);
 
 				#ifdef DEBUG_SEGMENTS
 				std::cout << std::endl;
 				#endif
 			}
 
-			u32 countLowerInter(PointEventIt event)
+			u32 countIntersections(PointEventIt event)
 			{
 				auto l0 = m_sweepLine.lowerBound(event->point.x);
 				auto l1 = m_sweepLine.upperBound(event->point.x);
 
-				u32 inters = 0u;
+				u32 intersections = 0u;
 				if (l0 != m_sweepLine.end())
-					inters += std::distance(l0, l1);
-				return inters;
+				{
+					intersections += std::distance(l0, l1);
+					intersections -= event->lowerEnd.size();
+				}
+				return intersections;
 			}
 
 			// NOTE : checked in handleEventPoint
@@ -578,7 +581,7 @@ namespace sect
 				}
 			}
 
-			void findNewEventPoints(PointEventIt event, u32 lowerInter)
+			void findNewEventPoints(PointEventIt event, u32 intersections)
 			{
 				// TODO : check possible impossible
 
@@ -587,7 +590,7 @@ namespace sect
 
 				auto l0 = m_sweepLine.lowerBound(event->point.x);
 				auto l1 = m_sweepLine.upperBound(event->point.x);
-				if (lowerInter == event->lowerEnd.size()) // only lower-end lines were in event
+				if (intersections + event->upperEnd.size() == 0) // only lower-end lines were in event
 				{
 					if (l0 == beg || l0 == end)
 						return;
