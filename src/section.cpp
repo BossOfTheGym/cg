@@ -29,22 +29,22 @@ namespace sect
 			return l;
 		}
 
-		// ctan
-		Float polar_y(const Vec2& point, Float eps = default_eps)
+		// ctan, minus required because we sweep from top to bottom
+		Float sweep_polar_y(const Vec2& point, Float eps = default_eps)
 		{
 			assert(std::abs(point.y) > eps);
 
-			return point.x / point.y;
+			return -point.x / point.y;
 		}
 
 		// ctan
-		Float polar_y(const Line2& line, Float eps = default_eps)
+		Float sweep_polar_y(const Line2& line, Float eps = default_eps)
 		{
 			assert(!horiz(line, eps));
 
 			auto [v0, v1] = reorder_line(line, eps);
 
-			return polar_y(v1 - v0);
+			return sweep_polar_y(v1 - v0);
 		}
 
 
@@ -227,6 +227,10 @@ namespace sect
 			using PointEventIt = EventQueue::Iterator;
 
 		public:
+			Sector(Float eps) : m_eps(eps)
+			{}
+
+		public:
 			std::vector<Intersection> sect(const std::vector<Line2>& lines)
 			{
 				initialize(lines);
@@ -354,6 +358,7 @@ namespace sect
 				return inters;
 			}
 
+			// NOTE : checked in handleEventPoint
 			void reportIntersection(PointEventIt event)
 			{
 				// lowed-end segments are already inserted
@@ -372,12 +377,14 @@ namespace sect
 				m_intersections.push_back(std::move(inter));
 			}
 
+			// NOTE : checked in handleEventPoint
 			void removeLowerEndSegments(PointEventIt event)
 			{
 				for (auto& it : event->lowerEnd)
 					m_sweepLine.erase(it);
 			}
 
+			// NOTE : checked in handleEventPoint
 			void reverseIntersectionOrder(PointEventIt event)
 			{
 				// TODO : check possible impossible
@@ -424,6 +431,7 @@ namespace sect
 				}
 			}
 
+			// NOTE : checked in handleEventPoint
 			void insertUpperEndSegments(PointEventIt event)
 			{
 				// TODO : check possible impossible
@@ -431,8 +439,8 @@ namespace sect
 				// sort with priority to polar angle
 				auto pred = [=] (const auto& l0, const auto& l1)
 				{
-					auto p0 = -polar_y(l0, m_eps);
-					auto p1 = -polar_y(l1, m_eps);
+					auto p0 = sweep_polar_y(l0, m_eps);
+					auto p1 = sweep_polar_y(l1, m_eps);
 
 					return std::abs(p0 - p1) > m_eps && p0 < p1;
 				};
@@ -446,8 +454,8 @@ namespace sect
 				auto u1 = event->upperEnd.end();
 				while (l0 != l1 && u0 != u1) // l0 == l1 => no intersecting segments were in sweep line or we can't insert anymore
 				{
-					auto pl = -polar_y(*l0, m_eps);
-					auto pu = -polar_y(*u0, m_eps);
+					auto pl = sweep_polar_y(*l0, m_eps);
+					auto pu = sweep_polar_y(*u0, m_eps);
 
 					if (pl < pu)
 					{
@@ -465,7 +473,7 @@ namespace sect
 					return;
 
 				// l0 == l1, check carefully whether we can insert after them
-				// all remaining segments have bigger polar_y so we insert before l1 that is another point
+				// all remaining segments have bigger sweep_polar_y so we insert before l1 that is another point
 				if (m_sweepLine.empty())
 				{
 					auto [inserted, _] = m_sweepLine.insert(*u0++);
@@ -498,6 +506,7 @@ namespace sect
 				}
 			}
 
+			// NOTE : simpler version of reverse + insertUpper
 			void reorderInsert_test(PointEventIt event)
 			{
 				// TODO : check possible impossible
@@ -523,8 +532,8 @@ namespace sect
 				auto u1 = event->upperEnd.end();
 				while (n0 != n1 && u0 != u1)
 				{
-					auto pn = polar_y(**n0); // double pointer
-					auto pu = polar_y(*u0);
+					auto pn = sweep_polar_y(**n0); // double pointer
+					auto pu = sweep_polar_y(*u0);
 
 					if (pn < pu)
 					{
@@ -603,8 +612,8 @@ namespace sect
 		};
 	}
 
-	std::vector<Intersection> section_n_lines(const std::vector<prim::Line2>& lines)
+	std::vector<Intersection> section_n_lines(const std::vector<prim::Line2>& lines, Float eps)
 	{
-		return Sector().sect(lines);
+		return Sector(eps).sect(lines);
 	}
 }

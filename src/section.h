@@ -15,5 +15,5 @@ namespace sect
 		std::vector<prim::Line2> lines;
 	};
 
-	std::vector<Intersection> section_n_lines(const std::vector<prim::Line2>& lines);
+	std::vector<Intersection> section_n_lines(const std::vector<prim::Line2>& lines, prim::Float eps = prim::default_eps);
 }
