@@ -21,6 +21,7 @@ namespace sect
 		using namespace prim;
 
 		// NOTE : sweeping from up to down (from upper y to lower), from left to right (from left x to right)
+		// NOTE : overlapping must processed correctly but rather stangely: after new overlapping segment is found new intersection will be reported
 		// NOTE : segments are stored from left to right in what order they intersect the sweep line
 		// NOTE : algorithm (in theory) doesn't care in what order we insert horizontal order but there are inserted in special manner
 		// NOTE : horizontal segments are processed in the following manner:
