@@ -9,7 +9,7 @@
 
 namespace hull
 {
-	std::vector<prim::vec2> convex_hull_graham(std::vector<prim::vec2>& vecs, prim::Float eps = 1e-6)
+	std::vector<prim::Vec2> convex_hull_graham(std::vector<prim::Vec2>& vecs, prim::Float eps = prim::default_eps)
 	{
 		assert(vecs.size() >= 3);
 
@@ -27,40 +27,30 @@ namespace hull
 				auto dv0m = v0 - vecs[0];
 				auto dv1m = v1 - vecs[0];
 
-				if (std::abs(dv0m.x) < eps || std::abs(dv1m.x) < eps)
-				{
+				if (std::abs(dv0m.x) <= eps || std::abs(dv1m.x) <= eps)
 					return dv0m.y < dv1m.y;
-				}
 				
 				auto ang0 = dv0m.y / dv0m.x;
 				auto ang1 = dv1m.y / dv1m.x;
-				if (std::abs(ang0 - ang1) < eps)
-				{
+				if (std::abs(ang0 - ang1) <= eps)
 					return dv0m.x < dv1m.x;
-				}
-
 				return ang0 < ang1;
 			}
 		);
 
-		std::vector<prim::vec2> hull;
+		std::vector<prim::Vec2> hull;
 		for (auto it = vecs.begin(), e = vecs.end(); it != e; it++)
 		{	
 			while (hull.size() > 1)
 			{
 				auto top = hull.size() - 1;
 				if (!prim::leftTurn(hull[top - 1], hull[top], *it))
-				{
 					hull.pop_back();
-				}
 				else
-				{
 					break;
-				}
 			}
 			hull.push_back(*it);
 		}
-
 		return hull;
 	}
 }
