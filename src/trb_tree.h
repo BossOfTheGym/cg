@@ -987,6 +987,8 @@ namespace trb
 
 
     public: // TODO : maybe move to tree_ext this extended functionality
+        // TODO : deriving from Iterator is workaround, make it comparable with Iterator
+        // TODO : add dereferencing operators
         class Extract : public Iterator
         {
             friend class Tree;
