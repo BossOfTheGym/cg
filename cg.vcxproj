@@ -156,6 +156,7 @@
     <ClInclude Include="src\quadtree.h" />
     <ClInclude Include="src\quadtree_test.h" />
     <ClInclude Include="src\section.h" />
+    <ClInclude Include="src\section_segments_test.h" />
     <ClInclude Include="src\test_util.h" />
     <ClInclude Include="src\trb_tree.h" />
     <ClInclude Include="src\trb_util.h" />
@@ -170,6 +171,7 @@
     <ClCompile Include="src\qsort.cpp" />
     <ClCompile Include="src\quadtree_test.cpp" />
     <ClCompile Include="src\section.cpp" />
+    <ClCompile Include="src\section_segments_test.cpp" />
     <ClCompile Include="src\trb_test.cpp" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
