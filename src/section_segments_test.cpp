@@ -3,6 +3,7 @@
 
 #include <iostream>
 
+
 namespace
 {
 	std::ostream& operator << (std::ostream& out, const prim::vec2& p)

@@ -15,5 +15,6 @@ namespace sect
 		std::vector<prim::Line2> lines;
 	};
 
+	// TODO : add dereference object
 	std::vector<Intersection> section_n_lines(const std::vector<prim::Line2>& lines, prim::Float eps = prim::default_eps);
 }

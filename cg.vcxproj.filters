@@ -93,7 +93,9 @@
     <ClInclude Include="src\primitive_test.h">
       <Filter>tests</Filter>
     </ClInclude>
-    <ClInclude Include="src\section_segments_test.h" />
+    <ClInclude Include="src\section_segments_test.h">
+      <Filter>tests</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="src\trb_test.cpp">
