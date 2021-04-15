@@ -108,6 +108,55 @@ void test_intersections()
 		},
 	};
 
+	std::cout << "***********************************" << std::endl;
+	std::cout << "**** Simple intersection tests ****" << std::endl;
+	std::cout << "***********************************" << std::endl;
+
+	u32 num = 1;
+	for (auto& test : tests)
+	{
+		std::cout << "******** Test " << num << " ********" << std::endl;
+		test_intersections(test);
+
+		++num;
+
+		std::cout << std::endl;
+	}
+}
+
+void test_intersections_with_horiz()
+{
+	std::vector<std::vector<prim::Line2>> tests
+	{
+		// 4 intersections
+		{
+			{{1.0, 8.0}, {5.0, 2.0}},
+			{{3.0, 9.0}, {3.0, 1.0}},
+			{{5.0, 8.0}, {1.0, 2.0}},
+			{{4.0, 8.0}, {8.0, 2.0}},
+			{{6.0, 9.0}, {6.0, 1.0}},
+			{{8.0, 8.0}, {4.0, 2.0}},
+			{{1.0, 5.0}, {3.0, 5.0}},
+			{{6.0, 5.0}, {3.0, 5.0}},
+			{{8.0, 5.0}, {6.0, 5.0}},
+			{{8.0, 5.0}, {1.0, 5.0}},
+		},
+
+		// 5 intersections
+		{
+			{{3.0, 1.0}, {3.0, 5.0}},
+			{{1.0, 3.0}, {5.0, 3.0}},
+			{{3.0, 5.0}, {1.0, 3.0}},
+			{{3.0, 5.0}, {5.0, 3.0}},
+			{{3.0, 1.0}, {1.0, 3.0}},
+			{{5.0, 3.0}, {3.0, 1.0}},
+		},
+	};
+
+	std::cout << "********************************************" << std::endl;
+	std::cout << "**** Intersection tests with horizontal ****" << std::endl;
+	std::cout << "********************************************" << std::endl;
+
 	u32 num = 1;
 	for (auto& test : tests)
 	{
@@ -122,7 +171,7 @@ void test_intersections()
 
 int main()
 {
-	test_intersections();
+	test_intersections_with_horiz();
 
 	return 0;
 }
