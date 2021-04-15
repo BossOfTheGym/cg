@@ -5,8 +5,14 @@
 
 #include <vector>
 #include <cassert>
-#include <iostream>
 #include <algorithm>
+
+
+#define DEBUG_SEGMENTS
+
+#ifdef DEBUG_SEGMENTS
+#include <iostream>
+#endif
 
 namespace sect
 {
@@ -16,7 +22,7 @@ namespace sect
 
 		// NOTE : sweeping from up to down (from upper y to lower), from left to right (from left x to right)
 		// NOTE : segments are stored from left to right in what order they intersect the sweep line
-		// NOTE : algorithm (in theory) doesn't care in what order we insert horizontal order
+		// NOTE : algorithm (in theory) doesn't care in what order we insert horizontal order but there are inserted in special manner
 		// NOTE : horizontal segments are processed in the following manner:
 		// 1) upper end is its leftmost end, lower end is its rightmost end
 		// 2) horizontal segment intersects sweep line in sweep.x so it can be processed by the algorithm correctly
@@ -56,19 +62,17 @@ namespace sect
 			return sweep_polar_y(v1 - v0);
 		}
 
-
-		// [DEBUG]
+		#ifdef DEBUG_SEGMENTS
 		std::ostream& operator << (std::ostream& out, const prim::Vec2& p)
 		{
 			return out << "(" <<  p.x << " " << p.y << ")";	
 		}
 
-		// [DEBUG]
 		std::ostream& operator << (std::ostream& out, const prim::Line2& l)
 		{
 			return out << l.v0 << l.v1;
 		}
-
+		#endif
 
 		struct SweepLineComparator
 		{
@@ -123,6 +127,7 @@ namespace sect
 				m_compare.sweep = sw;
 			}
 
+			#ifdef DEBUG_SEGMENTS
 			// [DEBUG]
 			void debug()
 			{
@@ -131,6 +136,7 @@ namespace sect
 					std::cout << l << " ";
 				std::cout << std::endl;
 			}
+			#endif
 		};
 
 
@@ -257,14 +263,16 @@ namespace sect
 			// lower-end segments will be inserted after upper-end is processed
 			void initialize(const std::vector<Line2>& lines)
 			{
-				// [DEBUG]
+				#ifdef DEBUG_SEGMENTS
 				std::cout << "*** init ***" << std::endl;
+				#endif
 
 				for (auto& line : lines)
 					insertUpperEndEvent(line);
 
-				// [DEBUG]
+				#ifdef DEBUG_SEGMENTS
 				std::cout << std::endl;
+				#endif
 			}
 
 
@@ -276,8 +284,9 @@ namespace sect
 				auto [it, _] = m_queue.insert(v0);
 				it->upperEnd.push_back(line);
 
-				// [DEBUG]
+				#ifdef DEBUG_SEGMENTS
 				std::cout << "upper: " << v0 << std::endl;
+				#endif
 			}
 
 			// NOTE : called after upper-end of a segment was processed so existing position is passed
@@ -288,8 +297,9 @@ namespace sect
 				auto [it, _] = m_queue.insert(v1);
 				it->lowerEnd.push_back(line);
 
-				// [DEBUG]
+				#ifdef DEBUG_SEGMENTS
 				std::cout << "lower: " << v1 << std::endl;
+				#endif
 			}
 
 			// NOTE : called if intersection was found
@@ -297,20 +307,23 @@ namespace sect
 			{
 				auto [it, _] = m_queue.insert(point);
 
-				// [DEBUG]
+				#ifdef DEBUG_SEGMENTS
 				std::cout << "inter: " << point << std::endl;
+				#endif
 			}
 
 
 			void handlePointEvent(PointEventIt event)
 			{
-				// [DEBUG]
+				#ifdef DEBUG_SEGMENTS
 				std::cout << "event: " << event->point << std::endl;
+				#endif
 
 				m_sweepLine.sweep(event->point);
 
-				// [DEBUG]
+				#ifdef DEBUG_SEGMENTS
 				m_sweepLine.debug();
+				#endif
 
 				u32 lowerInter = countLowerInter(event);
 
@@ -321,33 +334,37 @@ namespace sect
 				{
 					removeLowerEndSegments(event);
 
-					// [DEBUG]
+					#ifdef DEBUG_SEGMENTS
 					std::cout << "le rem ";
 					m_sweepLine.debug();
+					#endif
 				}
 
 				if (lowerInter != event->lowerEnd.size()) // not only lower-ends were in intersection
 				{
 					reverseIntersectionOrder(event);
 				
-					// [DEBUG]
+					#ifdef DEBUG_SEGMENTS
 					std::cout << "int rev ";
 					m_sweepLine.debug();
+					#endif
 				}
 				
 				if (!event->upperEnd.empty())
 				{
 					insertUpperEndSegments(event);
 				
-					// [DEBUG]
+					#ifdef DEBUG_SEGMENTS
 					std::cout << "ue add ";
 					m_sweepLine.debug();
+					#endif
 				}
 
 				findNewEventPoints(event, lowerInter);
 
-				// [DEBUG]
+				#ifdef DEBUG_SEGMENTS
 				std::cout << std::endl;
+				#endif
 			}
 
 			u32 countLowerInter(PointEventIt event)
