@@ -412,7 +412,8 @@ namespace sect
 			void reverseIntersectionOrder(PointEventIt event)
 			{
 				// TODO : check possible impossible
-
+				// TODO : compress ugly if statements
+				
 				// NOTE : we extract and then we reinsert all segments in order not to spoil 
 				// lower-end iterators that had already been inserted previously
 				extractIntersecting(event);
@@ -447,7 +448,7 @@ namespace sect
 			void insertUpperEndSegments(PointEventIt event)
 			{
 				// TODO : check possible impossible
-				// TODO : horizontal segments
+				// TODO : compress ugly if statements
 
 				// sort with priority to polar angle
 				auto pred = [=] (const auto& l0, const auto& l1)
