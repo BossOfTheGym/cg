@@ -34,6 +34,21 @@
     <Filter Include="main">
       <UniqueIdentifier>{41233188-87ab-401f-9129-ebcb50416037}</UniqueIdentifier>
     </Filter>
+    <Filter Include="window">
+      <UniqueIdentifier>{a6f31cc1-e04d-4faa-8f24-7ffff57f84bf}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="imgui">
+      <UniqueIdentifier>{f551e4ae-2203-401a-af5b-2743197a5dd3}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="gl">
+      <UniqueIdentifier>{0710103d-1679-4567-afd8-481bed3fd458}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="glfw3-cxx">
+      <UniqueIdentifier>{055f971a-3ec5-4ebf-9192-cc17ac1391cc}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="graphics-res">
+      <UniqueIdentifier>{f1585979-da21-424b-bbad-35b138938aab}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="src\test_util.h">
@@ -96,6 +111,45 @@
     <ClInclude Include="src\section_segments_test.h">
       <Filter>tests</Filter>
     </ClInclude>
+    <ClInclude Include="src\glfw-cxx\glfw3.h">
+      <Filter>glfw3-cxx</Filter>
+    </ClInclude>
+    <ClInclude Include="src\glfw-cxx\opengl-loader.h">
+      <Filter>glfw3-cxx</Filter>
+    </ClInclude>
+    <ClInclude Include="src\gl-header\gl-header.h">
+      <Filter>gl</Filter>
+    </ClInclude>
+    <ClInclude Include="src\imgui\imconfig.h">
+      <Filter>imgui</Filter>
+    </ClInclude>
+    <ClInclude Include="src\imgui\imgui.h">
+      <Filter>imgui</Filter>
+    </ClInclude>
+    <ClInclude Include="src\imgui\imgui_impl_glfw.h">
+      <Filter>imgui</Filter>
+    </ClInclude>
+    <ClInclude Include="src\imgui\imgui_impl_opengl3.h">
+      <Filter>imgui</Filter>
+    </ClInclude>
+    <ClInclude Include="src\imgui\imgui_internal.h">
+      <Filter>imgui</Filter>
+    </ClInclude>
+    <ClInclude Include="src\imgui\imstb_rectpack.h">
+      <Filter>imgui</Filter>
+    </ClInclude>
+    <ClInclude Include="src\imgui\imstb_textedit.h">
+      <Filter>imgui</Filter>
+    </ClInclude>
+    <ClInclude Include="src\imgui\imstb_truetype.h">
+      <Filter>imgui</Filter>
+    </ClInclude>
+    <ClInclude Include="src\graphics-res\graphics-res.h">
+      <Filter>graphics-res</Filter>
+    </ClInclude>
+    <ClInclude Include="src\graphics-res\graphics-res-util.h">
+      <Filter>graphics-res</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="src\trb_test.cpp">
@@ -121,6 +175,39 @@
     </ClCompile>
     <ClCompile Include="src\section_segments_test.cpp">
       <Filter>tests</Filter>
+    </ClCompile>
+    <ClCompile Include="src\glfw-cxx\sources\glfw3.cpp">
+      <Filter>glfw3-cxx</Filter>
+    </ClCompile>
+    <ClCompile Include="src\glfw-cxx\sources\opengl-loader.cpp">
+      <Filter>glfw3-cxx</Filter>
+    </ClCompile>
+    <ClCompile Include="src\imgui\imgui.cpp">
+      <Filter>imgui</Filter>
+    </ClCompile>
+    <ClCompile Include="src\imgui\imgui_demo.cpp">
+      <Filter>imgui</Filter>
+    </ClCompile>
+    <ClCompile Include="src\imgui\imgui_draw.cpp">
+      <Filter>imgui</Filter>
+    </ClCompile>
+    <ClCompile Include="src\imgui\imgui_impl_glfw.cpp">
+      <Filter>imgui</Filter>
+    </ClCompile>
+    <ClCompile Include="src\imgui\imgui_impl_opengl3.cpp">
+      <Filter>imgui</Filter>
+    </ClCompile>
+    <ClCompile Include="src\imgui\imgui_tables.cpp">
+      <Filter>imgui</Filter>
+    </ClCompile>
+    <ClCompile Include="src\imgui\imgui_widgets.cpp">
+      <Filter>imgui</Filter>
+    </ClCompile>
+    <ClCompile Include="src\graphics-res\graphics-res.cpp">
+      <Filter>graphics-res</Filter>
+    </ClCompile>
+    <ClCompile Include="src\graphics-res\graphics-res-util.cpp">
+      <Filter>graphics-res</Filter>
     </ClCompile>
   </ItemGroup>
 </Project>
