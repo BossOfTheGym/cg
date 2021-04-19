@@ -51,6 +51,8 @@ namespace glfw
 
 		, ClientApi = GLFW_CLIENT_API
 
+		, ContextCreationApi = GLFW_CONTEXT_CREATION_API 
+
 		, ContextVersionMajor    = GLFW_CONTEXT_VERSION_MAJOR
 		, ContextVersionMinor    = GLFW_CONTEXT_VERSION_MINOR
 
@@ -73,6 +75,10 @@ namespace glfw
 		, OpenGlApi   = GLFW_OPENGL_API
 		, OpenGlesApi = GLFW_OPENGL_ES_API
 		, NoApi       = GLFW_NO_API
+
+		, NativeContextApi = GLFW_NATIVE_CONTEXT_API 
+		, EglContextApi    = GLFW_EGL_CONTEXT_API
+		, OsMesaContextApi = GLFW_OSMESA_CONTEXT_API
 
 		, NoRobustness        = GLFW_NO_ROBUSTNESS
 		, NoResetNotification = GLFW_NO_RESET_NOTIFICATION
@@ -193,8 +199,6 @@ namespace glfw
 
 
 	public:
-		// TODO : monitor
-
 		// creates empty window
 		Window();
 
@@ -317,7 +321,7 @@ namespace glfw
 
 		void monitor();
 
-		void clientAPI();
+		Value clientAPI();
 
 
 

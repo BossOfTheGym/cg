@@ -1,9 +1,11 @@
-#include "section_segments_test.h"
+#include "app.h"
 
 int main()
 {
-	test_intersections();
-	test_intersections_with_horiz();
+	App app;
+	app.init();
+	app.exec();
+	app.deinit();
 
 	return 0;
 }

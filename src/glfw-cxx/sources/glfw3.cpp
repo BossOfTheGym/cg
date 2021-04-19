@@ -448,10 +448,11 @@ namespace glfw
 		// TODO
 	}
 
-	void Window::clientAPI()
+	Value Window::clientAPI()
 	{
-		// TODO
+		return Value{glfwGetWindowAttrib(m_window, GLFW_CONTEXT_CREATION_API)};
 	}
+
 
 	// empty callbacks
 	void Window::keyPressEvent(int key, int scancode, int action, int mods)
