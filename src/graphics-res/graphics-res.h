@@ -143,6 +143,27 @@ namespace res
 		Id id{null};
 	};
 
+	struct Framebuffer
+	{
+		Framebuffer() = default;
+
+		Framebuffer(Framebuffer&& another) noexcept;
+		Framebuffer(const Framebuffer&) = delete;
+
+		~Framebuffer();
+
+		Framebuffer& operator = (Framebuffer&& another) noexcept;
+		Framebuffer& operator = (const Framebuffer&) = delete;
+
+
+		void reset();
+
+		bool valid() const;
+
+
+		Id id{null};
+	};
+
 
 	struct FenceSync
 	{

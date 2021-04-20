@@ -5,6 +5,9 @@
 #include <string>
 #include <map>
 
+
+// TODO : define DEBUG_GFX_RES
+
 namespace
 {
 	std::map<std::string, GLenum> EXT_TO_SHADER_TYPE = 
@@ -28,31 +31,6 @@ namespace res
 		{
 			return it->second;
 		}
-		/*if (ext == ".vert")
-		{
-			return GL_VERTEX_SHADER;	
-		}
-		if (ext == ".tesc")
-		{
-			return GL_TESS_CONTROL_SHADER;
-		}
-		if (ext == ".tese")
-		{
-			return GL_TESS_EVALUATION_SHADER;
-		}
-		if (ext == ".geom")
-		{
-			return GL_GEOMETRY_SHADER;
-		}
-		if (ext == ".frag")
-		{
-			return GL_FRAGMENT_SHADER;
-		}
-		if (ext == ".comp")
-		{
-			return GL_COMPUTE_SHADER;
-		}*/
-
 		return -1;
 	}
 
@@ -268,9 +246,7 @@ namespace res
 
 		glCreateBuffers(1, &buffer.id);
 		if (!buffer.valid())
-		{
 			return Buffer{};
-		}
 
 		glNamedBufferStorage(buffer.id, size, data, usageFlags);
 
@@ -289,9 +265,7 @@ namespace res
 	Query create_query()
 	{
 		Query query{};
-
 		glGenQueries(1, &query.id);
-
 		return query;
 	}
 
@@ -300,6 +274,22 @@ namespace res
 		query = create_query();
 
 		return query.valid();
+	}
+
+
+	// framebuffer
+	Framebuffer create_framebuffer()
+	{
+		Framebuffer result;
+		glCreateFramebuffers(1, &result.id);
+		return result;
+	}
+
+	bool try_create_framebuffer(Framebuffer& framebuffer)
+	{
+		framebuffer = create_framebuffer();
+
+		return framebuffer.valid();
 	}
 
 

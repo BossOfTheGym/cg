@@ -3,10 +3,12 @@
 #include "../core.h"
 #include "graphics-res.h"
 
-#include <iostream>
-#include <filesystem>
 #include <string>
 #include <vector>
+#include <iostream>
+#include <filesystem>
+#include <type_traits>
+
 
 namespace res
 {
@@ -32,8 +34,8 @@ namespace res
 	// shader program
 	std::string get_shader_program_info_log(const ShaderProgram& program);
 
-	template<class ... ShaderT>
-	ShaderProgram create_shader_program_var(ShaderT&& ... shader)
+	template<class ... shader_t, std::enable_if_t<(std::is_same_v<std::remove_reference_t<std::remove_cv_t<shader_t>>, Shader> && ...), int> = 0>
+	ShaderProgram create_shader_program_var(shader_t&& ... shader)
 	{
 		ShaderProgram shaderProgram{};
 
@@ -57,8 +59,10 @@ namespace res
 
 	ShaderProgram create_shader_program(Shader** shaders, i32 count);
 
-	template<class ... Shader>
-	bool try_create_shader_program_var(ShaderProgram& program, Shader&& ... shader)
+	template<class ... shader_t>
+	auto try_create_shader_program(ShaderProgram& program, shader_t&& ... shader) 
+		-> std::enable_if_t<(std::is_same_v<std::remove_reference_t<std::remove_cv_t<shader_t>>, Shader> && ...), bool>
+		// disambiguation with the function going after
 	{
 		program = create_shader_program(std::forward<Shader>(shader)...);
 
@@ -94,6 +98,12 @@ namespace res
 	Query create_query();
 
 	bool try_create_query(Query& query);
+
+
+	// framebuffer
+	Framebuffer create_framebuffer();
+
+	bool try_create_framebuffer(Framebuffer& framebuffer);
 
 
 	// fence

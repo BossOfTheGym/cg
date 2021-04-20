@@ -237,6 +237,41 @@ namespace res
 		return id != null;
 	}
 
+	// Framebuffer
+	Framebuffer::Framebuffer(Framebuffer&& another) noexcept
+		: id(std::exchange(another.id, null))
+	{}
+
+	Framebuffer::~Framebuffer()
+	{
+		reset();
+	}
+
+	Framebuffer& Framebuffer::operator = (Framebuffer&& another) noexcept
+	{
+		if (this != &another)
+		{
+			reset();
+
+			id = std::exchange(another.id, null);
+		}
+		return *this;
+	}
+
+	void Framebuffer::reset()
+	{
+		if (valid())
+		{
+			glDeleteFramebuffers(1, &id);
+
+			id = null;
+		}
+	}
+
+	bool Framebuffer::valid() const
+	{
+		return id != null;
+	}
 
 
 	// FenceSync
