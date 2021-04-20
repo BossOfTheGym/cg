@@ -1,6 +1,7 @@
 #pragma once
 
 #include <memory>
+#include <string>
 
 class App;
 
@@ -14,6 +15,7 @@ struct AppAction
 	};
 
 	Type type{Nothing};
+	std::string option;
 };
 
 class AppState
