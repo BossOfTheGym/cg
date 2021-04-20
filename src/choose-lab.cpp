@@ -18,7 +18,7 @@ bool ChooseLab::init()
 		return true;
 
 	m_gui.reset(new ChooseGui());
-	m_gui->optionChosen().connect([&](auto lab)
+	m_gui->optionChosen.connect([&](auto lab)
 	{
 		labChosen(std::move(lab));
 	});
@@ -51,6 +51,6 @@ AppAction ChooseLab::execute()
 
 void ChooseLab::labChosen(std::string lab)
 {
-	m_chosen = true;
+	//m_chosen = true;
 	m_chosenLab = std::move(lab);
 }

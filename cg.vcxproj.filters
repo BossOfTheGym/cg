@@ -186,6 +186,9 @@
     <ClInclude Include="src\gui-signal.h">
       <Filter>signal</Filter>
     </ClInclude>
+    <ClInclude Include="src\lab-options.h">
+      <Filter>main</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="src\trb_test.cpp">

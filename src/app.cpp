@@ -1,5 +1,6 @@
 #include "app.h"
 #include "choose-lab.h"
+#include "lab-options.h"
 #include "main-window.h"
 #include "gl-header/gl-header.h"
 
@@ -86,8 +87,6 @@ void App::deinit()
 
 void App::exec()
 {
-	
-
 	m_window->makeContextCurrent();
 	m_window->show();
 	while (!m_window->shouldClose())
@@ -99,6 +98,11 @@ void App::exec()
 		ImGui::NewFrame();
 
 		m_stateStack.back()->execute();
+
+		// TEST
+		bool showDemoWindow = true;
+		if (showDemoWindow)
+			ImGui::ShowDemoWindow(&showDemoWindow);
 
 		ImGui::Render();
 

@@ -1,5 +1,8 @@
 #include "app.h"
 
+#include <climits>
+#include <iostream>
+
 int main()
 {
 	App app;

@@ -28,9 +28,6 @@ public:
 public: // Gui
 	virtual void draw() override;
 
-public:
-	OptionChosen& optionChosen();
-
-private:
-	OptionChosen m_optionChosen;
+public: // signals
+	OptionChosen optionChosen;
 };
