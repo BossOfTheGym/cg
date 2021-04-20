@@ -46,6 +46,12 @@
     <Filter Include="signal">
       <UniqueIdentifier>{8db174bf-af6d-42c5-8d94-7e772369ec28}</UniqueIdentifier>
     </Filter>
+    <Filter Include="main\states">
+      <UniqueIdentifier>{8ffd6697-655f-49f1-9b06-7feb7866e213}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="main\progs">
+      <UniqueIdentifier>{a4f6e186-7af0-4607-930f-e12966e2c9cb}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="src\test_util.h">
@@ -153,38 +159,38 @@
     <ClInclude Include="src\app.h">
       <Filter>main</Filter>
     </ClInclude>
-    <ClInclude Include="src\lab1.h">
-      <Filter>main</Filter>
-    </ClInclude>
-    <ClInclude Include="src\lab2.h">
-      <Filter>main</Filter>
-    </ClInclude>
-    <ClInclude Include="src\lab3.h">
-      <Filter>main</Filter>
-    </ClInclude>
-    <ClInclude Include="src\lab4.h">
-      <Filter>main</Filter>
-    </ClInclude>
-    <ClInclude Include="src\lab5.h">
-      <Filter>main</Filter>
-    </ClInclude>
-    <ClInclude Include="src\lab6.h">
-      <Filter>main</Filter>
-    </ClInclude>
     <ClInclude Include="src\pqueue.h">
       <Filter>ds</Filter>
-    </ClInclude>
-    <ClInclude Include="src\choose-lab.h">
-      <Filter>main</Filter>
     </ClInclude>
     <ClInclude Include="src\app-state.h">
       <Filter>main</Filter>
     </ClInclude>
-    <ClInclude Include="src\choose-gui.h">
-      <Filter>main</Filter>
-    </ClInclude>
     <ClInclude Include="src\gui-signal.h">
       <Filter>signal</Filter>
+    </ClInclude>
+    <ClInclude Include="src\lab1.h">
+      <Filter>main\states</Filter>
+    </ClInclude>
+    <ClInclude Include="src\lab2.h">
+      <Filter>main\states</Filter>
+    </ClInclude>
+    <ClInclude Include="src\lab3.h">
+      <Filter>main\states</Filter>
+    </ClInclude>
+    <ClInclude Include="src\lab4.h">
+      <Filter>main\states</Filter>
+    </ClInclude>
+    <ClInclude Include="src\lab5.h">
+      <Filter>main\states</Filter>
+    </ClInclude>
+    <ClInclude Include="src\lab6.h">
+      <Filter>main\states</Filter>
+    </ClInclude>
+    <ClInclude Include="src\choose-gui.h">
+      <Filter>main\states</Filter>
+    </ClInclude>
+    <ClInclude Include="src\choose-lab.h">
+      <Filter>main\states</Filter>
     </ClInclude>
     <ClInclude Include="src\lab-options.h">
       <Filter>main</Filter>
@@ -248,17 +254,17 @@
     <ClCompile Include="src\graphics-res\graphics-res-util.cpp">
       <Filter>graphics-res</Filter>
     </ClCompile>
-    <ClCompile Include="src\choose-lab.cpp">
-      <Filter>main</Filter>
-    </ClCompile>
-    <ClCompile Include="src\choose-gui.cpp">
-      <Filter>main</Filter>
-    </ClCompile>
     <ClCompile Include="src\main-window.cpp">
       <Filter>main</Filter>
     </ClCompile>
     <ClCompile Include="src\app.cpp">
       <Filter>main</Filter>
+    </ClCompile>
+    <ClCompile Include="src\choose-gui.cpp">
+      <Filter>main\states</Filter>
+    </ClCompile>
+    <ClCompile Include="src\choose-lab.cpp">
+      <Filter>main\states</Filter>
     </ClCompile>
   </ItemGroup>
 </Project>
