@@ -5,13 +5,20 @@
 
 class AppState;
 class MainWindow;
+class AppImpl;
 
 class App
 {
 public:
 	App();
 
+	App(const App&) = delete;
+	App(App&&) = delete;
+
 	~App();
+
+	App& operator = (const App&) = delete;
+	App& operator = (App&&) = delete;
 
 
 public:
@@ -21,9 +28,6 @@ public:
 
 	void exec();
 
-
 private:
-	std::vector<std::unique_ptr<AppState>> m_stateStack;
-	std::unique_ptr<MainWindow> m_window;
-	bool m_initialized{false};
+	std::unique_ptr<AppImpl> m_impl;
 };
