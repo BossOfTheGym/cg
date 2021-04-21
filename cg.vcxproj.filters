@@ -195,6 +195,18 @@
     <ClInclude Include="src\lab-options.h">
       <Filter>main</Filter>
     </ClInclude>
+    <ClInclude Include="src\prog-frame.h">
+      <Filter>main\progs</Filter>
+    </ClInclude>
+    <ClInclude Include="src\prog-rect.h">
+      <Filter>main\progs</Filter>
+    </ClInclude>
+    <ClInclude Include="src\prog-color-prim.h">
+      <Filter>main\progs</Filter>
+    </ClInclude>
+    <ClInclude Include="src\lab1-gui.h">
+      <Filter>main\states</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="src\trb_test.cpp">
@@ -264,6 +276,21 @@
       <Filter>main\states</Filter>
     </ClCompile>
     <ClCompile Include="src\choose-lab.cpp">
+      <Filter>main\states</Filter>
+    </ClCompile>
+    <ClCompile Include="src\prog-frame.cpp">
+      <Filter>main\progs</Filter>
+    </ClCompile>
+    <ClCompile Include="src\prog-rect.cpp">
+      <Filter>main\progs</Filter>
+    </ClCompile>
+    <ClCompile Include="src\lab1.cpp">
+      <Filter>main\states</Filter>
+    </ClCompile>
+    <ClCompile Include="src\prog-color-prim.cpp">
+      <Filter>main\progs</Filter>
+    </ClCompile>
+    <ClCompile Include="src\lab1-gui.cpp">
       <Filter>main\states</Filter>
     </ClCompile>
   </ItemGroup>

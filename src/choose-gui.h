@@ -30,4 +30,8 @@ public: // Gui
 
 public: // signals
 	OptionChosen optionChosen;
+
+private: // TEST
+	u32 m_maxPoints{100000};
+	u32 m_currPoints{0};
 };

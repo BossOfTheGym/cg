@@ -167,6 +167,7 @@
     <ClInclude Include="src\imgui\imstb_textedit.h" />
     <ClInclude Include="src\imgui\imstb_truetype.h" />
     <ClInclude Include="src\lab-options.h" />
+    <ClInclude Include="src\lab1-gui.h" />
     <ClInclude Include="src\lab1.h" />
     <ClInclude Include="src\lab2.h" />
     <ClInclude Include="src\lab3.h" />
@@ -179,6 +180,9 @@
     <ClInclude Include="src\pqueue.h" />
     <ClInclude Include="src\primitive.h" />
     <ClInclude Include="src\primitive_test.h" />
+    <ClInclude Include="src\prog-color-prim.h" />
+    <ClInclude Include="src\prog-frame.h" />
+    <ClInclude Include="src\prog-rect.h" />
     <ClInclude Include="src\qsort.h" />
     <ClInclude Include="src\quadtree.h" />
     <ClInclude Include="src\quadtree_test.h" />
@@ -206,10 +210,15 @@
     <ClCompile Include="src\imgui\imgui_impl_opengl3.cpp" />
     <ClCompile Include="src\imgui\imgui_tables.cpp" />
     <ClCompile Include="src\imgui\imgui_widgets.cpp" />
+    <ClCompile Include="src\lab1-gui.cpp" />
+    <ClCompile Include="src\lab1.cpp" />
     <ClCompile Include="src\main-window.cpp" />
     <ClCompile Include="src\main.cpp" />
     <ClCompile Include="src\primitive.cpp" />
     <ClCompile Include="src\primitive_test.cpp" />
+    <ClCompile Include="src\prog-color-prim.cpp" />
+    <ClCompile Include="src\prog-frame.cpp" />
+    <ClCompile Include="src\prog-rect.cpp" />
     <ClCompile Include="src\qsort.cpp" />
     <ClCompile Include="src\quadtree_test.cpp" />
     <ClCompile Include="src\section.cpp" />

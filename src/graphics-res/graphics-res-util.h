@@ -35,7 +35,7 @@ namespace res
 	std::string get_shader_program_info_log(const ShaderProgram& program);
 
 	template<class ... shader_t, std::enable_if_t<(std::is_same_v<std::remove_reference_t<std::remove_cv_t<shader_t>>, Shader> && ...), int> = 0>
-	ShaderProgram create_shader_program_var(shader_t&& ... shader)
+	ShaderProgram create_shader_program(shader_t&& ... shader)
 	{
 		ShaderProgram shaderProgram{};
 
@@ -76,6 +76,9 @@ namespace res
 	Texture create_texture(i32 width, i32 height, GLenum format);
 
 	Texture create_test_texture(i32 width, i32 height, i32 period);
+
+	Texture create_stencil_texture(i32 width, i32 height);
+
 
 	bool try_create_texture(Texture& texture, i32 width, i32 height, GLenum format);
 

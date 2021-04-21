@@ -4,6 +4,9 @@
 #include "main-window.h"
 #include "gl-header/gl-header.h"
 
+#include "graphics-res/graphics-res.h"
+#include "graphics-res/graphics-res-util.h"
+
 #include "imgui/imgui.h"
 #include "imgui/imgui_impl_glfw.h"
 #include "imgui/imgui_impl_opengl3.h"
@@ -63,7 +66,7 @@ public:
 		IMGUI_CHECKVERSION();
 		ImGui::CreateContext();
 		ImGui::StyleColorsDark();
-		ImGui_ImplGlfw_InitForOpenGL(m_window->getGLFWwindow(), false);
+		ImGui_ImplGlfw_InitForOpenGL(m_window->getGLFWwindow(), true);
 		ImGui_ImplOpenGL3_Init("#version 450");
 
 		m_initialized = true;

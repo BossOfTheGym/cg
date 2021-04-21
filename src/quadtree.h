@@ -26,15 +26,18 @@ namespace qtree
 		NE = 0b11,
 	};
 
-	AABB leaf_AABB(Leaf leaf, const AABB& aabb)
+	namespace
 	{
-		auto dv = (aabb.v1 - aabb.v0) * Vec2::value_type(0.5);
+		AABB leaf_AABB(Leaf leaf, const AABB& aabb)
+		{
+			auto dv = (aabb.v1 - aabb.v0) * Vec2::value_type(0.5);
 
-		auto v0 = aabb.v0;
-		v0.x += dv.x * ((u32)leaf & 0x01);
-		v0.y += dv.y * (((u32)leaf & 0x02) >> 1);
+			auto v0 = aabb.v0;
+			v0.x += dv.x * ((u32)leaf & 0x01);
+			v0.y += dv.y * (((u32)leaf & 0x02) >> 1);
 
-		return {v0, v0 + dv};
+			return {v0, v0 + dv};
+		}
 	}
 
 

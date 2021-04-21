@@ -161,9 +161,7 @@ namespace res
 
 		glCreateTextures(GL_TEXTURE_2D, 1, &texture.id);
 		if (!texture.valid())
-		{
 			return Texture{};
-		}
 
 		glTextureStorage2D(texture.id, 1, format, width, height);
 		glTextureParameteri(texture.id, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
@@ -202,6 +200,23 @@ namespace res
 		}
 
 		glTextureSubImage2D(texture.id, 0, 0, 0, width, height, GL_RGBA, GL_FLOAT, data.data());
+
+		return texture;
+	}
+
+	Texture create_stencil_texture(i32 width, i32 height)
+	{
+		Texture texture;
+
+		glCreateTextures(GL_TEXTURE_2D, 1, &texture.id);
+		if (!texture.valid())
+			return Texture{};
+
+		glTextureStorage2D(texture.id, 1, GL_STENCIL_INDEX8, width, height);
+		glTextureParameteri(texture.id, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+		glTextureParameteri(texture.id, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+		glTextureParameteri(texture.id, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+		glTextureParameteri(texture.id, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
 
 		return texture;
 	}
