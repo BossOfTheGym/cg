@@ -152,8 +152,10 @@
     <ClInclude Include="src\core.h" />
     <ClInclude Include="src\dcel.h" />
     <ClInclude Include="src\gl-header\gl-header.h" />
+    <ClInclude Include="src\gl-header\gl-types.h" />
     <ClInclude Include="src\glfw-cxx\glfw3.h" />
     <ClInclude Include="src\glfw-cxx\opengl-loader.h" />
+    <ClInclude Include="src\graphics-res\graphics-res-fwd.h" />
     <ClInclude Include="src\graphics-res\graphics-res-util.h" />
     <ClInclude Include="src\graphics-res\graphics-res.h" />
     <ClInclude Include="src\gui-signal.h" />

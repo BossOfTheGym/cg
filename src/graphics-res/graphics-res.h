@@ -1,6 +1,6 @@
 #pragma once
 
-#include "../gl-header/gl-header.h"
+#include "../gl-header/gl-types.h"
 
 namespace res
 {

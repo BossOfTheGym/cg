@@ -1,5 +1,6 @@
 #include "prog-color-prim.h"
 
+#include "gl-header/gl-header.h"
 #include "graphics-res/graphics-res-util.h"
 
 #include <cassert>

@@ -1,5 +1,7 @@
 #include "graphics-res-util.h"
 
+#include "../gl-header/gl-header.h"
+
 #include <iostream>
 #include <fstream>
 #include <string>
@@ -105,6 +107,30 @@ namespace res
 
 
 	// shader program
+	namespace detail
+	{
+		// proxy functions to evade inclusion if heavy header required by templates
+		GLuint glCreateProgram_proxy()
+		{
+			return glCreateProgram();
+		}
+
+		void glAttachShader_proxy(GLuint program, GLuint shader)
+		{
+			glAttachShader(program, shader);
+		}
+
+		void glLinkProgram_proxy(GLuint program)
+		{
+			glLinkProgram(program);
+		}
+
+		void glDetachShader_proxy(GLuint program, GLuint shader)
+		{
+			glDetachShader(program, shader);
+		}
+	}
+
 	std::string get_shader_program_info_log(const ShaderProgram& program)
 	{
 		GLint length{};
@@ -115,6 +141,13 @@ namespace res
 		glGetProgramInfoLog(program.id, length, nullptr, infoLog.data());
 
 		return infoLog;
+	}
+
+	bool check_program_link_status(const ShaderProgram& prog)
+	{
+		GLint linkStatus{};
+		glGetProgramiv(prog.id, GL_LINK_STATUS, &linkStatus);
+		return linkStatus == GL_TRUE;
 	}
 
 	ShaderProgram create_shader_program(Shader** shaders, i32 count)

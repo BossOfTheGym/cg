@@ -1,5 +1,7 @@
 #include "graphics-res.h"
 
+#include "../gl-header/gl-header.h"
+
 #include <utility>
 
 namespace res

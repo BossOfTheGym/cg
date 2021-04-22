@@ -32,21 +32,30 @@ namespace res
 
 
 	// shader program
+	namespace detail
+	{
+		// proxy functions to evade inclusion if heavy header required by templates
+		GLuint glCreateProgram_proxy();
+		void glAttachShader_proxy(GLuint program, GLuint shader);
+		void glLinkProgram_proxy(GLuint program);
+		void glDetachShader_proxy(GLuint program, GLuint shader);
+	}
+
 	std::string get_shader_program_info_log(const ShaderProgram& program);
+
+	bool check_program_link_status(const ShaderProgram& program);
 
 	template<class ... shader_t, std::enable_if_t<(std::is_same_v<std::remove_reference_t<std::remove_cv_t<shader_t>>, Shader> && ...), int> = 0>
 	ShaderProgram create_shader_program(shader_t&& ... shader)
 	{
 		ShaderProgram shaderProgram{};
 
-		shaderProgram.id = glCreateProgram();
-		(glAttachShader(shaderProgram.id, shader.id), ...);
-		glLinkProgram(shaderProgram.id);
-		(glDetachShader(shaderProgram.id, shader.id), ...);
+		shaderProgram.id = detail::glCreateProgram_proxy();
+		(detail::glAttachShader_proxy(shaderProgram.id, shader.id), ...);
+		detail::glLinkProgram_proxy(shaderProgram.id);
+		(detail::glDetachShader_proxy(shaderProgram.id, shader.id), ...);
 
-		GLint linkStatus{};
-		glGetProgramiv(shaderProgram.id, GL_LINK_STATUS, &linkStatus);
-		if (linkStatus != GL_TRUE)
+		if (!check_program_link_status(shaderProgram))
 		{
 			std::cerr << "Failed to link shader program. Error log: " << std::endl;
 			std::cerr << get_shader_program_info_log(shaderProgram) << std::endl;
