@@ -13,6 +13,7 @@ class ChooseGui : public Gui
 {
 public:
 	using OptionChosen = sig::Signal<void(std::string)>;
+	using ExitApp = sig::Signal<void()>;
 
 public:
 	ChooseGui() = default;
@@ -30,8 +31,5 @@ public: // Gui
 
 public: // signals
 	OptionChosen optionChosen;
-
-private: // TEST
-	u32 m_maxPoints{100000};
-	u32 m_currPoints{0};
+	ExitApp exitApp;
 };
