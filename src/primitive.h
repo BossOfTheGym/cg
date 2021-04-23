@@ -15,6 +15,7 @@ namespace prim
 	using Float = f64;
 
 	using Vec2 = dvec2;
+	using Vec3 = dvec3;
 
 	struct Line2
 	{
