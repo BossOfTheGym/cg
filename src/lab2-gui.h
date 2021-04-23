@@ -10,14 +10,13 @@
 class Lab2Gui : public Gui
 {
 public:
-	using CountChanged = sig::Signal<void(u32)>;
 	using Generate     = sig::Signal<void(u32)>;
 	using Intersect    = sig::Signal<void()>;
 	using Clear        = sig::Signal<void()>;
 	using Back         = sig::Signal<void()>;
 
 public:
-	Lab2Gui(u32 maxSegmentCount);
+	Lab2Gui(u32 maxSegmentCount, u32 initCount);
 
 public:
 	virtual void draw() override;
@@ -29,7 +28,6 @@ private:
 	void clearIntersectionInfo();
 
 public: // signals
-	CountChanged countChanged;
 	Generate     generate;
 	Intersect    intersect;
 	Clear        clear;

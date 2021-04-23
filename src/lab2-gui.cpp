@@ -4,7 +4,9 @@
 
 using namespace std::string_literals;
 
-Lab2Gui::Lab2Gui(u32 maxSegmentsCount) : m_maxSegmentCount(maxSegmentsCount)
+Lab2Gui::Lab2Gui(u32 maxSegmentsCount, u32 initCount) 
+	: m_maxSegmentCount(maxSegmentsCount)
+	, m_segmentCount(initCount)
 {
 	m_maxSegmentsString = "max segments: "s + std::to_string(maxSegmentsCount);
 }
@@ -18,10 +20,7 @@ void Lab2Gui::draw()
 			ImGui::Text(m_maxSegmentsString.c_str());
 
 			if (ImGui::InputScalar("Segments count", ImGuiDataType_U32, &m_segmentCount))
-			{
 				m_segmentCount = std::min(m_segmentCount, m_maxSegmentCount);
-				countChanged.emit(m_segmentCount);
-			}
 
 			if (ImGui::Button("Generate"))
 			{
