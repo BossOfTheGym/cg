@@ -20,6 +20,9 @@ struct AppAction
 	std::string stateName;
 };
 
+// see IInputController.h
+class IInputController;
+
 // State constructor must only accept App pointer
 class AppState
 {
@@ -35,6 +38,12 @@ public:
 	virtual void deinit() = 0;
 
 	virtual AppAction execute() = 0;
+
+	// input redirected via controller from App
+	virtual IInputController* getController()
+	{
+		return nullptr;
+	}
 
 public:
 	App& app()

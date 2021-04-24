@@ -122,6 +122,12 @@ public:
 		}
 	}
 
+public:
+	MainWindow* window()
+	{
+		return m_window.get();
+	}
+
 private: // action handling
 	void handleAction(AppAction action)
 	{
@@ -200,4 +206,9 @@ void App::deinit()
 void App::exec()
 {
 	m_impl->exec();
+}
+
+MainWindow* App::window()
+{
+	return m_impl->window();
 }

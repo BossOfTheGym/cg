@@ -27,6 +27,10 @@ public:
 
 	void exec();
 
+public: // modules
+	// sigh... required to fetch farmebuffer size
+	MainWindow* window();
+
 private:
 	std::unique_ptr<AppImpl> m_impl;
 };
