@@ -32,6 +32,7 @@ namespace res
 
 
 	// shader program
+	// TODO : this is fucking pointless, if you use utils you're likely to use gl functions as well
 	namespace detail
 	{
 		// proxy functions to evade inclusion if heavy header required by templates
@@ -82,12 +83,16 @@ namespace res
 
 
 	// textures
+	Texture create_texture();
+
 	Texture create_texture(i32 width, i32 height, GLenum format);
 
 	Texture create_test_texture(i32 width, i32 height, i32 period);
 
 	Texture create_stencil_texture(i32 width, i32 height);
 
+
+	bool try_create_texture(Texture& texture);
 
 	bool try_create_texture(Texture& texture, i32 width, i32 height, GLenum format);
 

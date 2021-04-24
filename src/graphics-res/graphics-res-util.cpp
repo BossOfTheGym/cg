@@ -188,6 +188,17 @@ namespace res
 
 
 	// textures
+	Texture create_texture()
+	{
+		Texture texture{};
+
+		glCreateTextures(GL_TEXTURE_2D, 1, &texture.id);
+		if (!texture.valid())
+			return Texture{};
+
+		return texture;
+	}
+
 	Texture create_texture(i32 width, i32 height, GLenum format)
 	{
 		Texture texture{};
@@ -252,6 +263,14 @@ namespace res
 		glTextureParameteri(texture.id, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
 
 		return texture;
+	}
+
+
+	bool try_create_texture(Texture& texture)
+	{
+		texture = create_texture();
+
+		return texture.valid();
 	}
 
 	bool try_create_texture(Texture& texture, i32 width, i32 height, GLenum format)
