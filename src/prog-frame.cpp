@@ -13,6 +13,7 @@ namespace
 
 	// x0, x1, y0, y1
 	uniform vec4 params;
+	uniform mat4 proj;
 
 	// produce:
 	// v0 : (x0, y0)
@@ -23,7 +24,7 @@ namespace
 	{
 		int x = gl_VertexID / 2;
 		int y = 2 + gl_VertexID % 2;
-		gl_Position = vec4(params[x], params[y], 0.0, 0.5);
+		gl_Position = proj * vec4(params[x], params[y], 0.0, 0.5);
 	}
 	)vert";
 
@@ -53,11 +54,17 @@ ProgFrame::ProgFrame()
 
 	m_paramsLoc = glGetUniformLocation(m_prog.id, "params");
 	assert(m_paramsLoc != -1);
-
 	m_colorLoc = glGetUniformLocation(m_prog.id, "frameColor");
 	assert(m_colorLoc != -1);
+	m_projLoc = glGetUniformLocation(m_prog.id, "proj");
+	assert(m_projLoc != -1);
 }
 
+
+void ProgFrame::setProj(const prim::mat4& proj)
+{
+	glProgramUniformMatrix4fv(m_prog.id, m_projLoc, 1, GL_FALSE, prim::value_ptr(proj));
+}
 
 void ProgFrame::setFrameParams(const prim::vec4& params)
 {

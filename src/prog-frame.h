@@ -12,6 +12,8 @@ public:
 	ProgFrame();
 
 public:
+	void setProj(const prim::mat4& proj);
+
 	// vec4 : x - x0, y - x1, z - y0, w - y1
 	void setFrameParams(const prim::vec4& v0);
 
@@ -23,4 +25,5 @@ private:
 	res::ShaderProgram m_prog;
 	GLint m_paramsLoc{-1};
 	GLint m_colorLoc{-1};
+	GLint m_projLoc{-1};
 };

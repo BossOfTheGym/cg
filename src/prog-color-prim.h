@@ -13,8 +13,11 @@ public:
 	ProgColorPrim();
 
 public:
+	void setProj(const prim::mat4& proj);
+
 	void use();
 
 private:
 	res::ShaderProgram m_prog;
+	GLint m_projLoc{-1};
 };
