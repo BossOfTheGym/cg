@@ -4,7 +4,9 @@
 
 using namespace std::string_literals;
 
-Lab3Gui::Lab3Gui(u32 maxPoints) : m_maxPoints(maxPoints)
+Lab3Gui::Lab3Gui(u32 maxPoints, u32 initPoints) 
+	: m_maxPoints(maxPoints)
+	, m_currPoints(initPoints)
 {
 	m_maxPointString = "max points: " + std::to_string(maxPoints);
 }
@@ -19,7 +21,6 @@ void Lab3Gui::draw()
 			if (ImGui::InputScalar("points", ImGuiDataType_U32, &m_currPoints))
 			{
 				m_currPoints = std::min(m_maxPoints, m_currPoints);
-				pointsChanged.emit(m_currPoints);
 			}
 
 			if (ImGui::Button("Generate"))

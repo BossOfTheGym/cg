@@ -10,20 +10,18 @@
 class Lab4Gui : public Gui
 {
 public:
-	using PointsChanged = sig::Signal<void(u32)>;
-	using Generate	    = sig::Signal<void(u32)>;
-	using Build		    = sig::Signal<void()>;
-	using Clear		    = sig::Signal<void()>;
-	using Back		    = sig::Signal<void()>;
+	using Generate = sig::Signal<void(u32)>;
+	using Build	   = sig::Signal<void()>;
+	using Clear	   = sig::Signal<void()>;
+	using Back	   = sig::Signal<void()>;
 
 public:
-	Lab4Gui(u32 maxPoints);
+	Lab4Gui(u32 maxPoints, u32 initPoints);
 
 public:
 	virtual void draw() override;
 
 public: // signals
-	PointsChanged pointsChanged;
 	Generate     generate;
 	Build        build;
 	Clear        clear;

@@ -20,7 +20,6 @@ public:
 	App& operator = (const App&) = delete;
 	App& operator = (App&&) = delete;
 
-
 public:
 	void init();
 

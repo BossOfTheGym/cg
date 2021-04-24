@@ -1,7 +1,8 @@
 #pragma once
 
-#include "gui.h"
 #include "app-state.h"
+#include "gui-signal.h"
+
 #include <string>
 
 
@@ -28,12 +29,20 @@ public: // AppState
 	virtual AppAction execute() override;
 
 
-private:
+private: // callbacks
 	void labChosen(std::string lab);
+
+	void exitApp();
+
 
 private:
 	std::unique_ptr<ChooseGui> m_gui;
-	bool m_initialized{false};
-	bool m_chosen{};
+	sig::Connection m_labChangedConn;
+	sig::Connection m_exitApp;
+
+	bool m_exit{false};
+	bool m_chosen{false};
 	std::string m_chosenLab;
+
+	bool m_initialized{false};
 };

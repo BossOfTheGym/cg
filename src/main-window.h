@@ -14,9 +14,9 @@ public:
 
 
 private: // glfw::Window
-	virtual void mouseMoveEvent(double xpos, double ypos);
+	virtual void mouseMoveEvent(double xpos, double ypos) override;
 
-	virtual void mouseButtonEvent(int button, int action, int mods);
+	virtual void mouseButtonEvent(int button, int action, int mods) override;
 
 
 public: // signals

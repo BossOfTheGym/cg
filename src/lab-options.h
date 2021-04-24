@@ -10,5 +10,5 @@ inline const std::array<std::string, 6> LAB_OPTIONS =
 	"lab3",
 	"lab4",
 	"lab5",
-	"lab6"
+	"lab6",
 };

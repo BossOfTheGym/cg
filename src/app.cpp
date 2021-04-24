@@ -2,6 +2,7 @@
 #include "choose-lab.h"
 #include "lab-options.h"
 #include "main-window.h"
+#include "state-creator.h"
 #include "gl-header/gl-header.h"
 
 #include "graphics-res/graphics-res.h"
@@ -11,7 +12,10 @@
 #include "imgui/imgui_impl_glfw.h"
 #include "imgui/imgui_impl_opengl3.h"
 
+#include <string>
 #include <cassert>
+#include <iostream>
+
 
 class AppImpl
 {
@@ -38,11 +42,12 @@ public:
 		if (m_initialized)
 			return;
 
-		// window init
+		// glfw
 		assert(glfw::initialize());
 
 		using namespace glfw;
 
+		// window init
 		CreationInfo info;
 		info.height = 1024;
 		info.width  = 1024;
@@ -84,14 +89,12 @@ public:
 
 		// states
 		while(!m_stateStack.empty())
-		{
-			m_stateStack.back()->deinit();
 			m_stateStack.pop_back();
-		}
 
 		// window
 		m_window.reset();
 
+		// glfw
 		glfw::terminate();
 
 		m_initialized = false;
@@ -107,12 +110,10 @@ public:
 
 			startGuiFrame();
 
-			m_stateStack.back()->execute();
+			handleAction(m_stateStack.back()->execute());
 
 			// demo
-			bool showDemoWindow = true;
-			if (showDemoWindow)
-				ImGui::ShowDemoWindow(&showDemoWindow);
+			ImGui::ShowDemoWindow();
 
 			endGuiFrame();
 			drawGui();
@@ -121,7 +122,29 @@ public:
 		}
 	}
 
-private:
+private: // action handling
+	void handleAction(AppAction action)
+	{
+		switch(action.type)
+		{
+			case ActionType::Exit:
+				m_window->shouldClose(true);
+				break;
+
+			case ActionType::Pop:
+				m_stateStack.pop_back();
+				break;
+
+			case ActionType::Push:
+				auto newState = m_stateCreator.createState(m_app, action.stateName);
+				assert(newState != nullptr);
+				assert(newState->init());
+				m_stateStack.push_back(std::move(newState));
+				break;
+		}
+	}
+
+private: // gui
 	void startGuiFrame()
 	{
 		ImGui_ImplOpenGL3_NewFrame();
@@ -143,13 +166,13 @@ private:
 		ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
 	}
 
-
 private:
 	App* m_app{};
 	bool m_initialized{false};
 
 	std::vector<std::unique_ptr<AppState>> m_stateStack;
 	std::unique_ptr<MainWindow> m_window;
+	StateCreator m_stateCreator;
 };
 
 

@@ -171,9 +171,13 @@
     <ClInclude Include="src\lab-options.h" />
     <ClInclude Include="src\lab1-gui.h" />
     <ClInclude Include="src\lab1.h" />
+    <ClInclude Include="src\lab2-gui.h" />
     <ClInclude Include="src\lab2.h" />
+    <ClInclude Include="src\lab3-gui.h" />
     <ClInclude Include="src\lab3.h" />
+    <ClInclude Include="src\lab4-gui.h" />
     <ClInclude Include="src\lab4.h" />
+    <ClInclude Include="src\lab5-gui.h" />
     <ClInclude Include="src\lab5.h" />
     <ClInclude Include="src\lab6.h" />
     <ClInclude Include="src\list.h" />
@@ -190,12 +194,14 @@
     <ClInclude Include="src\quadtree_test.h" />
     <ClInclude Include="src\section.h" />
     <ClInclude Include="src\section_segments_test.h" />
+    <ClInclude Include="src\state-creator.h" />
     <ClInclude Include="src\test_util.h" />
     <ClInclude Include="src\trb_tree.h" />
     <ClInclude Include="src\trb_util.h" />
     <ClInclude Include="src\trb_node.h" />
     <ClInclude Include="src\trb_set.h" />
     <ClInclude Include="src\trb_test.h" />
+    <ClInclude Include="src\lab6-gui.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="src\app.cpp" />
@@ -214,6 +220,16 @@
     <ClCompile Include="src\imgui\imgui_widgets.cpp" />
     <ClCompile Include="src\lab1-gui.cpp" />
     <ClCompile Include="src\lab1.cpp" />
+    <ClCompile Include="src\lab2-gui.cpp" />
+    <ClCompile Include="src\lab2.cpp" />
+    <ClCompile Include="src\lab3-gui.cpp" />
+    <ClCompile Include="src\lab3.cpp" />
+    <ClCompile Include="src\lab4-gui.cpp" />
+    <ClCompile Include="src\lab4.cpp" />
+    <ClCompile Include="src\lab5-gui.cpp" />
+    <ClCompile Include="src\lab5.cpp" />
+    <ClCompile Include="src\lab6-gui.cpp" />
+    <ClCompile Include="src\lab6.cpp" />
     <ClCompile Include="src\main-window.cpp" />
     <ClCompile Include="src\main.cpp" />
     <ClCompile Include="src\primitive.cpp" />
@@ -225,6 +241,7 @@
     <ClCompile Include="src\quadtree_test.cpp" />
     <ClCompile Include="src\section.cpp" />
     <ClCompile Include="src\section_segments_test.cpp" />
+    <ClCompile Include="src\state-creator.cpp" />
     <ClCompile Include="src\trb_test.cpp" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />

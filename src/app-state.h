@@ -5,24 +5,29 @@
 
 class App;
 
-struct AppAction
+enum class ActionType
 {
-	enum Type
-	{
-		Nothing,
-		Change,
-		Exit,
-	};
-
-	Type type{Nothing};
-	std::string option;
+	Nothing,
+	Change, // Pop prev, Push new
+	Pop,
+	Push,
+	Exit,
 };
 
+struct AppAction
+{
+	ActionType type{ActionType::Nothing};
+	std::string stateName;
+};
+
+// State constructor must only accept App pointer
 class AppState
 {
 public:
 	AppState(App* owner) : m_app(owner)
 	{}
+
+	virtual ~AppState() = default;
 
 public:
 	virtual bool init() = 0;

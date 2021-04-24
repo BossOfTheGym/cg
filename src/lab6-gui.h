@@ -4,6 +4,7 @@
 #include "core.h"
 #include "gui-signal.h"
 
+// iso
 class Lab6Gui : public Gui
 {
 public:

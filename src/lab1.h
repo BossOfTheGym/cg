@@ -10,6 +10,7 @@ namespace
 	class Lab1Impl;
 }
 
+// quadtree
 class Lab1 : public AppState
 {
 	friend class Lab1Impl;
