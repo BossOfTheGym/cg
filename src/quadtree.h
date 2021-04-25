@@ -402,7 +402,7 @@ namespace qtree
 				if (!curr->leaf())
 				{
 					for (auto& child : curr->children)
-						nodes.push_back(child);
+						nodes.push(child);
 				}
 				else
 				{
