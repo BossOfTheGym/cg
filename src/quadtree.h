@@ -40,6 +40,24 @@ namespace qtree
 		}
 	}
 
+	template<class T>
+	class Allocator
+	{
+	public:
+		template<class ... Args>
+		T* alloc(Args&& ... args)
+		{
+			if constexpr(std::is_aggregate_v<T>)
+				return ::new T{std::forward<Args>(args)...};
+			else
+				return ::new T(std::forward<Args>(args)...);
+		}
+
+		void dealloc(T* ptr)
+		{
+			::delete ptr;
+		}
+	};
 
 	template<class element_t>
 	struct QuadNode
@@ -126,7 +144,7 @@ namespace qtree
 	// 
 	// position_t is a functor mapping element_t to Vec2 (so you can store whatever you want here)
 	// TODO : maybe I need to do deduction guides
-	template<class element_t, class position_t, template<class T> class allocator_t>
+	template<class element_t, class position_t, template<class T> class allocator_t = Allocator>
 	class QuadTree
 	{
 	public:
