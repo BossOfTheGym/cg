@@ -18,13 +18,13 @@ namespace
 	// produce:
 	// v0 : (x0, y0)
 	// v1 : (x0, y1)
-	// v2 : (x1, y0)
-	// v3 : (x1, y1)
+	// v2 : (x1, y1)
+	// v3 : (x1, y0)
 	void main()
 	{
-		int x = gl_VertexID / 2;
-		int y = 2 + gl_VertexID % 2;
-		gl_Position = proj * vec4(params[x], params[y], 0.0, 0.5);
+		float x = params[gl_VertexID / 2];
+		float y = params[2 + (1 + gl_VertexID) / 2 % 2];
+		gl_Position = proj * vec4(x, y, 0.0, 1.0);
 	}
 	)vert";
 
