@@ -269,6 +269,19 @@ namespace glfw
 	}
 
 
+	Vec2<double> Window::cursorPos() const
+	{
+		double x, y;
+		glfwGetCursorPos(m_window, &x, &y);
+		return {x, y};
+	}
+
+	void Window::cursorPos(double x, double y)
+	{
+		glfwSetCursorPos(m_window, x, y);
+	}
+
+
 	Size<int> Window::size() const
 	{
 		int width{};

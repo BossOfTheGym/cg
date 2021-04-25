@@ -248,6 +248,11 @@ namespace glfw
 		void shouldClose(bool flag);
 
 
+		Vec2<double> cursorPos() const;
+
+		void cursorPos(double x, double y);
+
+
 		Size<int> size() const;
 
 		void size(int width, int height);
