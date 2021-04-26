@@ -44,11 +44,15 @@ namespace
 
 ProgFrame::ProgFrame()
 {
+	bool stat{};
+
 	res::Shader vert;
-	assert(res::try_create_shader_from_source(vert, GL_VERTEX_SHADER, VERT_SOURCE));
+	stat = res::try_create_shader_from_source(vert, GL_VERTEX_SHADER, VERT_SOURCE);
+	assert(stat);
 
 	res::Shader frag;
-	assert(res::try_create_shader_from_source(frag, GL_FRAGMENT_SHADER, FRAG_SOURCE));
+	stat = res::try_create_shader_from_source(frag, GL_FRAGMENT_SHADER, FRAG_SOURCE);
+	assert(stat);
 
 	assert(res::try_create_shader_program(m_prog, vert, frag));
 

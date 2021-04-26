@@ -27,6 +27,9 @@ public: // AppState
 
 	virtual AppAction execute() override;
 
+	virtual void pause() override;
+
+	virtual void resume() override;
 
 private:
 	std::unique_ptr<Lab1Impl> m_impl;	

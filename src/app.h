@@ -28,7 +28,7 @@ public:
 	void exec();
 
 public: // modules
-	// sigh... required to fetch farmebuffer size
+	// sigh... required to fetch framebuffer size
 	MainWindow* window();
 
 private:

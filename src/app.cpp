@@ -43,14 +43,15 @@ public:
 			return;
 
 		// glfw
-		assert(glfw::initialize());
+		bool stat = glfw::initialize();
+		assert(stat);
 
 		using namespace glfw;
 
 		// window init
 		CreationInfo info;
 		info.height = 1024;
-		info.width  = 1024;
+		info.width  = 1280;
 		info.title = "cg";
 		info.intHints.push_back({Hint::Resizable, (int)Value::False});
 		info.intHints.push_back({Hint::ContextVersionMajor, 4});
@@ -64,7 +65,9 @@ public:
 		// choose state(default state)
 		auto chooseLab = std::make_unique<ChooseLab>(m_app);
 		assert(chooseLab != nullptr);
-		assert(chooseLab->init());
+		stat = chooseLab->init();
+		assert(stat);
+
 		m_stateStack.push_back(std::move(chooseLab));
 
 		// imgui
@@ -72,7 +75,7 @@ public:
 		ImGui::CreateContext();
 		ImGui::StyleColorsDark();
 		ImGui_ImplGlfw_InitForOpenGL(m_window->getGLFWwindow(), true);
-		ImGui_ImplOpenGL3_Init("#version 450");
+		ImGui_ImplOpenGL3_Init("#version 450 core");
 
 		m_initialized = true;
 	}
@@ -89,7 +92,10 @@ public:
 
 		// states
 		while(!m_stateStack.empty())
+		{
+			m_stateStack.back()->deinit();
 			m_stateStack.pop_back();
+		}
 
 		// window
 		m_window.reset();
@@ -106,7 +112,13 @@ public:
 		m_window->show();
 		while (!m_window->shouldClose())
 		{
+			if (m_stateStack.empty())
+				break;
+
 			glfw::poll_events();
+
+			glClearColor(1.0, 0.5, 0.25, 1.0);
+			glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
 			startGuiFrame();
 
@@ -138,13 +150,20 @@ private: // action handling
 				break;
 
 			case ActionType::Pop:
+				m_stateStack.back()->deinit();
 				m_stateStack.pop_back();
+
+				m_stateStack.back()->resume();
 				break;
 
 			case ActionType::Push:
+				m_stateStack.back()->pause();
+
 				auto newState = m_stateCreator.createState(m_app, action.stateName);
 				assert(newState != nullptr);
-				assert(newState->init());
+				bool stat = newState->init();
+				assert(stat);
+
 				m_stateStack.push_back(std::move(newState));
 				break;
 		}
@@ -167,8 +186,6 @@ private: // gui
 	{
 		auto [w, h] = m_window->framebufferSize();
 		glViewport(0, 0, w, h);
-		glClearColor(1.0, 0.5, 0.25, 1.0);
-		glClear(GL_COLOR_BUFFER_BIT);
 		ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
 	}
 

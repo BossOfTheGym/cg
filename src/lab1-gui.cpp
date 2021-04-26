@@ -4,9 +4,10 @@
 
 #include <utility>
 
-Lab1Gui::Lab1Gui(u32 maxPoints, u32 initPoints) 
+Lab1Gui::Lab1Gui(u32 maxPoints, u32 initPoints, f32 x0, f32 x1, f32 y0, f32 y1) 
 	: m_maxPoints(maxPoints)
 	, m_currPoints(initPoints)
+	, m_params{x0, x1, y0, y1}
 {
 	m_maxPointsString = "Max points: " + std::to_string(maxPoints);
 }
@@ -36,4 +37,12 @@ void Lab1Gui::draw()
 			returnBack.emit();
 	}
 	ImGui::End();
+}
+
+void Lab1Gui::setFrameParams(f32 x0, f32 x1, f32 y0, f32 y1)
+{
+	m_params[0] = x0;
+	m_params[1] = x1;
+	m_params[2] = y0;
+	m_params[3] = y1;
 }
