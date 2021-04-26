@@ -24,7 +24,8 @@ void Lab1Gui::draw()
 		if (ImGui::Button("Generate"))
 			generatePoints.emit(m_currPoints);
 
-		if (ImGui::InputFloat4("x0 x1 y0 y1", m_params))
+		ImGui::InputFloat4("x0 x1 y0 y1", m_params);
+		if (ImGui::Button("Set frame"))
 		{
 			if (m_params[0] > m_params[1])
 				std::swap(m_params[0], m_params[1]);
@@ -32,7 +33,6 @@ void Lab1Gui::draw()
 				std::swap(m_params[2], m_params[3]);
 			frameParamsChanged.emit(m_params[0], m_params[1], m_params[2], m_params[3]);
 		}
-
 		if (ImGui::Button("Back"))
 			returnBack.emit();
 	}
