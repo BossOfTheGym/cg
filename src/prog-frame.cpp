@@ -51,16 +51,17 @@ ProgFrame::ProgFrame()
 	assert(stat);
 
 	res::Shader frag;
-	stat = res::try_create_shader_from_source(frag, GL_FRAGMENT_SHADER, FRAG_SOURCE);
+	stat = res::try_create_shader_from_source(frag, GL_FRAGMENT_SHADER, FRAG_SOURCE); 
 	assert(stat);
 
-	assert(res::try_create_shader_program(m_prog, vert, frag));
+	stat = res::try_create_shader_program(m_prog, vert, frag); 
+	assert(stat);
 
-	m_paramsLoc = glGetUniformLocation(m_prog.id, "params");
+	m_paramsLoc = glGetUniformLocation(m_prog.id, "params"); 
 	assert(m_paramsLoc != -1);
-	m_colorLoc = glGetUniformLocation(m_prog.id, "frameColor");
+	m_colorLoc = glGetUniformLocation(m_prog.id, "frameColor"); 
 	assert(m_colorLoc != -1);
-	m_projLoc = glGetUniformLocation(m_prog.id, "proj");
+	m_projLoc = glGetUniformLocation(m_prog.id, "proj"); 
 	assert(m_projLoc != -1);
 }
 
