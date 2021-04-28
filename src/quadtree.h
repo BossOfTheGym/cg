@@ -13,6 +13,7 @@
 #include <type_traits>
 
 
+// TODO : this is very poor implementation it must be reworked
 namespace qtree
 {
 	using Vec2 = prim::Vec2;
