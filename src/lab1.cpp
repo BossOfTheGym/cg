@@ -16,6 +16,8 @@
 #include <cassert>
 #include <iostream>
 
+using namespace prim;
+
 namespace
 {
 	constexpr const u32 max_points = 1'000'000;
@@ -219,9 +221,9 @@ namespace
 		u32 m_backOffset{};
 	};
 
-	using GfxDBuffer2 = GfxDBuffer<prim::vec2>;
-	using GfxDBuffer3 = GfxDBuffer<prim::vec3>;
-	using GfxDBuffer4 = GfxDBuffer<prim::vec4>;
+	using GfxDBuffer2 = GfxDBuffer<vec2>;
+	using GfxDBuffer3 = GfxDBuffer<vec3>;
+	using GfxDBuffer4 = GfxDBuffer<vec4>;
 
 	class DVertexArray
 	{
@@ -325,7 +327,7 @@ namespace
 		public:
 			Sampler() = default;
 
-			const prim::Vec2& operator() (u32 handle) const
+			const Vec2& operator() (u32 handle) const
 			{
 				return m_host->m_points[handle];
 			}
@@ -389,10 +391,11 @@ namespace
 		{
 			swapDBuffered();
 
-			render();
 			doGui();
 
-			return act();
+			render();
+
+			return handleState();
 		}
 
 		void pause()
@@ -537,14 +540,22 @@ namespace
 		}
 
 
-	private:
-		AppAction act()
+	private: // action
+		AppAction handleState()
 		{
 			if (m_goBack)
 			{
 				m_goBack = false;
 				return AppAction{ActionType::Pop}; // we need to pop current state
 			}
+
+			if (m_frameChanged)
+			{
+				m_frameChanged = false;
+
+				doQuery(m_frameParams);
+			}
+
 			return {}; // do nothing
 		}
 
@@ -562,14 +573,13 @@ namespace
 
 			// points
 			auto seed = std::random_device()();
-			//seed = 12345; // TODO : for now
 			std::minstd_rand0 base(seed);
-			std::uniform_real_distribution<prim::Float> genX(0.02 * w, 0.98 * w);
-			std::uniform_real_distribution<prim::Float> genY(0.02 * h, 0.98 * h);
+			std::uniform_real_distribution<Float> genX(0.02 * w, 0.98 * w);
+			std::uniform_real_distribution<Float> genY(0.02 * h, 0.98 * h);
 
 			m_points.clear();
 			for (u32 i = 0; i < amount; i++)
-				m_points.push_back(prim::Vec2{genX(base), genY(base)});
+				m_points.push_back(Vec2{genX(base), genY(base)});
 
 			// vertices
 			m_gfxPoints->resize(amount);
@@ -619,7 +629,7 @@ namespace
 			m_frameParams[2] = y0;
 			m_frameParams[3] = y1;
 			
-			doQuery(m_frameParams);
+			m_frameChanged = true;
 		}
 
 
@@ -658,7 +668,7 @@ namespace
 				m_frameParams[3] = m_framePrev[3] + dy;
 				m_gui->setFrameParams(m_frameParams[0], m_frameParams[1], m_frameParams[2], m_frameParams[3]);
 
-				doQuery(m_frameParams);
+				m_frameChanged = true;
 			}
 		}
 
@@ -669,12 +679,12 @@ namespace
 			return m_frameParams[0] <= x && x <= m_frameParams[1] && m_frameParams[2] <= y && y <= m_frameParams[3];
 		}
 
-		prim::mat4 projMat()
+		mat4 projMat()
 		{
 			// projects shitty top-left originated window into OpenGL coordinate system
 			auto [w, h] = m_window->framebufferSize();
 
-			prim::mat4 proj{1.0};
+			mat4 proj{1.0};
 			proj[0][0] = +2.0 / w; 
 			proj[1][1] = -2.0 / h;
 			proj[3][0] = -1.0;
@@ -682,13 +692,13 @@ namespace
 			return proj;
 		}
 
-		prim::AABB2 frameToAABB()
+		AABB2 frameToAABB()
 		{
 			return {{m_frameParams[0], m_frameParams[2]}, {m_frameParams[1], m_frameParams[3]}};
 		}
 
 	private: // query
-		void doQuery(const prim::vec4& params)
+		void doQuery(const vec4& params)
 		{
 			m_gfxColors->waitSyncBack();
 
@@ -738,7 +748,8 @@ namespace
 		void renderPoints()
 		{
 			if (!m_needRedraw)
-				return
+				return;
+			m_needRedraw = false;
 
 			m_gfxColors->waitSyncFront();
 
@@ -784,26 +795,22 @@ namespace
 	private:
 		// app state
 		Lab1*       m_lab{};
-		MainWindow* m_window{};
-		bool m_initialized{false};
-		bool m_paused{false};
+		MainWindow* m_window{};		
 
 		// gui & state
 		std::unique_ptr<Lab1Gui> m_gui;
 		sig::Connection m_goBackConn;
 		sig::Connection m_frameChangedConn;
 		sig::Connection m_generatePointsConn;
-		prim::vec4 m_frameParams{};
-		u32        m_pointsGenerated{};
-		bool       m_goBack{false};
+		vec4 m_frameParams{};
+		u32  m_pointsGenerated{};
 
 		// input & state
 		sig::Connection m_mouseButtonConn;
 		sig::Connection m_mouseMovedConn;
-		prim::vec4 m_framePrev{};
+		vec4 m_framePrev{};
 		double m_capturedX{};
 		double m_capturedY{};
-		bool m_frameCaptured{};
 
 		// gfx
 		res::VertexArray m_dummyArray;
@@ -815,20 +822,27 @@ namespace
 		std::unique_ptr<DVertexArray> m_vertexArray;
 		std::unique_ptr<GfxDBuffer2>  m_gfxPoints;
 		std::unique_ptr<GfxDBuffer4>  m_gfxColors;
-		prim::vec4 m_color0{0.0, 0.0, 0.0, 1.0};
-		prim::vec4 m_color1{1.0, 0.0, 0.0, 1.0};
-		prim::vec4 m_color2{0.0, 0.0, 1.0, 1.0};
-		bool m_needSwap{false};
+		vec4 m_color0{0.0, 0.0, 0.0, 1.0};
+		vec4 m_color1{1.0, 0.0, 0.0, 1.0};
+		vec4 m_color2{0.0, 0.0, 1.0, 1.0};
 
-		// render state
+		// state
+		bool m_frameCaptured{false};
+		bool m_frameChanged{false};
+
+		bool m_initialized{false};
 		bool m_needRedraw{false};
+		bool m_needSwap{false};
+		bool m_paused{false};
+		bool m_goBack{false};
 
 		// points
-		std::vector<prim::Vec2>         m_points;
+		std::vector<Vec2>         m_points;
 		std::unique_ptr<DQuery<Handle>> m_query;
 		std::unique_ptr<QuadTree>       m_tree;
 	};
 }
+
 
 Lab1::Lab1(App* app) : AppState(app)
 {
