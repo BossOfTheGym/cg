@@ -2,7 +2,7 @@
 #include "section.h"
 
 #include <iostream>
-
+#include <numeric>
 
 namespace
 {
@@ -19,7 +19,16 @@ namespace
 
 void test_intersections(const std::vector<prim::Line2>& lines)
 {
-	auto intersections = sect::section_n_lines(lines);
+	std::vector<u32> handles(lines.size());
+	std::iota(handles.begin(), handles.end(), 0u);
+
+	auto sampler = [&] (u32 handle)
+	{
+		return lines[handle];
+	};
+
+	auto intersections = sect::section_n_lines<u32>(handles, sampler);
+
 	if (intersections.size() > 0)
 	{
 		std::cout << "intersections: " << intersections.size() << std::endl;
@@ -27,7 +36,7 @@ void test_intersections(const std::vector<prim::Line2>& lines)
 		{
 			std::cout << "point " << p << std::endl;		
 			for (auto& seg : segs)
-				std::cout << "    line " << seg << std::endl;
+				std::cout << "    line " << sampler(seg) << std::endl;
 		}
 	}
 	else
@@ -73,7 +82,7 @@ void test_intersections()
 		{{5.0, 8.0}, {5.0, 2.0}},
 		},
 
-		// 4(24 inters)
+		// 4(23 inters)
 		{
 			{{1.0, 4.0}, {3.0, 2.0}},
 		{{5.0, 2.0}, {1.0, 6.0}},
