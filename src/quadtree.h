@@ -445,7 +445,7 @@ namespace qtree
 		NodeAllocator m_allocator;
 
 		Node* m_root{nullptr};
-		u32 m_maxDepth{16};
+		u32 m_maxDepth{32};
 	};
 
 
