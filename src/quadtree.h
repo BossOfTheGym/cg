@@ -396,6 +396,8 @@ namespace qtree
 			while(!nodes.empty())
 			{
 				auto curr = nodes.front();
+				nodes.pop();
+
 				if (!prim::overlaps(box, curr->box))
 					continue;
 
