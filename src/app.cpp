@@ -51,7 +51,7 @@ public:
 		// window init
 		CreationInfo info;
 		info.height = 1024;
-		info.width  = 1280;
+		info.width  = 1536;
 		info.title = "cg";
 		info.intHints.push_back({Hint::Resizable, (int)Value::False});
 		info.intHints.push_back({Hint::ContextVersionMajor, 4});
