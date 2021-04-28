@@ -44,6 +44,9 @@ AppAction ChooseLab::execute()
 {
 	m_gui->draw();
 
+	glClearColor(1.0, 0.5, 0.25, 1.0);
+	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+
 	if (m_exit)
 	{
 		return AppAction{ActionType::Exit};

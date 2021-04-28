@@ -96,7 +96,7 @@ namespace
 		using vec  = vec_t;
 
 	public:
-		GfxDBuffer(u32 initCapacity, u32 wait = 25u) 
+		GfxDBuffer(u32 initCapacity, u32 wait = 50u) 
 			: Base(2 * initCapacity)
 			, m_wait(wait)
 			, m_size(initCapacity)
@@ -310,7 +310,7 @@ namespace
 		Query m_front;
 	};
 
-
+	// TODO : sequence is broken
 	class Lab1Impl
 	{
 		friend class Sampler;
@@ -498,7 +498,7 @@ namespace
 			glVertexArrayAttribBinding(arrayId, 1, 1);
 
 			m_needSwap = false;
-			m_needRedrawPoints = true;
+			m_needRedraw = true;
 		}
 
 		void deinitGfx()
@@ -517,7 +517,7 @@ namespace
 			m_gfxPoints.reset();
 
 			m_needSwap = false;
-			m_needRedrawPoints = false;
+			m_needRedraw = false;
 		}
 
 		void initPoints()
@@ -593,10 +593,16 @@ namespace
 			m_vertexArray->primitives(m_pointsGenerated);
 
 			// quadtree & query
-			m_tree->clear();
 			m_query->clear();
+
+			auto c = clock();
+			m_tree->clear();
+			std::cout << "c: " << (float)(clock() - c) / CLOCKS_PER_SEC << "ms" << std::endl;
+
+			c = clock();
 			for (u32 i = 0; i < m_pointsGenerated; i++)
 				m_tree->insert(i);
+			std::cout << "i: " << (float)(clock() - c) / CLOCKS_PER_SEC << "ms" << std::endl;
 
 			doQuery(m_frameParams);
 		}
@@ -691,7 +697,9 @@ namespace
 				m_gfxColors->writeBack(m_color0, handle);
 
 			// query points
+			auto c = clock();
 			m_tree->query(frameToAABB(), m_query->back());
+			std::cout << "q: " << (float)(clock() - c) / CLOCKS_PER_SEC << "ms" << std::endl;
 
 			// set new color
 			for (auto& handle : m_query->back())
@@ -702,7 +710,7 @@ namespace
 
 			// data changed so we will need to swap next frame
 			m_needSwap = true;
-			m_needRedrawPoints = true;
+			m_needRedraw = true;
 		}
 
 	private: // double-buffer control
@@ -729,9 +737,8 @@ namespace
 
 		void renderPoints()
 		{
-			if (!m_needRedrawPoints)
-				return;
-			m_needRedrawPoints = false;
+			if (!m_needRedraw)
+				return
 
 			m_gfxColors->waitSyncFront();
 
@@ -814,7 +821,7 @@ namespace
 		bool m_needSwap{false};
 
 		// render state
-		bool m_needRedrawPoints{false};
+		bool m_needRedraw{false};
 
 		// points
 		std::vector<prim::Vec2>         m_points;

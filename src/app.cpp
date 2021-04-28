@@ -117,15 +117,10 @@ public:
 
 			glfw::poll_events();
 
-			glClearColor(1.0, 0.5, 0.25, 1.0);
-			glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-
 			startGuiFrame();
 
-			handleAction(m_stateStack.back()->execute());
-
-			// demo
-			ImGui::ShowDemoWindow();
+			demo();
+			handleAction(m_stateStack.back()->execute());						
 
 			endGuiFrame();
 			drawGui();
@@ -180,6 +175,11 @@ private: // gui
 	void endGuiFrame()
 	{
 		ImGui::Render();
+	}
+
+	void demo()
+	{
+		ImGui::ShowDemoWindow();
 	}
 
 	void drawGui()
