@@ -368,6 +368,26 @@ namespace qtree
 			}
 		}
 
+		void query(Node* node, const AABB& box, std::vector<Elem>& result)
+		{
+			if (!prim::overlaps(box, node->box))
+				return;
+
+			if (!node->leaf())
+			{
+				for (auto& child : node->children)
+					query(child, box, result);
+			}
+			else
+			{
+				for (auto& elem : node->data)
+				{
+					if (prim::inAABB(box, m_position(elem)))
+						result.push_back(elem);
+				}
+			}
+		}
+
 	public:
 		bool insert(const Elem& elem)
 		{
@@ -390,7 +410,8 @@ namespace qtree
 		{
 			result.clear();
 
-			std::queue<Node*> nodes;
+			query(m_root, box, result);
+			/*std::queue<Node*> nodes;
 
 			nodes.push(m_root);
 			while(!nodes.empty())
@@ -414,7 +435,7 @@ namespace qtree
 							result.push_back(elem);
 					}
 				}
-			}
+			}*/
 		}
 		
 
@@ -423,7 +444,7 @@ namespace qtree
 		NodeAllocator m_allocator;
 
 		Node* m_root{nullptr};
-		u32 m_maxDepth{31};
+		u32 m_maxDepth{16};
 	};
 
 
