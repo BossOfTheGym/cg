@@ -106,9 +106,6 @@ namespace prim
 	// intersection
 	Status intersectSegSeg(const Line2& s0, const Line2& s1, Vec2& v0, Vec2& v1, Float eps)
 	{
-		if (!overlaps_checked(s0.v0.x, s0.v1.x, s1.v0.x, s1.v1.x) || !overlaps_checked(s0.v0.y, s0.v1.y, s1.v0.y, s1.v1.y))
-			return Status::NoIntersection;
-
 		auto ds0 = s0.v1 - s0.v0;
 		auto ds1 = s1.v1 - s1.v0;
 
