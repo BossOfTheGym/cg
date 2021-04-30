@@ -569,7 +569,7 @@ namespace
 			std::uniform_real_distribution<Float> genX(0.1 * w, 0.9 * w); // x
 			std::uniform_real_distribution<Float> genY(0.1 * h, 0.9 * h); // y
 			std::uniform_real_distribution<Float> genA(0.0, 2 * pi); // angle
-			std::uniform_real_distribution<Float> genD(0.09 * w, 0.91 * w);  // dist
+			std::uniform_real_distribution<Float> genD(0.05 * w, 0.1 * w);  // dist
 
 			m_segments.clear();
 			for (u32 i = 0; i < m_segmentsToGen; i++)
@@ -631,19 +631,19 @@ namespace
 				return m_segments[handle];
 			};
 
-			//auto intersections = sect::section_n_lines(m_segmentHandles, sampler);
-			//std::cout << "intersections:" << std::endl;
-			//for (auto& [point, lines] : intersections)
-			//	std::cout << point.x << " " << point.y << std::endl;
+			auto intersections = sect::section_n_lines(m_segmentHandles, sampler);
+			std::cout << "intersections:" << std::endl;
+			for (auto& [point, lines] : intersections)
+				std::cout << point.x << " " << point.y << std::endl;
 
 			m_gfxColors->waitSyncBack();
 
 			auto colorPtr = m_gfxColors->backPtr();
 			for (u32 i = 0; i < m_gfxColors->size(); i++)
-				colorPtr[i] = m_color1; // was m_color0
-			//for (auto& [point, lines] : intersections)
-			//	for (auto& handle : lines)
-			//		colorPtr[handle] = m_color1;
+				colorPtr[i] = m_color0;
+			for (auto& [point, lines] : intersections)
+				for (auto& handle : lines)
+					colorPtr[handle] = m_color1;
 
 			m_gfxColors->flushBack();
 			m_gfxColors->syncBack();
