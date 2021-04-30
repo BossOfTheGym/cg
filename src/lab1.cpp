@@ -76,6 +76,11 @@ namespace
 			flush(0, m_capacity);
 		}
 
+		vec* ptr()
+		{
+			return m_mappedPtr;
+		}
+
 		void write(const vec& v, u32 index)
 		{
 			assert(index < m_capacity);
@@ -103,6 +108,7 @@ namespace
 			, m_wait(wait)
 			, m_size(initCapacity)
 		{}
+
 
 	public:
 		void waitSyncFront()
@@ -170,6 +176,17 @@ namespace
 		}
 
 
+		vec* frontPtr()
+		{
+			return Base::ptr() + m_frontOffset;
+		}
+
+		vec* backPtr()
+		{
+			return Base::ptr() + m_backOffset;
+		}
+
+
 		void swap()
 		{
 			m_front ^= 0x1u;
@@ -188,6 +205,7 @@ namespace
 			m_frontOffset = 0u;
 			m_backOffset = m_size;
 		}
+
 
 	private:
 		void waitSync(res::FenceSync& sync)
@@ -312,7 +330,28 @@ namespace
 		Query m_front;
 	};
 
-	// TODO : sequence is broken
+	template<class vec, class size>
+	void store_vec_data(vec* ptr, vec* data, size count)
+	{
+		for (size i = 0; i < count; i++)
+			ptr[i] = data[i];
+	}
+
+	template<class vec, class size>
+	void store_vec_value(vec* ptr, vec value, size count)
+	{
+		for (size i = 0; i < count; i++)
+			ptr[i] = value;
+	}
+
+	template<class vec, class index>
+	void store_vec_value(vec* ptr, vec value, index* indices, index indexCount)
+	{
+		for (index i = 0; i < indexCount; i++)
+			ptr[indices[i]] = value;
+	}
+
+
 	class Lab1Impl
 	{
 		friend class Sampler;
@@ -389,12 +428,9 @@ namespace
 
 		AppAction execute()
 		{
-			swapDBuffered();
-
 			doGui();
-
+			swapDBuffered();
 			render();
-
 			return handleState();
 		}
 
@@ -416,7 +452,7 @@ namespace
 			}
 		}
 
-	private: // init functions
+	private: // init & deinit
 		void initGui()
 		{
 			auto [w, h] = m_window->framebufferSize();
@@ -428,9 +464,9 @@ namespace
 			m_gui.reset(new Lab1Gui(max_points, 0u, x0, x1, y0, y1));
 			assert(m_gui != nullptr);
 
-			m_generatePointsConn = m_gui->generatePoints    .connect([&](u32 pts){ generatePoints(pts); });
-			m_goBackConn         = m_gui->returnBack        .connect([&](){ returnBack(); });
-			m_frameChangedConn   = m_gui->frameParamsChanged.connect([&](f32 x0, f32 x1, f32 y0, f32 y1) { frameParamsChanged(x0, x1, y0, y1); });
+			m_generatePointsConn = m_gui->generatePoints    .connect([&](u32 pts){ onGeneratePoints(pts); });
+			m_goBackConn         = m_gui->returnBack        .connect([&](){ onReturnBack(); });
+			m_frameChangedConn   = m_gui->frameParamsChanged.connect([&](f32 x0, f32 x1, f32 y0, f32 y1){ onFrameParamsChanged(x0, x1, y0, y1); });
 			m_frameParams = {x0, x1, y0, y1};
 		}
 
@@ -444,8 +480,8 @@ namespace
 
 		void initInput()
 		{
-			m_mouseButtonConn = m_window->mouseButton.connect( [&](int button, int action, int mods){ mouseButton(button, action, mods); });
-			m_mouseMovedConn  = m_window->mouseMoved .connect( [&](double x, double y){ mouseMoved(x, y); });
+			m_mouseButtonConn = m_window->mouseButton.connect( [&](int button, int action, int mods){ onMouseButton(button, action, mods); });
+			m_mouseMovedConn  = m_window->mouseMoved .connect( [&](double x, double y){ onMouseMoved(x, y); });
 		}
 
 		void deinitInput()
@@ -543,9 +579,13 @@ namespace
 	private: // action
 		AppAction handleState()
 		{
+			if (m_needGenerate)
+				m_frameChanged = false;
+
 			if (m_goBack)
 			{
 				m_goBack = false;
+
 				return AppAction{ActionType::Pop}; // we need to pop current state
 			}
 
@@ -556,73 +596,36 @@ namespace
 				doQuery(m_frameParams);
 			}
 
+			if (m_needGenerate)
+			{
+				m_needGenerate = false;
+
+				generatePoints();
+			}
+
 			return {}; // do nothing
 		}
 
-	private: // gui
+
+	private: // gui callbacks
 		void doGui()
 		{
 			m_gui->draw();
 		}
 
-		void generatePoints(u32 amount)
+		void onGeneratePoints(u32 amount)
 		{
 			m_pointsGenerated = amount;
 
-			auto [w, h] = m_window->framebufferSize();
-
-			// points
-			auto seed = std::random_device()();
-			std::minstd_rand0 base(seed);
-			std::uniform_real_distribution<Float> genX(0.02 * w, 0.98 * w);
-			std::uniform_real_distribution<Float> genY(0.02 * h, 0.98 * h);
-
-			m_points.clear();
-			for (u32 i = 0; i < amount; i++)
-				m_points.push_back(Vec2{genX(base), genY(base)});
-
-			// vertices
-			m_gfxPoints->resize(amount);
-			for (u32 i = 0; i < amount; i++)
-				m_gfxPoints->writeFront(m_points[i], i);
-			for (u32 i = 0; i < amount; i++)
-				m_gfxPoints->writeBack(m_points[i], i);
-			m_gfxPoints->flush();
-			m_gfxPoints->sync();
-
-			// colors
-			m_gfxColors->resize(amount);
-			for (u32 i = 0; i < amount; i++)
-				m_gfxColors->writeFront(m_color0, i);
-			for (u32 i = 0; i < amount; i++)
-				m_gfxColors->writeBack(m_color0, i);
-			m_gfxColors->flush();
-			m_gfxColors->sync();
-
-			// vertex array
-			m_vertexArray->primitives(m_pointsGenerated);
-
-			// quadtree & query
-			m_query->clear();
-
-			auto c = clock();
-			m_tree->clear();
-			std::cout << "c: " << (float)(clock() - c) / CLOCKS_PER_SEC << "ms" << std::endl;
-
-			c = clock();
-			for (u32 i = 0; i < m_pointsGenerated; i++)
-				m_tree->insert(i);
-			std::cout << "i: " << (float)(clock() - c) / CLOCKS_PER_SEC << "ms" << std::endl;
-
-			doQuery(m_frameParams);
+			m_needGenerate = true;
 		}
 
-		void returnBack()
+		void onReturnBack()
 		{
 			m_goBack = true;
 		}
 
-		void frameParamsChanged(f32 x0, f32 x1, f32 y0, f32 y1)
+		void onFrameParamsChanged(f32 x0, f32 x1, f32 y0, f32 y1)
 		{
 			m_frameParams[0] = x0;
 			m_frameParams[1] = x1;
@@ -633,8 +636,8 @@ namespace
 		}
 
 
-	private: // input
-		void mouseButton(int button, int action, int mods)
+	private: // input callbacks
+		void onMouseButton(int button, int action, int mods)
 		{
 			if (button == GLFW_MOUSE_BUTTON_LEFT)
 			{
@@ -655,7 +658,7 @@ namespace
 			}
 		}
 
-		void mouseMoved(double xpos, double ypos)
+		void onMouseMoved(double xpos, double ypos)
 		{
 			if (m_frameCaptured)
 			{
@@ -673,7 +676,7 @@ namespace
 		}
 
 
-	private: // operations
+	private: // utility
 		bool inFrame(double x, double y)
 		{
 			return m_frameParams[0] <= x && x <= m_frameParams[1] && m_frameParams[2] <= y && y <= m_frameParams[3];
@@ -697,6 +700,59 @@ namespace
 			return {{m_frameParams[0], m_frameParams[2]}, {m_frameParams[1], m_frameParams[3]}};
 		}
 
+
+	private: // generation
+		void generatePoints()
+		{
+			auto [w, h] = m_window->framebufferSize();
+
+			// points
+			auto seed = std::random_device()();
+			std::minstd_rand0 base(seed);
+			std::uniform_real_distribution<Float> genX(0.02 * w, 0.98 * w);
+			std::uniform_real_distribution<Float> genY(0.02 * h, 0.98 * h);
+
+			m_points.clear();
+			for (u32 i = 0; i < m_pointsGenerated; i++)
+				m_points.push_back(Vec2{genX(base), genY(base)});
+
+			// vertices
+			m_gfxPoints->resize(m_pointsGenerated);
+			for (u32 i = 0; i < m_pointsGenerated; i++)
+				m_gfxPoints->writeFront(m_points[i], i);
+			for (u32 i = 0; i < m_pointsGenerated; i++)
+				m_gfxPoints->writeBack(m_points[i], i);
+			m_gfxPoints->flush();
+			m_gfxPoints->sync();
+
+			// colors
+			m_gfxColors->resize(m_pointsGenerated);
+			for (u32 i = 0; i < m_pointsGenerated; i++)
+				m_gfxColors->writeFront(m_color0, i);
+			for (u32 i = 0; i < m_pointsGenerated; i++)
+				m_gfxColors->writeBack(m_color0, i);
+			m_gfxColors->flush();
+			m_gfxColors->sync();
+
+			// vertex array
+			m_vertexArray->primitives(m_pointsGenerated);
+
+			// quadtree & query
+			m_query->clear();
+
+			auto c = clock();
+			m_tree->clear();
+			std::cout << "c: " << (float)(clock() - c) / CLOCKS_PER_SEC << "ms" << std::endl;
+
+			c = clock();
+			for (u32 i = 0; i < m_pointsGenerated; i++)
+				m_tree->insert(i);
+			std::cout << "i: " << (float)(clock() - c) / CLOCKS_PER_SEC << "ms" << std::endl;
+
+			m_frameChanged = true;
+		}
+
+
 	private: // query
 		void doQuery(const vec4& params)
 		{
@@ -719,9 +775,10 @@ namespace
 			m_gfxColors->syncBack();
 
 			// data changed so we will need to swap next frame
-			m_needSwap = true;
+			m_needSwap   = true;
 			m_needRedraw = true;
 		}
+
 
 	private: // double-buffer control
 		void swapDBuffered()
@@ -736,6 +793,7 @@ namespace
 				m_query->swap();
 			}
 		}
+
 
 	private: // rendering
 		void render()
@@ -797,21 +855,16 @@ namespace
 		Lab1*       m_lab{};
 		MainWindow* m_window{};		
 
-		// gui & state
+		// gui
 		std::unique_ptr<Lab1Gui> m_gui;
 		sig::Connection m_goBackConn;
 		sig::Connection m_frameChangedConn;
 		sig::Connection m_generatePointsConn;
-		vec4 m_frameParams{};
-		u32  m_pointsGenerated{};
-
-		// input & state
+		
+		// input
 		sig::Connection m_mouseButtonConn;
 		sig::Connection m_mouseMovedConn;
-		vec4 m_framePrev{};
-		double m_capturedX{};
-		double m_capturedY{};
-
+		
 		// gfx
 		res::VertexArray m_dummyArray;
 		res::Framebuffer m_renderedPoints;
@@ -827,17 +880,26 @@ namespace
 		vec4 m_color2{0.0, 0.0, 1.0, 1.0};
 
 		// state
+		vec4 m_frameParams{};
+		vec4 m_framePrev{};
+
+		u32  m_pointsGenerated{};
+
+		double m_capturedX{};
+		double m_capturedY{};
+
 		bool m_frameCaptured{false};
 		bool m_frameChanged{false};
 
 		bool m_initialized{false};
 		bool m_needRedraw{false};
+		bool m_needGenerate{false};
 		bool m_needSwap{false};
 		bool m_paused{false};
 		bool m_goBack{false};
 
 		// points
-		std::vector<Vec2>         m_points;
+		std::vector<Vec2> m_points;
 		std::unique_ptr<DQuery<Handle>> m_query;
 		std::unique_ptr<QuadTree>       m_tree;
 	};

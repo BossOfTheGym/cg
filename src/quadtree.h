@@ -12,6 +12,11 @@
 #include <algorithm>
 #include <type_traits>
 
+#define DEBUG_QTREE
+
+#ifdef DEBUG_QTREE
+#include <iostream>
+#endif
 
 // TODO : this is very poor implementation it must be reworked
 namespace qtree
@@ -439,6 +444,32 @@ namespace qtree
 			}*/
 		}
 		
+		#ifdef DEBUG_QTREE
+	public:
+		void leafStat()
+		{
+			u32 count = leafStat(m_root, 0u);
+			std::cout << "total elems: " << count << std::endl;
+		}
+		
+	private:
+		u32 leafStat(Node* node, u32 depth)
+		{
+			u32 count = 0;
+			if (!node->leaf())
+			{
+				for (auto& child : node->children)
+					count += leafStat(child, depth + 1);
+			}
+			else
+			{
+				std::cout << "depth: " << depth << " count: " << node->data.size() << std::endl;
+
+				count = node->data.size();
+			}
+			return count;
+		}
+		#endif
 
 	protected:
 		Position m_position;
