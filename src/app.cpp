@@ -1,4 +1,5 @@
 #include "app.h"
+#include "primitive.h"
 #include "choose-lab.h"
 #include "lab-options.h"
 #include "main-window.h"
@@ -41,6 +42,9 @@ public:
 	{
 		if (m_initialized)
 			return;
+
+		// prmitives
+		prim::Init();
 
 		// glfw
 		bool stat = glfw::initialize();
