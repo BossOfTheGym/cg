@@ -44,7 +44,7 @@ public:
 			return;
 
 		// prmitives
-		prim::Init();
+		prim::init();
 
 		// glfw
 		bool stat = glfw::initialize();

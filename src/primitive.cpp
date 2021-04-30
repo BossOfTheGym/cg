@@ -1,9 +1,15 @@
 #include "primitive.h"
+#include "Predicates.h"
 
 #include <algorithm>
 
 namespace prim
 {
+	void init()
+	{
+		exact::Init();
+	}
+
 	// math
 	Float det4(Float a, Float b, Float c, Float d)
 	{
@@ -299,9 +305,20 @@ namespace prim
 		return Turn::Left;
 	}
 
-	bool leftTurn(const Vec2& v0, const Vec2& v1, const Vec2& v2, Float eps)
+	Turn turn_exact(const Vec2& v0, const Vec2& v1, const Vec2& v2)
 	{
-		return turn(v0, v1, v2, eps) == Turn::Left;
+		auto vv0 = v0;
+		auto vv1 = v1;
+		auto vv2 = v2;
+		switch(exact::orient2d(value_ptr(vv0), value_ptr(vv1), value_ptr(vv2)))
+		{
+			case exact::left:
+				return Turn::Left;
+			case exact::right:
+				return Turn::Right;
+			default:
+				return Turn::Straight;		
+		}
 	}
 
 	Orient circleOrient(const Vec2& v0, const Vec2& v1, const Vec2& v2, const Vec2& v3, Float eps)
@@ -324,5 +341,22 @@ namespace prim
 			return Orient::In;
 
 		return Orient::Out;
+	}
+
+	Orient circleOrient_exact(const Vec2& v0, const Vec2& v1, const Vec2& v2, const Vec2& v3)
+	{
+		auto vv0 = v0;
+		auto vv1 = v1;
+		auto vv2 = v2;
+		auto vv3 = v3;
+		switch(exact::incircle(value_ptr(vv0), value_ptr(vv1), value_ptr(vv2), value_ptr(vv3)))
+		{
+			case exact::inside:
+				return Orient::In;
+			case exact::outside:
+				return Orient::Out;
+			default:
+				return Orient::On;
+		}
 	}
 }

@@ -1,7 +1,6 @@
 #pragma once
 
 #include "core.h"
-#include "Predicates.h"
 
 #include <cmath>
 
@@ -12,8 +11,8 @@ namespace prim
 {
 	// points v0, v1, v2 are listed in counterclockwise order
 	using namespace glm;
-	// exact(almost) predicates
-	using namespace exact;
+
+	void init();
 
 	using Float = f64;
 
@@ -132,7 +131,9 @@ namespace prim
 
 	Turn turn(const Vec2& v0, const Vec2& v1, const Vec2& v2, Float eps = default_eps);
 
-	bool leftTurn(const Vec2& v0, const Vec2& v1, const Vec2& v2, Float eps = default_eps);
+	Turn turn_exact(const Vec2& v0, const Vec2& v1, const Vec2& v2);
 
 	Orient circleOrient(const Vec2& v0, const Vec2& v1, const Vec2& v2, const Vec2& v3, Float eps = default_eps);
+
+	Orient circleOrient_exact(const Vec2& v0, const Vec2& v1, const Vec2& v2, const Vec2& v3);
 }
