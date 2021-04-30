@@ -10,8 +10,7 @@
 #include <utility>
 #include <algorithm>
 
-//#define DEBUG_SEGMENTS
-
+#define DEBUG_SEGMENTS
 #ifdef DEBUG_SEGMENTS
 #include <iostream>
 #endif
@@ -48,25 +47,6 @@ namespace sect
 			if (l.v0.x < l.v1.x)
 				return l;
 			return {l.v1, l.v0};
-		}
-
-		// NOTE : ctan, minus required because we sweep from top to bottom
-		// NOTE : no horizontal segments here!
-		Float sweep_polar_y(const Vec2& point, Float eps = default_eps)
-		{
-			assert(std::abs(point.y) > eps);
-
-			return -point.x / point.y;
-		}
-
-		// NOTE : no horizontal segments here!
-		Float sweep_polar_y(const Line2& line, Float eps = default_eps)
-		{
-			assert(!horiz(line, eps));
-
-			auto [v0, v1] = reorder_line(line, eps);
-
-			return sweep_polar_y(v1 - v0);
 		}
 	}
 
@@ -388,25 +368,7 @@ namespace sect
 				#endif
 			}
 
-			if (intersections != 0) // not only lower-ends were in intersection
-			{
-				reverseIntersectionOrder(event);
-
-				#ifdef DEBUG_SEGMENTS
-				std::cout << "int rev ";
-				m_sweepLine.debug();
-				#endif
-			}
-
-			if (!event->upperEnd.empty())
-			{
-				insertUpperEndSegments(event);
-
-				#ifdef DEBUG_SEGMENTS
-				std::cout << "ue add ";
-				m_sweepLine.debug();
-				#endif
-			}
+			insertInterUpper(event, intersections);
 
 			findNewEventPoints(event, intersections);
 
@@ -455,140 +417,47 @@ namespace sect
 				m_sweepLine.erase(it);
 		}
 
-		// NOTE : checked in handleEventPoint
-		void reverseIntersectionOrder(PointEventIt event)
+		void extractIntersecting(PointEventIt event)
 		{
-			// TODO : check possible impossible
-			// TODO : compress ugly if statements
-
-			// NOTE : we extract and then we reinsert all segments in order not to spoil 
-			// lower-end iterators that had already been inserted previously
-			extractIntersecting(event);
-
-			// reinsert back
-			auto e0 = m_extractBuffer.begin();
-			auto e1 = m_extractBuffer.end();
-			auto insertPos = m_sweepLine.lowerBound(event->point.x);
-			if (m_sweepLine.empty())
-			{
-				auto [inserted, _] = m_sweepLine.insert(std::move(*e0++));
-				while (e0 != e1)
-					inserted = m_sweepLine.insertAfter(inserted, std::move(*e0++));
-			}
-			else
-			{
-				if (insertPos != m_sweepLine.begin())
-				{
-					--insertPos;
-					while (e0 != e1)
-						insertPos = m_sweepLine.insertAfter(insertPos, std::move(*e0++));
-				}
-				else
-				{
-					while (e0 != e1)
-						m_sweepLine.insertBefore(insertPos, std::move(*e0++));
-				}
-			}
-		}
-
-		// NOTE : checked in handleEventPoint
-		void insertUpperEndSegments(PointEventIt event)
-		{
-			// TODO : check possible impossible
-			// TODO : compress ugly if statements
-
-			// sort with priority to polar angle
-			auto pred = [&] (const auto& l0, const auto& l1)
-			{
-				auto p0 = sweep_polar_y(m_sampler(l0), m_eps);
-				auto p1 = sweep_polar_y(m_sampler(l1), m_eps);
-
-				return std::abs(p0 - p1) > m_eps && p0 < p1;
-			};
-
-			auto h0 = moveBackHorizUpper(event); // first horizontal
-			auto h1 = event->upperEnd.end();     // last horizontal
-			auto u0 = event->upperEnd.begin();   // first normal
-			std::sort(u0, h0, pred);
-
-			// iterators
 			auto l0 = m_sweepLine.lowerBound(event->point.x);
 			auto l1 = m_sweepLine.upperBound(event->point.x);
-			while (l0 != l1 && !horiz(m_sampler(*l0)) && u0 != h0) // insert until can or horizontal segment is met
-			{
-				auto pl = sweep_polar_y(m_sampler(*l0), m_eps);
-				auto pu = sweep_polar_y(m_sampler(*u0), m_eps);
 
-				if (pl < pu)
-				{
-					++l0;
-				}
-				else // pl > pu
-				{
-					auto inserted = m_sweepLine.insertBefore(l0, *u0++);
-					insertLowerEndEvent(inserted);
-				}
-			}
+			// extract and reverse
+			m_extractBuffer.clear();
+			while (l0 != l1)
+				m_extractBuffer.push_back(m_sweepLine.extract(l0++));
+			std::reverse(m_extractBuffer.begin(), m_extractBuffer.end());
+		}
 
-			// check carefully whether we can insert after them
-			// all remaining segments have bigger sweep_polar_y so we insert before l1 that is another point
-			if (l0 == l1)
+		void insertInterUpper(PointEventIt event, u32 intersections)
+		{
+			auto pred = [&] (const auto& l0, const auto& l1)
 			{
-				if (m_sweepLine.empty())
-				{
-					auto [inserted, _] = m_sweepLine.insert(*u0++);
-					insertLowerEndEvent(inserted);
-					while (u0 != h1) // rest + horizontal
-					{
-						inserted = m_sweepLine.insertAfter(inserted, *u0++);
-						insertLowerEndEvent(inserted);
-					}
-				}
+				auto [l00, l01] = reorder_line(m_sampler(l0));
+				auto [l10, l11] = reorder_line(m_sampler(l1));
+
+				return turn(event->point, l01, l11) == Turn::Left;
+			};
+
+			std::sort(event->upperEnd.begin(), event->upperEnd.end(), pred);
+
+			extractIntersecting(event);
+
+			auto e0 = m_extractBuffer.begin();
+			auto e1 = m_extractBuffer.end();
+			auto u0 = event->upperEnd.begin();
+			auto u1 = event->upperEnd.end();
+			while(e0 != e1 && u0 != u1)
+			{
+				if (pred(**e0, *u0))
+					m_sweepLine.insert(std::move(*e0++));
 				else
-				{
-					if (l1 == m_sweepLine.end())
-					{
-						auto inserted = --l1;
-						while (u0 != h1) // rest + horizontal
-						{
-							inserted = m_sweepLine.insertAfter(inserted, *u0++);
-							insertLowerEndEvent(inserted);
-						}
-					}
-					else
-					{
-						while (u0 != h1) // rest + horizontal
-						{
-							auto inserted = m_sweepLine.insertBefore(l1, *u0++);
-							insertLowerEndEvent(inserted);
-						}
-					}
-				}
-
-				return;
+					m_sweepLine.insert(*u0++);
 			}
-
-			// there were interescting lines and cycle broke due to horizontal segment in sweep line
-			if (horiz(m_sampler(*l0)))
-			{
-				while (u0 != h1) // rest + horizontal
-				{
-					auto inserted = m_sweepLine.insertBefore(l0, *u0++);
-					insertLowerEndEvent(inserted);
-				}
-
-				return;
-			}
-
-			// u0 == h0, all nonhorizontal segments were inserted
-			// see NOTE, we can simply insert after all segments because order of horizontal segments arbitrarly 
-			// (but they all inserted after normal)
-			auto inserted = --l1;
-			while (u0 != h1)
-			{
-				inserted = m_sweepLine.insertAfter(inserted, *u0++);
-				insertLowerEndEvent(inserted);
-			}
+			while (e0 != e1)
+				m_sweepLine.insert(std::move(*e0++));
+			while (u0 != u1)
+				m_sweepLine.insert(*u0++);
 		}
 
 		void findNewEventPoints(PointEventIt event, u32 intersections)
@@ -602,16 +471,16 @@ namespace sect
 			auto l1 = m_sweepLine.upperBound(event->point.x);
 			if (intersections + event->upperEnd.size() == 0) // only lower-end lines were in event
 			{
-				if (l0 == beg || l0 == end)
-					return;
-
-				findNewEvent(l0 - 1, l0, event);
+				if (l0 != beg && l0 != end)
+					findNewEvent(l0 - 1, l0, event);
 			}
 			else
 			{
+				assert(l0 != end);
 				if (l0 != beg)
 					findNewEvent(l0 - 1, l0, event);
 
+				assert(l1 - 1 != end);
 				if (l1 != end)
 					findNewEvent(l1 - 1, l1, event);
 			}
@@ -625,39 +494,10 @@ namespace sect
 			Vec2 i0;
 			Vec2 i1;
 			auto status = intersectSegSeg(m_sampler(*l0), m_sampler(*l1), i0, i1); 
-			if (status == Status::Intersection)
-			{
-				if (m_eventQueue.preceds(event, i0))
-					insertIntersectionEvent(i0);
-			}
+			if (status == Status::Intersection && m_eventQueue.preceds(event, i0))
+				insertIntersectionEvent(i0);
 		}
 
-
-		void extractIntersecting(PointEventIt event)
-		{
-			auto l0 = m_sweepLine.lowerBound(event->point.x);
-			auto l1 = m_sweepLine.upperBound(event->point.x);
-
-			// extract and reverse
-			m_extractBuffer.clear();
-			while (l0 != l1)
-				m_extractBuffer.push_back(m_sweepLine.extract(l0++));
-			std::reverse(m_extractBuffer.begin(), m_extractBuffer.end());
-		}
-
-		auto moveBackHorizUpper(PointEventIt event) -> decltype(event->upperEnd.begin())
-		{
-			auto u0 = event->upperEnd.begin();
-			auto u1 = event->upperEnd.end();
-			while (u0 != u1)
-			{
-				if (horiz(m_sampler(*u0)))
-					std::iter_swap(u0, --u1);
-				else
-					++u0;
-			}
-			return u1;
-		}
 
 	private:
 		ExtractBuffer         m_extractBuffer;
