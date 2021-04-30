@@ -1,6 +1,7 @@
 #pragma once
 
 #include "core.h"
+#include "Predicates.h"
 
 #include <cmath>
 
@@ -11,6 +12,8 @@ namespace prim
 {
 	// points v0, v1, v2 are listed in counterclockwise order
 	using namespace glm;
+	// exact(almost) predicates
+	using namespace exact;
 
 	using Float = f64;
 

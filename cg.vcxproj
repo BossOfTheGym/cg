@@ -184,6 +184,7 @@
     <ClInclude Include="src\main-window.h" />
     <ClInclude Include="src\pool_storage.h" />
     <ClInclude Include="src\pqueue.h" />
+    <ClInclude Include="src\Predicates.h" />
     <ClInclude Include="src\primitive.h" />
     <ClInclude Include="src\primitive_test.h" />
     <ClInclude Include="src\prog-color-prim.h" />
@@ -232,6 +233,7 @@
     <ClCompile Include="src\lab6.cpp" />
     <ClCompile Include="src\main-window.cpp" />
     <ClCompile Include="src\main.cpp" />
+    <ClCompile Include="src\Predicates.cpp" />
     <ClCompile Include="src\primitive.cpp" />
     <ClCompile Include="src\primitive_test.cpp" />
     <ClCompile Include="src\prog-color-prim.cpp" />

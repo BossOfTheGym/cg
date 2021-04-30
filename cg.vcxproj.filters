@@ -234,6 +234,9 @@
     <ClInclude Include="src\lab6-gui.h">
       <Filter>main\gui</Filter>
     </ClInclude>
+    <ClInclude Include="src\Predicates.h">
+      <Filter>primitive</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="src\trb_test.cpp">
@@ -352,6 +355,9 @@
     </ClCompile>
     <ClCompile Include="src\lab6-gui.cpp">
       <Filter>main\gui</Filter>
+    </ClCompile>
+    <ClCompile Include="src\Predicates.cpp">
+      <Filter>primitive</Filter>
     </ClCompile>
   </ItemGroup>
 </Project>
