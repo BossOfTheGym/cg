@@ -239,10 +239,6 @@ namespace
 		u32 m_backOffset{};
 	};
 
-	using GfxDBuffer2 = GfxDBuffer<vec2>;
-	using GfxDBuffer3 = GfxDBuffer<vec3>;
-	using GfxDBuffer4 = GfxDBuffer<vec4>;
-
 	class DVertexArray
 	{
 	public:
@@ -290,6 +286,32 @@ namespace
 		u32 m_primitives{};
 	};
 
+	using GfxDBuffer2 = GfxDBuffer<vec2>;
+	using GfxDBuffer3 = GfxDBuffer<vec3>;
+	using GfxDBuffer4 = GfxDBuffer<vec4>;
+
+
+	template<class vec1, class vec2, class size>
+	void store_vec_data(vec1* ptr, vec2* data, size count)
+	{
+		for (size i = 0; i < count; i++)
+			ptr[i] = data[i];
+	}
+
+	template<class vec1, class vec2, class size>
+	void store_vec_value(vec1* ptr, vec2 value, size count)
+	{
+		for (size i = 0; i < count; i++)
+			ptr[i] = value;
+	}
+
+	template<class vec1, class vec2, class index>
+	void store_vec_value(vec1* ptr, vec2 value, index* indices, index indexCount)
+	{
+		for (index i = 0; i < indexCount; i++)
+			ptr[indices[i]] = value;
+	}
+
 	template<class Handle>
 	class DQuery
 	{
@@ -329,27 +351,6 @@ namespace
 		Query m_back;
 		Query m_front;
 	};
-
-	template<class vec, class size>
-	void store_vec_data(vec* ptr, vec* data, size count)
-	{
-		for (size i = 0; i < count; i++)
-			ptr[i] = data[i];
-	}
-
-	template<class vec, class size>
-	void store_vec_value(vec* ptr, vec value, size count)
-	{
-		for (size i = 0; i < count; i++)
-			ptr[i] = value;
-	}
-
-	template<class vec, class index>
-	void store_vec_value(vec* ptr, vec value, index* indices, index indexCount)
-	{
-		for (index i = 0; i < indexCount; i++)
-			ptr[indices[i]] = value;
-	}
 
 
 	class Lab1Impl
@@ -403,9 +404,8 @@ namespace
 			initInput();
 			initGfx();
 			initPoints();
-
-			m_paused = false;
-
+			initState();
+			
 			m_initialized = true;
 
 			return true;
@@ -420,6 +420,7 @@ namespace
 			deinitInput();
 			deinitGui();
 			deinitPoints();
+			deinitState();
 
 			m_paused = true;
 
@@ -507,7 +508,7 @@ namespace
 			assert(m_progRect != nullptr);
 
 			bool stat = res::try_create_texture(m_attachment); assert(stat);
-			glTextureStorage2D(m_attachment.id, 1, GL_RGBA32F, w, h);
+			glTextureStorage2D(m_attachment.id, 1, GL_RGBA8, w, h);
 			glTextureParameteri(m_attachment.id, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
 			glTextureParameteri(m_attachment.id, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
 			glTextureParameteri(m_attachment.id, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
@@ -520,7 +521,7 @@ namespace
 
 			stat = res::try_create_vertex_array(m_dummyArray); assert(stat);
 
-			m_vertexArray.reset(new DVertexArray(0));
+			m_vertexArray.reset(new DVertexArray(0u));
 			assert(m_vertexArray != nullptr);
 
 			auto arrayId = m_vertexArray->id();
@@ -535,9 +536,6 @@ namespace
 			glVertexArrayBindingDivisor(arrayId, 1, 0);
 			glVertexArrayAttribFormat(arrayId, 1, 4, GL_FLOAT, GL_FALSE, 0);
 			glVertexArrayAttribBinding(arrayId, 1, 1);
-
-			m_needSwap = false;
-			m_needRedraw = true;
 		}
 
 		void deinitGfx()
@@ -554,9 +552,6 @@ namespace
 
 			m_gfxColors.reset();
 			m_gfxPoints.reset();
-
-			m_needSwap = false;
-			m_needRedraw = false;
 		}
 
 		void initPoints()
@@ -575,6 +570,17 @@ namespace
 			m_points.clear();
 		}
 
+		void initState()
+		{
+			resetState();
+
+			m_needRedraw = true;
+		}
+
+		void deinitState()
+		{
+			resetState();
+		}
 
 	private: // action
 		AppAction handleState()
@@ -700,6 +706,19 @@ namespace
 			return {{m_frameParams[0], m_frameParams[2]}, {m_frameParams[1], m_frameParams[3]}};
 		}
 
+		void resetState()
+		{
+			m_frameCaptured = false;
+			m_frameChanged = false;
+
+			m_initialized = false;
+			m_needRedraw = false;
+			m_needGenerate = false;
+			m_needSwap = false;
+			m_paused = false;
+			m_goBack = false;
+		}
+
 
 	private: // generation
 		void generatePoints()
@@ -718,19 +737,15 @@ namespace
 
 			// vertices
 			m_gfxPoints->resize(m_pointsGenerated);
-			for (u32 i = 0; i < m_pointsGenerated; i++)
-				m_gfxPoints->writeFront(m_points[i], i);
-			for (u32 i = 0; i < m_pointsGenerated; i++)
-				m_gfxPoints->writeBack(m_points[i], i);
+			store_vec_data(m_gfxPoints->frontPtr(), m_points.data(), m_pointsGenerated);
+			store_vec_data(m_gfxPoints->backPtr() , m_points.data(), m_pointsGenerated);
 			m_gfxPoints->flush();
 			m_gfxPoints->sync();
 
 			// colors
 			m_gfxColors->resize(m_pointsGenerated);
-			for (u32 i = 0; i < m_pointsGenerated; i++)
-				m_gfxColors->writeFront(m_color0, i);
-			for (u32 i = 0; i < m_pointsGenerated; i++)
-				m_gfxColors->writeBack(m_color0, i);
+			store_vec_value(m_gfxColors->frontPtr(), m_color0, m_pointsGenerated);
+			store_vec_value(m_gfxColors->backPtr() , m_color0, m_pointsGenerated);
 			m_gfxColors->flush();
 			m_gfxColors->sync();
 
@@ -739,15 +754,10 @@ namespace
 
 			// quadtree & query
 			m_query->clear();
-
-			auto c = clock();
 			m_tree->clear();
-			std::cout << "c: " << (float)(clock() - c) / CLOCKS_PER_SEC << "ms" << std::endl;
 
-			c = clock();
 			for (u32 i = 0; i < m_pointsGenerated; i++)
 				m_tree->insert(i);
-			std::cout << "i: " << (float)(clock() - c) / CLOCKS_PER_SEC << "ms" << std::endl;
 
 			m_frameChanged = true;
 		}
@@ -758,18 +768,16 @@ namespace
 		{
 			m_gfxColors->waitSyncBack();
 
+			auto& query = m_query->back();
+
 			// reset color
-			for (auto& handle : m_query->back())
-				m_gfxColors->writeBack(m_color0, handle);
+			store_vec_value(m_gfxColors->backPtr(), m_color0, query.data(), (Handle)query.size());
 
 			// query points
-			auto c = clock();
-			m_tree->query(frameToAABB(), m_query->back());
-			std::cout << "q: " << (float)(clock() - c) / CLOCKS_PER_SEC << "ms" << std::endl;
+			m_tree->query(frameToAABB(), query);
 
 			// set new color
-			for (auto& handle : m_query->back())
-				m_gfxColors->writeBack(m_color1, handle);
+			store_vec_value(m_gfxColors->backPtr(), m_color1, query.data(), (Handle)query.size());
 
 			m_gfxColors->flushBack();
 			m_gfxColors->syncBack();
@@ -854,6 +862,7 @@ namespace
 		// app state
 		Lab1*       m_lab{};
 		MainWindow* m_window{};		
+		bool m_initialized{false};
 
 		// gui
 		std::unique_ptr<Lab1Gui> m_gui;
@@ -883,7 +892,7 @@ namespace
 		vec4 m_frameParams{};
 		vec4 m_framePrev{};
 
-		u32  m_pointsGenerated{};
+		u32 m_pointsGenerated{};
 
 		double m_capturedX{};
 		double m_capturedY{};
@@ -891,9 +900,8 @@ namespace
 		bool m_frameCaptured{false};
 		bool m_frameChanged{false};
 
-		bool m_initialized{false};
-		bool m_needRedraw{false};
 		bool m_needGenerate{false};
+		bool m_needRedraw{false};
 		bool m_needSwap{false};
 		bool m_paused{false};
 		bool m_goBack{false};
