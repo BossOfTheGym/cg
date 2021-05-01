@@ -563,24 +563,29 @@ namespace
 			auto [w, h] = m_window->framebufferSize();
 
 			// segments
-			auto seed = 182605794;m_seed();
-			std::cout << "seed: " << seed << std::endl;
+			auto seed = m_seed();
+			auto coef = std::max(std::sqrt(m_segmentsToGen), 10.0);
+
+			auto maxDx = 1.5 * w / coef;
+			auto maxDy = 1.5 * h / coef;
 
 			std::minstd_rand0 base(seed);
-			std::uniform_int_distribution<i32> genX(0.1 * w, 0.9 * w); // x
-			std::uniform_int_distribution<i32> genY(0.1 * h, 0.9 * h); // y
+			std::uniform_int_distribution<i32> genX(maxDx, w - maxDx); // x
+			std::uniform_int_distribution<i32> genY(maxDy, h - maxDy); // y
 			std::uniform_real_distribution<Float> genA(0.0, 2 * pi); // angle
-			std::uniform_real_distribution<Float> genD(0.05 * w, 0.1 * w);  // dist
+			std::uniform_real_distribution<Float> genDx(0.5 * maxDx, maxDx); // dist
+			std::uniform_real_distribution<Float> genDy(0.5 * maxDy, maxDy); // dist
 
 			m_segments.clear();
 			for (u32 i = 0; i < m_segmentsToGen; i++)
 			{
 				auto x0 = genX(base);
 				auto y0 = genY(base);
-				auto a = genA(base);
-				auto d = genD(base);
-				auto x1 = (i32)(d * std::cos(a)) + x0;
-				auto y1 = (i32)(d * std::sin(a)) + y0;
+				auto a  = genA(base);
+				auto dx = genDx(base);
+				auto dy = genDy(base);
+				auto x1 = (i32)(dx * std::cos(a) + x0);
+				auto y1 = (i32)(dy * std::sin(a) + y0);
 				
 				m_segments.push_back({{x0, y0}, {x1, y1}});
 			}
@@ -633,9 +638,6 @@ namespace
 			};
 
 			auto intersections = sect::section_n_lines(m_segmentHandles, sampler);
-			std::cout << "intersections:" << std::endl;
-			for (auto& [point, lines] : intersections)
-				std::cout << point.x << " " << point.y << std::endl;
 
 			m_gfxColors->waitSyncBack();
 
