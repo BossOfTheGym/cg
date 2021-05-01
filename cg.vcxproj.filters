@@ -237,6 +237,9 @@
     <ClInclude Include="src\Predicates.h">
       <Filter>primitive</Filter>
     </ClInclude>
+    <ClInclude Include="src\hull_test.h">
+      <Filter>tests</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="src\trb_test.cpp">
@@ -358,6 +361,9 @@
     </ClCompile>
     <ClCompile Include="src\Predicates.cpp">
       <Filter>primitive</Filter>
+    </ClCompile>
+    <ClCompile Include="src\hull_test.cpp">
+      <Filter>tests</Filter>
     </ClCompile>
   </ItemGroup>
 </Project>
