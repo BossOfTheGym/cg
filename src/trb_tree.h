@@ -55,7 +55,11 @@ namespace trb
         using Compare   = typename tree_traits_t::Compare;
         using Allocator = typename tree_traits_t::Allocator;
 
-        // almost corresponds to standart (even closer)
+        // TODO : almost corresponds to standart (even closer)
+        // TODO : inc & dec operations, if node is nil then it is not affected so
+        // 1) nil + any_num = nil
+        // 2) nil - any_num = nil
+        // TODO : I must change this behavior
         class Iterator
         {
             friend class Tree;
