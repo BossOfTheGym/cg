@@ -65,6 +65,7 @@ namespace sect
 	template<class handle_t>
 	using Intersections = std::vector<Intersection<handle_t>>;
 
+	// TODO : O(n^2) memory consumption removal, see https://ru.wikipedia.org/wiki/Алгоритм_Бентли_—_Оттманна
 	// NOTE : sweeping from up to down (from upper y to lower), from left to right (from left x to right)
 	// NOTE : overlapping must processed correctly but rather stangely: after new overlapping segment is found new intersection will be reported
 	// NOTE : segments are stored from left to right in what order they intersect the sweep line
@@ -479,6 +480,7 @@ namespace sect
 		void findNewEventPoints(u32 intersections)
 		{
 			// TODO : check possible impossible
+			// TODO : O(n^2) memory consumption removal, see https://ru.wikipedia.org/wiki/Алгоритм_Бентли_—_Оттманна
 
 			auto beg = m_sweepLine.begin();
 			auto end = m_sweepLine.end();
