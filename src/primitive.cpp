@@ -10,6 +10,16 @@ namespace prim
 		exact::Init();
 	}
 
+
+	// primitives
+	Triangle2 Triangle2::construct(const Vec2& v0, const Vec2& v1, const Vec2& v2)
+	{
+		if (turn(v0, v1, v2) == Turn::Left)
+			return {v0, v1, v2};
+		return {v0, v2, v1};
+	}
+
+
 	// math
 	Float det4(Float a, Float b, Float c, Float d)
 	{
@@ -26,11 +36,6 @@ namespace prim
 		return v0.x * v1.y - v0.y * v1.x;
 	}
 
-	Float len(const Vec2& v)
-	{
-		return std::sqrt(dot2(v));
-	}
-
 
 	// orientation
 	bool inAABB(const AABB2& aabb, const Vec2& vec)
@@ -44,6 +49,13 @@ namespace prim
 		return cross_z(tri.v1 - tri.v0, v - tri.v1) >= 0
 			&& cross_z(tri.v2 - tri.v1, v - tri.v2) >= 0
 			&& cross_z(tri.v0 - tri.v2, v - tri.v0) >= 0;
+	}
+
+	bool inTriangle(const Vec2& v0, const Vec2& v1, const Vec2& v2, const Vec2& v)
+	{
+		return cross_z(v1 - v0, v - v1) >= 0
+			&& cross_z(v2 - v1, v - v2) >= 0
+			&& cross_z(v0 - v2, v - v0) >= 0;
 	}
 
 	bool overlaps(const AABB2& a, const AABB2& b)
@@ -330,13 +342,13 @@ namespace prim
 		Float v2x = v0.x, v2y = v0.y, v2z = v2.x * v2.x + v2.y * v2.y;
 		Float v3x = v0.x, v3y = v0.y, v3z = v3.x * v3.x + v3.y * v3.y;
 
-		Float det = v0x * (v1y * v2z - v1z * v2y) - v0y * (v1x * v2z - v1z * v2x) + v0z * (v1x * v2y - v1y * v2x);
+		Float det = v0x * (v1y * v2z - v1z * v2y) 
+			      - v0y * (v1x * v2z - v1z * v2x) 
+				  + v0z * (v1x * v2y - v1y * v2x);
 		if (std::abs(det) <= eps)
 			return Orient::On;
-
 		if (det > 0.0)
 			return Orient::In;
-
 		return Orient::Out;
 	}
 

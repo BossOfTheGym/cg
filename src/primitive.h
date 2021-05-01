@@ -12,6 +12,7 @@ namespace prim
 	// points v0, v1, v2 are listed in counterclockwise order
 	using namespace glm;
 
+
 	void init();
 
 	using Float = f64;
@@ -33,6 +34,8 @@ namespace prim
 
 	struct Triangle2
 	{
+		static Triangle2 construct(const Vec2& v0, const Vec2& v1, const Vec2& v2);
+
 		Vec2 v0{};
 		Vec2 v1{};
 		Vec2 v2{};
@@ -64,14 +67,14 @@ namespace prim
 	Float dot2(const Vec2& v0);
 
 	Float cross_z(const Vec2& v0, const Vec2& v1);
-
-	Float len(const Vec2& v);
 	
 
 	// orientation
 	bool inAABB(const AABB2& aabb, const Vec2& vec);
 
 	bool inTriangle(const Triangle2& tri, const Vec2& vec);
+
+	bool inTriangle(const Vec2& v0, const Vec2& v1, const Vec2& v2, const Vec2& v);
 
 	bool overlaps(const AABB2& a, const AABB2& b);
 
@@ -127,7 +130,6 @@ namespace prim
 		On = 0,
 		Out = 1,
 	};
-
 
 	Turn turn(const Vec2& v0, const Vec2& v1, const Vec2& v2, Float eps = default_eps);
 
