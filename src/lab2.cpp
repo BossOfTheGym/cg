@@ -345,8 +345,8 @@ namespace
 		AppAction execute()
 		{
 			doGui();
-			render();
 			swapDBuffered();
+			render();
 			return handleState();
 		}
 
@@ -462,6 +462,7 @@ namespace
 		void initGen()
 		{
 			m_seed.seed(1); // std::random_device()()
+			//m_seed.seed(1105902161);
 		}
 
 		void deinitGen()
@@ -562,12 +563,12 @@ namespace
 			auto [w, h] = m_window->framebufferSize();
 
 			// segments
-			auto seed = m_seed();
+			auto seed = 182605794;m_seed();
 			std::cout << "seed: " << seed << std::endl;
 
 			std::minstd_rand0 base(seed);
-			std::uniform_real_distribution<Float> genX(0.1 * w, 0.9 * w); // x
-			std::uniform_real_distribution<Float> genY(0.1 * h, 0.9 * h); // y
+			std::uniform_int_distribution<i32> genX(0.1 * w, 0.9 * w); // x
+			std::uniform_int_distribution<i32> genY(0.1 * h, 0.9 * h); // y
 			std::uniform_real_distribution<Float> genA(0.0, 2 * pi); // angle
 			std::uniform_real_distribution<Float> genD(0.05 * w, 0.1 * w);  // dist
 
@@ -578,8 +579,8 @@ namespace
 				auto y0 = genY(base);
 				auto a = genA(base);
 				auto d = genD(base);
-				auto x1 = d * std::cos(a) + x0;
-				auto y1 = d * std::sin(a) + y0;
+				auto x1 = (i32)(d * std::cos(a)) + x0;
+				auto y1 = (i32)(d * std::sin(a)) + y0;
 				
 				m_segments.push_back({{x0, y0}, {x1, y1}});
 			}
@@ -615,7 +616,7 @@ namespace
 				colPtr[i] = m_color0;
 			colPtr = m_gfxColors->backPtr();
 			for (u32 i = 0 ; i < 2 * m_segmentsToGen; i++)
-				colPtr[i] = m_color1;
+				colPtr[i] = m_color0;
 			m_gfxColors->flush();
 			m_gfxColors->sync();
 
@@ -642,13 +643,18 @@ namespace
 			for (u32 i = 0; i < m_gfxColors->size(); i++)
 				colorPtr[i] = m_color0;
 			for (auto& [point, lines] : intersections)
+			{
 				for (auto& handle : lines)
-					colorPtr[handle] = m_color1;
+				{
+					colorPtr[2 * handle    ] = m_color1;
+					colorPtr[2 * handle + 1] = m_color1;
+				}
+			}
 
 			m_gfxColors->flushBack();
 			m_gfxColors->syncBack();
 
-			m_gui->setIntersectionInfo(0u);
+			m_gui->setIntersectionInfo(intersections.size());
 
 			m_needSwap   = true;
 			m_needRedraw = true;

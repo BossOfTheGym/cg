@@ -53,7 +53,7 @@ namespace prim
 
 	// abs() <= eps => equal
 	// abs() > eps => not equal
-	static constexpr Float default_eps = 1e-15;
+	static constexpr Float default_eps = 1e-10;
 
 	// math
 	// computes 2x2 determinant (ad - bc)

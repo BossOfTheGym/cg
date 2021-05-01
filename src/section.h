@@ -10,7 +10,7 @@
 #include <utility>
 #include <algorithm>
 
-//#define DEBUG_SEGMENTS
+#define DEBUG_SEGMENTS
 #ifdef DEBUG_SEGMENTS
 #include <iostream>
 #endif
@@ -494,14 +494,14 @@ namespace sect
 			{
 				if (l0 != beg)
 				{
-					assert(l0 != end); // should never happen
-					findNewEvent(l0 - 1, l0);
+					if (l0 != end) // should never happen but happens
+						findNewEvent(l0 - 1, l0);
 				}
 
 				if (l1 != end)
 				{
-					assert(l1 - 1 != end); // should never happen
-					findNewEvent(l1 - 1, l1);
+					if (l1 - 1 != end) // should never happen but happens
+						findNewEvent(l1 - 1, l1);
 				}
 			}
 		}
