@@ -1,5 +1,8 @@
 #pragma once
 
+// TODO : bad design, decide what to do with size
+// some labs already depend on it and I don't really want to change it
+
 template<class vec_t> // vec2, vec3, vec4
 class GfxBuffer
 {
@@ -74,6 +77,47 @@ private:
 };
 
 template<class vec_t> // vec2, vec3, vec4
+class GfxSBuffer : public GfxBuffer<vec_t>
+{
+public:
+	using Base = GfxBuffer<vec_t>;
+	using vec  = vec_t;
+
+public:
+	GfxSBuffer(u32 initCapacity, u32 wait = 50u) : Base(initCapacity), m_wait(wait)
+	{}
+
+	~GfxSBuffer()
+	{}
+
+public:
+	void waitSync()
+	{
+		if (m_sync.valid())
+		{
+			while (true)
+			{
+				GLenum result = glClientWaitSync(m_sync.id, GL_SYNC_FLUSH_COMMANDS_BIT, m_wait);
+				if (result == GL_ALREADY_SIGNALED || result == GL_CONDITION_SATISFIED)
+					break;
+			}
+			m_sync.del();
+		}
+	}
+
+	void sync()
+	{
+		waitSync();
+
+		m_sync = res::create_fence_sync();
+	}
+
+private:
+	res::FenceSync m_sync{};
+	u32 m_wait{};
+};
+
+template<class vec_t> // vec2, vec3, vec4
 class GfxDBuffer : public GfxBuffer<vec_t>
 {
 public:
@@ -81,47 +125,13 @@ public:
 	using vec  = vec_t;
 
 public:
-	GfxDBuffer(u32 initCapacity, u32 wait = 50u) 
-		: Base(2 * initCapacity)
-		, m_wait(wait)
-		, m_size(initCapacity)
+	GfxDBuffer(u32 initCapacity) : Base(2 * initCapacity), m_size(initCapacity)
 	{}
 
+	~GfxDBuffer()
+	{}
 
 public:
-	void waitSyncFront()
-	{
-		waitSync(m_syncs[m_front]);
-	}
-
-	void waitSyncBack()
-	{
-		waitSync(m_syncs[m_front ^ 0x1u]);
-	}
-
-	void waitSync()
-	{
-		waitSync(m_syncs[0]);
-		waitSync(m_syncs[1]);
-	}
-
-
-	void syncFront()
-	{
-		createSync(m_syncs[m_front]);
-	}
-
-	void syncBack()
-	{
-		createSync(m_syncs[m_front ^ 0x1u]);
-	}
-
-	void sync()
-	{
-		createSync(m_syncs[0]);
-		createSync(m_syncs[1]);
-	}
-
 	void writeFront(const vec& v, u32 index)
 	{
 		Base::write(v, m_frontOffset + index);
@@ -176,8 +186,6 @@ public:
 	{
 		assert(value <= Base::capacity() / 2);
 
-		waitSync();
-
 		m_size = value;
 		m_front = 0u;
 		m_frontOffset = 0u;
@@ -187,6 +195,79 @@ public:
 	u32 size() const
 	{
 		return m_size;
+	}
+
+protected:
+	u32 front()
+	{
+		return m_front;
+	}
+
+	u32 back()
+	{
+		return m_front ^ 0x1u;
+	}
+
+private:
+	u32 m_size{};
+	u32 m_front{};
+	u32 m_frontOffset{};
+	u32 m_backOffset{};
+};
+
+template<class vec_t> // vec2, vec3, vec4
+class GfxSDBuffer : public GfxDBuffer<vec_t>
+{
+public:
+	using Base = GfxDBuffer<vec_t>;
+	using vec  = vec_t;
+
+public:
+	GfxSDBuffer(u32 initCapacity, u32 wait = 50u) : Base(2 * initCapacity), m_wait(wait)
+	{}
+
+	~GfxSDBuffer()
+	{}
+
+public:
+	void waitSyncFront()
+	{
+		waitSync(m_syncs[Base::front()]);
+	}
+
+	void waitSyncBack()
+	{
+		waitSync(m_syncs[Base::back()]);
+	}
+
+	void waitSync()
+	{
+		waitSync(m_syncs[0]);
+		waitSync(m_syncs[1]);
+	}
+
+
+	void syncFront()
+	{
+		createSync(m_syncs[Base::front()]);
+	}
+
+	void syncBack()
+	{
+		createSync(m_syncs[Base::back()]);
+	}
+
+	void sync()
+	{
+		createSync(m_syncs[0]);
+		createSync(m_syncs[1]);
+	}
+
+	void resize(u32 value)
+	{
+		waitSync();
+
+		Base::resize(value);
 	}
 
 private:
@@ -214,11 +295,6 @@ private:
 private:
 	res::FenceSync m_syncs[2]{}; // pending flushes
 	u32 m_wait{};
-	u32 m_size{};
-
-	u32 m_front{};
-	u32 m_frontOffset{};
-	u32 m_backOffset{};
 };
 
 class DVertexArray

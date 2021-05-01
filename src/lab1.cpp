@@ -24,9 +24,9 @@ namespace
 {
 	constexpr const u32 max_points = 1'000'000;
 
-	using GfxDBuffer2 = GfxDBuffer<vec2>;
-	using GfxDBuffer3 = GfxDBuffer<vec3>;
-	using GfxDBuffer4 = GfxDBuffer<vec4>;
+	using GfxDBuffer2 = GfxSDBuffer<vec2>;
+	using GfxDBuffer3 = GfxSDBuffer<vec3>;
+	using GfxDBuffer4 = GfxSDBuffer<vec4>;
 
 	template<class vec1, class vec2, class size>
 	void store_vec_data(vec1* ptr, vec2* data, size count)

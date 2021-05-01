@@ -27,9 +27,9 @@ namespace
 	constexpr const u32 max_segments = 1'00'000;
 	constexpr const Float pi = 3.14159265358979323846;
 
-	using GfxDBuffer2 = GfxDBuffer<vec2>;
-	using GfxDBuffer3 = GfxDBuffer<vec3>;
-	using GfxDBuffer4 = GfxDBuffer<vec4>;
+	using GfxDBuffer2 = GfxSDBuffer<vec2>;
+	using GfxDBuffer3 = GfxSDBuffer<vec3>;
+	using GfxDBuffer4 = GfxSDBuffer<vec4>;
 
 	using Handle = u32;
 
