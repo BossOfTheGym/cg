@@ -257,9 +257,6 @@
     <ClCompile Include="src\main.cpp">
       <Filter>main</Filter>
     </ClCompile>
-    <ClCompile Include="src\section.cpp">
-      <Filter>section</Filter>
-    </ClCompile>
     <ClCompile Include="src\primitive_test.cpp">
       <Filter>tests</Filter>
     </ClCompile>

@@ -243,7 +243,6 @@
     <ClCompile Include="src\prog-rect.cpp" />
     <ClCompile Include="src\qsort.cpp" />
     <ClCompile Include="src\quadtree_test.cpp" />
-    <ClCompile Include="src\section.cpp" />
     <ClCompile Include="src\section_segments_test.cpp" />
     <ClCompile Include="src\state-creator.cpp" />
     <ClCompile Include="src\trb_test.cpp" />
