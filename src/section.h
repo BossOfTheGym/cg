@@ -10,7 +10,7 @@
 #include <utility>
 #include <algorithm>
 
-#define DEBUG_SEGMENTS
+//#define DEBUG_SEGMENTS
 #ifdef DEBUG_SEGMENTS
 #include <iostream>
 #endif
@@ -244,11 +244,9 @@ namespace sect
 				return this->begin();
 			}
 
-			bool preceds(Iterator it, const Vec2& point)
+			bool preceds(const PointEvent& event, const Vec2& point)
 			{
-				assert(it != this->end());
-
-				return this->m_compare(*it, point);
+				return this->m_compare(event, point);
 			}
 		};
 
@@ -275,10 +273,10 @@ namespace sect
 			while (!m_eventQueue.empty())
 			{
 				auto it = m_eventQueue.front();
+				m_event = std::move(*it);
+				m_eventQueue.erase(it);
 
-				handlePointEvent(it);
-
-				m_eventQueue.pop();
+				handlePointEvent();
 			}
 
 			assert(m_sweepLine.empty());
@@ -341,26 +339,26 @@ namespace sect
 		}
 
 
-		void handlePointEvent(PointEventIt event)
+		void handlePointEvent()
 		{
 			#ifdef DEBUG_SEGMENTS
-			std::cout << "event: " << event->point << std::endl;
+			std::cout << "event: " << m_event.point << std::endl;
 			#endif
 
-			m_sweepLine.sweep(event->point);
+			m_sweepLine.sweep(m_event.point);
 
 			#ifdef DEBUG_SEGMENTS
 			m_sweepLine.debug();
 			#endif
 
-			u32 intersections = countIntersections(event);
+			u32 intersections = countIntersections();
 
-			if (intersections + event->lowerEnd.size() + event->upperEnd.size() > 1)
-				reportIntersection(event);
+			if (intersections + m_event.lowerEnd.size() + m_event.upperEnd.size() > 1)
+				reportIntersection();
 
-			if (!event->lowerEnd.empty())
+			if (!m_event.lowerEnd.empty())
 			{
-				removeLowerEndSegments(event);
+				removeLowerEndSegments();
 
 				#ifdef DEBUG_SEGMENTS
 				std::cout << "le rem ";
@@ -368,59 +366,67 @@ namespace sect
 				#endif
 			}
 
-			insertInterUpper(event, intersections);
+			if (intersections + m_event.upperEnd.size() != 0)
+			{
+				insertInterUpper(intersections);
 
-			findNewEventPoints(event, intersections);
+				#ifdef DEBUG_SEGMENTS
+				std::cout << "iu rem ";
+				m_sweepLine.debug();
+				#endif
+			}
+
+			findNewEventPoints(intersections);
 
 			#ifdef DEBUG_SEGMENTS
 			std::cout << std::endl;
 			#endif
 		}
 
-		u32 countIntersections(PointEventIt event)
+		u32 countIntersections()
 		{
-			auto l0 = m_sweepLine.lowerBound(event->point.x);
-			auto l1 = m_sweepLine.upperBound(event->point.x);
+			auto l0 = m_sweepLine.lowerBound(m_event.point.x);
+			auto l1 = m_sweepLine.upperBound(m_event.point.x);
 
 			u32 intersections = 0u;
 			if (l0 != m_sweepLine.end())
 			{
 				intersections += std::distance(l0, l1);
-				intersections -= event->lowerEnd.size();
+				intersections -= m_event.lowerEnd.size();
 			}
 			return intersections;
 		}
 
 		// NOTE : checked in handleEventPoint
-		void reportIntersection(PointEventIt event)
+		void reportIntersection()
 		{
 			// lowed-end segments are already inserted
 			// intersecting too
 			// so we add all segments from lower bound to upper bound of an intersection
-			Intersection<Handle> inter{event->point};
+			Intersection<Handle> inter{m_event.point};
 
-			auto l0 = m_sweepLine.lowerBound(event->point.x);
-			auto l1 = m_sweepLine.upperBound(event->point.x);
+			auto l0 = m_sweepLine.lowerBound(m_event.point.x);
+			auto l1 = m_sweepLine.upperBound(m_event.point.x);
 			while (l0 != l1)
 				inter.lines.push_back(*l0++);
 
-			for (auto& line : event->upperEnd)
+			for (auto& line : m_event.upperEnd)
 				inter.lines.push_back(line);
 
 			m_intersections.push_back(std::move(inter));
 		}
 
 		// NOTE : checked in handleEventPoint
-		void removeLowerEndSegments(PointEventIt event)
+		void removeLowerEndSegments()
 		{
-			for (auto& it : event->lowerEnd)
+			for (auto& it : m_event.lowerEnd)
 				m_sweepLine.erase(it);
 		}
 
-		void extractIntersecting(PointEventIt event)
+		void extractIntersecting()
 		{
-			auto l0 = m_sweepLine.lowerBound(event->point.x);
-			auto l1 = m_sweepLine.upperBound(event->point.x);
+			auto l0 = m_sweepLine.lowerBound(m_event.point.x);
+			auto l1 = m_sweepLine.upperBound(m_event.point.x);
 
 			// extract and reverse
 			m_extractBuffer.clear();
@@ -429,72 +435,85 @@ namespace sect
 			std::reverse(m_extractBuffer.begin(), m_extractBuffer.end());
 		}
 
-		void insertInterUpper(PointEventIt event, u32 intersections)
+		void insertInterUpper(u32 intersections)
 		{
 			auto pred = [&] (const auto& l0, const auto& l1)
 			{
 				auto [l00, l01] = reorder_line(m_sampler(l0));
 				auto [l10, l11] = reorder_line(m_sampler(l1));
 
-				return turn(event->point, l01, l11) == Turn::Left;
+				return turn(m_event.point, l01, l11) == Turn::Left;
 			};
 
-			std::sort(event->upperEnd.begin(), event->upperEnd.end(), pred);
+			std::sort(m_event.upperEnd.begin(), m_event.upperEnd.end(), pred);
 
-			extractIntersecting(event);
+			extractIntersecting();
 
 			auto e0 = m_extractBuffer.begin();
 			auto e1 = m_extractBuffer.end();
-			auto u0 = event->upperEnd.begin();
-			auto u1 = event->upperEnd.end();
+			auto u0 = m_event.upperEnd.begin();
+			auto u1 = m_event.upperEnd.end();
 			while(e0 != e1 && u0 != u1)
 			{
 				if (pred(**e0, *u0))
-					m_sweepLine.insert(std::move(*e0++));
+				{
+					auto [inserted, _] = m_sweepLine.insert(std::move(*e0++));
+				}
 				else
-					m_sweepLine.insert(*u0++);
+				{
+					auto [inserted, _] = m_sweepLine.insert(*u0++);
+					insertLowerEndEvent(inserted);
+				}
 			}
 			while (e0 != e1)
-				m_sweepLine.insert(std::move(*e0++));
+			{
+				auto [inserted, _] = m_sweepLine.insert(std::move(*e0++));
+			}
 			while (u0 != u1)
-				m_sweepLine.insert(*u0++);
+			{
+				auto [inserted, _] = m_sweepLine.insert(*u0++);
+				insertLowerEndEvent(inserted);
+			}
 		}
 
-		void findNewEventPoints(PointEventIt event, u32 intersections)
+		void findNewEventPoints(u32 intersections)
 		{
 			// TODO : check possible impossible
 
 			auto beg = m_sweepLine.begin();
 			auto end = m_sweepLine.end();
 
-			auto l0 = m_sweepLine.lowerBound(event->point.x);
-			auto l1 = m_sweepLine.upperBound(event->point.x);
-			if (intersections + event->upperEnd.size() == 0) // only lower-end lines were in event
+			auto l0 = m_sweepLine.lowerBound(m_event.point.x);
+			auto l1 = m_sweepLine.upperBound(m_event.point.x);
+			if (intersections + m_event.upperEnd.size() == 0) // only lower-end lines were in event
 			{
 				if (l0 != beg && l0 != end)
-					findNewEvent(l0 - 1, l0, event);
+					findNewEvent(l0 - 1, l0);
 			}
 			else
 			{
-				assert(l0 != end);
 				if (l0 != beg)
-					findNewEvent(l0 - 1, l0, event);
+				{
+					assert(l0 != end); // should never happen
+					findNewEvent(l0 - 1, l0);
+				}
 
-				assert(l1 - 1 != end);
 				if (l1 != end)
-					findNewEvent(l1 - 1, l1, event);
+				{
+					assert(l1 - 1 != end); // should never happen
+					findNewEvent(l1 - 1, l1);
+				}
 			}
 		}
 
 		// NOTE : l0 preceds l1, l0 != end(), l1 != end()
-		void findNewEvent(SweepLineIt l0, SweepLineIt l1, PointEventIt event)
+		void findNewEvent(SweepLineIt l0, SweepLineIt l1)
 		{			
 			// TODO : check possible impossible
 
-			Vec2 i0;
-			Vec2 i1;
+			Vec2 i0, i1;
 			auto status = intersectSegSeg(m_sampler(*l0), m_sampler(*l1), i0, i1); 
-			if (status == Status::Intersection && m_eventQueue.preceds(event, i0))
+			if (status == Status::Intersection && m_eventQueue.preceds(m_event, i0))
 				insertIntersectionEvent(i0);
 		}
 
@@ -502,6 +521,8 @@ namespace sect
 	private:
 		ExtractBuffer         m_extractBuffer;
 		Intersections<Handle> m_intersections;
+
+		PointEvent m_event;
 
 		SweepLine  m_sweepLine;
 		EventQueue m_eventQueue;
