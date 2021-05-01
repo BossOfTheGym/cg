@@ -243,6 +243,9 @@
     <ClInclude Include="src\gfx-res.h">
       <Filter>main</Filter>
     </ClInclude>
+    <ClInclude Include="src\prog-unicolor-prim.h">
+      <Filter>main\progs</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="src\trb_test.cpp">
@@ -364,6 +367,9 @@
     </ClCompile>
     <ClCompile Include="src\hull_test.cpp">
       <Filter>tests</Filter>
+    </ClCompile>
+    <ClCompile Include="src\prog-unicolor-prim.cpp">
+      <Filter>main\progs</Filter>
     </ClCompile>
   </ItemGroup>
 </Project>
