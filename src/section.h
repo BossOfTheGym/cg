@@ -10,7 +10,7 @@
 #include <utility>
 #include <algorithm>
 
-#define DEBUG_SEGMENTS
+//#define DEBUG_SEGMENTS
 #ifdef DEBUG_SEGMENTS
 #include <iostream>
 #endif
