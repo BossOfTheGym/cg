@@ -240,6 +240,9 @@
     <ClInclude Include="src\hull_test.h">
       <Filter>tests</Filter>
     </ClInclude>
+    <ClInclude Include="src\gfx-res.h">
+      <Filter>main</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="src\trb_test.cpp">

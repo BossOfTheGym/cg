@@ -151,6 +151,7 @@
     <ClInclude Include="src\convex_hull.h" />
     <ClInclude Include="src\core.h" />
     <ClInclude Include="src\dcel.h" />
+    <ClInclude Include="src\gfx-res.h" />
     <ClInclude Include="src\gl-header\gl-header.h" />
     <ClInclude Include="src\gl-header\gl-types.h" />
     <ClInclude Include="src\glfw-cxx\glfw3.h" />
