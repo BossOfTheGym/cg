@@ -2,6 +2,10 @@
 
 // TODO : bad design, decide what to do with size
 // some labs already depend on it and I don't really want to change it
+// TODO : double-buffered buffers are implemented not in the I really wanted to
+// 1) they must be implemented either as pair of simple buffers
+// 2) or like single buffer that uses two separate ranges and doesn't contain any size parameter
+// TODO : I must implement move operations (I'm too lazy) and make them default constructible so there is no need for dynamic storage
 
 template<class vec_t> // vec2, vec3, vec4
 class GfxBuffer
