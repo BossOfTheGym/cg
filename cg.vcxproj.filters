@@ -55,6 +55,9 @@
     <Filter Include="main\gui">
       <UniqueIdentifier>{f063f85c-6e84-4ffa-91b4-016359a44821}</UniqueIdentifier>
     </Filter>
+    <Filter Include="tria">
+      <UniqueIdentifier>{86290790-e99e-4e4f-97fa-b67daf63c986}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="src\test_util.h">
@@ -245,6 +248,9 @@
     </ClInclude>
     <ClInclude Include="src\prog-unicolor-prim.h">
       <Filter>main\progs</Filter>
+    </ClInclude>
+    <ClInclude Include="src\tria.h">
+      <Filter>tria</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

@@ -206,6 +206,7 @@
     <ClInclude Include="src\trb_set.h" />
     <ClInclude Include="src\trb_test.h" />
     <ClInclude Include="src\lab6-gui.h" />
+    <ClInclude Include="src\tria.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="src\app.cpp" />
