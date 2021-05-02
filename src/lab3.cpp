@@ -321,8 +321,9 @@ namespace
 			{
 				auto a = genA(base);
 				auto c = genC(base);
-				auto x = (i32)(c * A * std::cos(a) + cx);
-				auto y = (i32)(c * B * std::sin(a) + cy);
+				auto l = 0.7 + 0.3 * std::sin(10 * a);
+				auto x = (i32)(c * A * l * std::cos(a) + cx);
+				auto y = (i32)(c * B * l * std::sin(a) + cy);
 				m_points.push_back(Vec2{x, y});
 			}
 
