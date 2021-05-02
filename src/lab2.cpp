@@ -456,6 +456,8 @@ namespace
 			glDrawArrays(GL_LINES, m_vertexArray->front(), m_vertexArray->primitives());
 
 			glBindFramebuffer(GL_DRAW_FRAMEBUFFER, bound);
+
+			m_gfxColors->syncFront();
 		}
 
 		void renderAttachment()
