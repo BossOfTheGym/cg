@@ -12,6 +12,7 @@ namespace hull
 {
 	using namespace prim;
 
+	// TODO : rename, remove hull from name(I have namespace already)
 	template<class handle_t, class sampler_t>
 	std::vector<handle_t> convex_hull_graham(std::vector<handle_t>& vecs, sampler_t sampler, Float eps = default_eps)
 	{
