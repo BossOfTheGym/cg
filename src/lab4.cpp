@@ -233,7 +233,7 @@ namespace
 			{
 				m_needBuild = false;
 
-				buildHull();
+				buildTria();
 			}
 
 			if (m_needClear)
@@ -338,13 +338,13 @@ namespace
 			m_gfxVertices->flush(0u, m_points.size());
 			m_gfxVertices->sync();
 
-			// hull
+			// tria
 			m_triaElems = 0u;
 
 			m_needRedraw = true;
 		}
 
-		void buildHull()
+		void buildTria()
 		{
 			auto sampler = [&](auto handle)
 			{
