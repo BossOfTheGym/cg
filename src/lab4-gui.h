@@ -44,4 +44,3 @@ private:
 	bool m_built{};
 	std::string m_currPointsString;
 };
-

@@ -83,7 +83,7 @@ namespace tria
 				if (t == Turn::Right)
 				{
 					tri.push_back(*(res.end() - 2));
-					tri.push_back(vesc[i]);
+					tri.push_back(vecs[i]);
 				}
 				res.pop_back();
 			}
