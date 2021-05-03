@@ -6,7 +6,7 @@ void Lab5Gui::draw()
 {
 	if (ImGui::Begin("lab5"))
 	{
-		ImGui::Text("this lab really must be tested");
+		ImGui::Text("Enjoy the projection!");
 		if (ImGui::Button("Back"))
 			back.emit();
 	}
