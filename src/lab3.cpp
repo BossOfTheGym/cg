@@ -319,9 +319,9 @@ namespace
 			m_points.clear();
 			for (u32 i = 0; i < m_pointsToGen; i++)
 			{
-				auto a = genA(base);
+				auto a = genA(base); 
 				auto c = std::sqrt(genC(base));
-				auto l = 0.7 + 0.3 * std::sin(10 * a);
+				auto l = 0.7 + 0.3 * std::cos(10 * a);
 				auto x = (i32)(c * A * l * std::cos(a) + cx);
 				auto y = (i32)(c * B * l * std::sin(a) + cy);
 				m_points.push_back(Vec2{x, y});
