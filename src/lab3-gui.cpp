@@ -19,9 +19,7 @@ void Lab3Gui::draw()
 		if (!m_built)
 		{
 			if (ImGui::InputScalar("points", ImGuiDataType_U32, &m_currPoints))
-			{
 				m_currPoints = std::min(m_maxPoints, m_currPoints);
-			}
 
 			if (ImGui::Button("Generate"))
 			{

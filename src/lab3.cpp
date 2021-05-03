@@ -320,7 +320,7 @@ namespace
 			for (u32 i = 0; i < m_pointsToGen; i++)
 			{
 				auto a = genA(base);
-				auto c = genC(base);
+				auto c = std::sqrt(genC(base));
 				auto l = 0.7 + 0.3 * std::sin(10 * a);
 				auto x = (i32)(c * A * l * std::cos(a) + cx);
 				auto y = (i32)(c * B * l * std::sin(a) + cy);
