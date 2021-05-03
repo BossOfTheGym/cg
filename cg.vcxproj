@@ -190,9 +190,11 @@
     <ClInclude Include="src\primitive.h" />
     <ClInclude Include="src\primitive_test.h" />
     <ClInclude Include="src\prog-color-prim.h" />
+    <ClInclude Include="src\prog-fractal.h" />
     <ClInclude Include="src\prog-frame.h" />
     <ClInclude Include="src\prog-rect.h" />
     <ClInclude Include="src\prog-unicolor-prim.h" />
+    <ClInclude Include="src\prog-unicolor-prim3d.h" />
     <ClInclude Include="src\qsort.h" />
     <ClInclude Include="src\quadtree.h" />
     <ClInclude Include="src\quadtree_test.h" />
@@ -242,9 +244,11 @@
     <ClCompile Include="src\primitive.cpp" />
     <ClCompile Include="src\primitive_test.cpp" />
     <ClCompile Include="src\prog-color-prim.cpp" />
+    <ClCompile Include="src\prog-fractal.cpp" />
     <ClCompile Include="src\prog-frame.cpp" />
     <ClCompile Include="src\prog-rect.cpp" />
     <ClCompile Include="src\prog-unicolor-prim.cpp" />
+    <ClCompile Include="src\prog-unicolor-prim3d.cpp" />
     <ClCompile Include="src\qsort.cpp" />
     <ClCompile Include="src\quadtree_test.cpp" />
     <ClCompile Include="src\section_segments_test.cpp" />

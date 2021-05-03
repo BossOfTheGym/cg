@@ -252,6 +252,12 @@
     <ClInclude Include="src\tria.h">
       <Filter>tria</Filter>
     </ClInclude>
+    <ClInclude Include="src\prog-unicolor-prim3d.h">
+      <Filter>main\progs</Filter>
+    </ClInclude>
+    <ClInclude Include="src\prog-fractal.h">
+      <Filter>main\progs</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="src\trb_test.cpp">
@@ -375,6 +381,12 @@
       <Filter>tests</Filter>
     </ClCompile>
     <ClCompile Include="src\prog-unicolor-prim.cpp">
+      <Filter>main\progs</Filter>
+    </ClCompile>
+    <ClCompile Include="src\prog-unicolor-prim3d.cpp">
+      <Filter>main\progs</Filter>
+    </ClCompile>
+    <ClCompile Include="src\prog-fractal.cpp">
       <Filter>main\progs</Filter>
     </ClCompile>
   </ItemGroup>
