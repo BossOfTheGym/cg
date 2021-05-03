@@ -2,7 +2,6 @@
 #include "lab3-gui.h"
 
 #include "app.h"
-#include "section.h"
 #include "primitive.h"
 #include "prog-rect.h"
 #include "main-window.h"
