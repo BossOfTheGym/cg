@@ -2,7 +2,7 @@
 #include "lab6-gui.h"
 
 #include "app.h"
-#include "bezier.h"
+#include "casteljau.h"
 #include "primitive.h"
 #include "prog-frame.h"
 #include "main-window.h"
@@ -31,7 +31,7 @@ namespace
 	constexpr f32 frame_size = 10.0f;
 
 	using GfxSBuffer2 = GfxSBuffer<vec2>;
-	using Patch = bezier::Patch2D<vec2>;
+	using Patch = casteljau::Patch<vec2>;
 
 	class Lab6Impl
 	{
@@ -161,8 +161,6 @@ namespace
 		void initState()
 		{
 			resetState();
-
-			m_needUpdatePatch = true;
 		}
 
 		void deinitState()
@@ -213,7 +211,14 @@ namespace
 				{
 					m_capturedIndex = capturePatchPoint({x, y});
 					if (m_capturedIndex != invalid)
+					{
 						m_pointCaptured = true;
+					}
+					else
+					{
+						m_patch.pts.push_back({x, y});
+						m_needUpdatePatch = true;
+					}
 				}
 
 				if (m_pointCaptured && action == GLFW_RELEASE)
@@ -269,11 +274,7 @@ namespace
 
 		void resetPatch()
 		{
-			auto [w, h] = m_window->framebufferSize();
-			m_patch.v0 = Vec2(0.2 * w, 0.5 * h);
-			m_patch.v1 = Vec2(0.4 * w, 0.5 * h);
-			m_patch.v2 = Vec2(0.6 * w, 0.5 * h);
-			m_patch.v3 = Vec2(0.8 * w, 0.5 * h);
+			m_patch.pts.clear();
 		}
 
 
@@ -285,7 +286,7 @@ namespace
 			auto ptr = m_bezierBuffer->ptr();
 			auto dt = 1.0 / patch_split;
 			for (u32 i = 0; i <= patch_split; i++)
-				ptr[i] = bezier::eval2d(m_patch, i * dt);
+				ptr[i] = m_patch.eval(i * dt);
 
 			m_bezierBuffer->flush();
 			m_bezierBuffer->sync();
@@ -293,35 +294,19 @@ namespace
 
 		u32 capturePatchPoint(const vec2& vec)
 		{
-			if (inFrame(frameParams(m_patch.v0), vec))
-				return 0u;
-			if (inFrame(frameParams(m_patch.v1), vec))
-				return 1u;
-			if (inFrame(frameParams(m_patch.v2), vec))
-				return 2u;
-			if (inFrame(frameParams(m_patch.v3), vec))
-				return 3u;
+			for (u32 i = 0; i < m_patch.pts.size(); i++)
+			{
+				if (inFrame(frameParams(m_patch.pts[i]), vec))
+					return i;		
+			}
 			return invalid;
 		}
 
 		void setPatchPoint(u32 ind, const vec2& vec)
 		{
-			switch(ind)
-			{
-				case 0u:
-					m_patch.v0 = vec;
-					break;
-				case 1u:
-					m_patch.v1 = vec;
-					break;
-				case 2u:
-					m_patch.v2 = vec;
-					break;
-				case 3u:
-					m_patch.v3 = vec;
-					break;
-			}
+			m_patch.pts[ind] = vec;
 		}
+
 
 	private: // render
 		void render()
@@ -333,24 +318,24 @@ namespace
 			glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT | GL_STENCIL_BUFFER_BIT);
 			glViewport(0, 0, w, h);
 
-			glBindVertexArray(m_bezierArray.id);
-			m_progUnicolor->use();
-			m_progUnicolor->setPrimColor(m_color0);
-			m_progUnicolor->setProj(projMat());
-			glDrawArrays(GL_LINE_STRIP, 0, patch_split + 1);
+			if (!m_patch.pts.empty())
+			{
+				glBindVertexArray(m_bezierArray.id);
+				m_progUnicolor->use();
+				m_progUnicolor->setPrimColor(m_color0);
+				m_progUnicolor->setProj(projMat());
+				glDrawArrays(GL_LINE_STRIP, 0, patch_split + 1);
 
-			glBindVertexArray(m_dummyArray.id);
-			m_progFrame->use();			
-			m_progFrame->setProj(projMat());
-			m_progFrame->setFrameColor(m_color1);
-			m_progFrame->setFrameParams(frameParams(m_patch.v0));
-			glDrawArrays(GL_LINE_LOOP, 0, 4);
-			m_progFrame->setFrameParams(frameParams(m_patch.v1));
-			glDrawArrays(GL_LINE_LOOP, 0, 4);
-			m_progFrame->setFrameParams(frameParams(m_patch.v2));
-			glDrawArrays(GL_LINE_LOOP, 0, 4);
-			m_progFrame->setFrameParams(frameParams(m_patch.v3));
-			glDrawArrays(GL_LINE_LOOP, 0, 4);
+				glBindVertexArray(m_dummyArray.id);
+				m_progFrame->use();			
+				m_progFrame->setProj(projMat());
+				m_progFrame->setFrameColor(m_color1);
+				for (auto& pt : m_patch.pts)
+				{
+					m_progFrame->setFrameParams(frameParams(pt));
+					glDrawArrays(GL_LINE_LOOP, 0, 4);
+				}
+			}
 
 			m_bezierBuffer->sync();
 		}

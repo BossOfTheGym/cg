@@ -146,6 +146,7 @@
     <ClInclude Include="src\app-state.h" />
     <ClInclude Include="src\app.h" />
     <ClInclude Include="src\bezier.h" />
+    <ClInclude Include="src\casteljau.h" />
     <ClInclude Include="src\choose-gui.h" />
     <ClInclude Include="src\choose-lab.h" />
     <ClInclude Include="src\convex_hull.h" />

@@ -6,7 +6,7 @@ void Lab6Gui::draw()
 {
 	if (ImGui::Begin("lab6"))
 	{
-		ImGui::Text("Enjoy bezier patch!");
+		ImGui::Text("Enjoy casteljau patch!");
 		if (ImGui::Button("Back"))
 			back.emit();
 	}
