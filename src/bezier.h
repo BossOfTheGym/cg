@@ -13,6 +13,14 @@ namespace bezier
 	using Vec2  = prim::Vec2;
 	using Vec3  = prim::Vec3;
 
+	template<class vec>
+	struct Patch2D
+	{
+		vec v0{};
+		vec v1{};
+		vec v2{};
+		vec v3{};
+	};
 
 	template<class vec>
 	vec eval2d(const vec& v0, const vec& v1, const vec& v2, const vec& v3, Float t)
@@ -20,11 +28,14 @@ namespace bezier
 		using value = typename vec::value_type;
 
 		value m = 1.0 - t;
-
-		return v0 * m * m * m
-			+ v1 * t * m * m * 3.0f
-			+ v2 * t * t * m * 3.0f
-			+ v3 * t * t * t;
+		value mmm  = m * m * m;
+		value tmm3 = t * m * m * 3.0f;
+		value ttm3 = t * t * m * 3.0f;
+		value ttt  = t * t * t;
+		return v0 * mmm
+			 + v1 * tmm3
+			 + v2 * ttm3
+			 + v3 * ttt;
 	}
 
 	template<class vec>
@@ -33,6 +44,12 @@ namespace bezier
 		return eval2d(v[0], v[1], v[2], v[3], t);
 	}
 
+	template<class vec>
+	vec eval2d(const Patch2D<vec>& patch, Float t)
+	{
+		return eval2d(patch.v0, patch.v1, patch.v2, patch.v3, t);
+	}
+	
 	template<class vec>
 	vec c1connect2d_prev(const vec& v, const vec& next)
 	{
@@ -50,12 +67,9 @@ namespace bezier
 	}
 
 
-	struct Patch2D
+	struct Patch3D
 	{
-		Vec2 v0{};
-		Vec2 v1{};
-		Vec2 v2{};
-		Vec2 v3{};
+		Vec3 v[16]{};
 	};
 
 	// v ^
@@ -91,10 +105,4 @@ namespace bezier
 
 		return eval2d(vu0, vu1, vu2, vu3, v);
 	}
-
-
-	struct Patch3D
-	{
-		Vec3 v[16]{};
-	};
 }
