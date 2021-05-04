@@ -35,7 +35,7 @@ namespace hull
 		{
 			auto tri = Triangle2::construct(sampler(v0), sampler(v1), sampler(v2));
 			auto it = std::remove_if(first, last, [&](auto v){ return inTriangle(tri, sampler(v)); });
-			vecs.erase(it, vecs.end());
+			vecs.erase(it, last);
 		};
 
 		auto pred = [&](auto v0, auto v1)
