@@ -443,7 +443,7 @@ namespace sect
 				auto [l00, l01] = reorder_line(m_sampler(l0));
 				auto [l10, l11] = reorder_line(m_sampler(l1));
 
-				return turn(m_event.point, l01, l11) == Turn::Left;
+				return turn_exact(m_event.point, l01, l11) == Turn::Left;
 			};
 
 			std::sort(m_event.upperEnd.begin(), m_event.upperEnd.end(), pred);

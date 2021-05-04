@@ -66,7 +66,7 @@ namespace tria
 		{
 			tri.push_back(res.back());
 			tri.push_back(vecs[i]);
-			if (turn(sampler(vecs[0]), sampler(res.back()), sampler(vecs[i])) != Turn::Straight)
+			if (turn_exact(sampler(vecs[0]), sampler(res.back()), sampler(vecs[i])) != Turn::Straight)
 			{
 				tri.push_back(vecs[0]);
 				tri.push_back(vecs[i]);
@@ -77,7 +77,7 @@ namespace tria
 			{
 				auto v0 = sampler(*(res.end() - 2));
 				auto v1 = sampler(*(res.end() - 1));
-				auto t = turn(v0, v1, vv);
+				auto t = turn_exact(v0, v1, vv);
 				if (t == Turn::Left)
 					break;
 				if (t == Turn::Right)

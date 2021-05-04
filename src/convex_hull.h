@@ -44,7 +44,7 @@ namespace hull
 			auto vv0 = sampler(v0);
 			auto vv1 = sampler(v1);
 
-			auto t = turn(vv, vv0, vv1);
+			auto t = turn_exact(vv, vv0, vv1);
 			if (t == Turn::Left)
 				return true;
 			if (t == Turn::Right)
@@ -83,7 +83,7 @@ namespace hull
 			{
 				auto v0 = sampler(*(res.end() - 2));
 				auto v1 = sampler(*(res.end() - 1));
-				if (turn(v0, v1, vv) == Turn::Left)
+				if (turn_exact(v0, v1, vv) == Turn::Left)
 					break;
 				res.pop_back();
 			}
