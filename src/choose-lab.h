@@ -6,7 +6,10 @@
 #include <string>
 
 
-class ChooseGui;
+namespace
+{
+	class ChooseGuiImpl;
+}
 
 class ChooseLab : public AppState
 {
@@ -28,21 +31,10 @@ public: // AppState
 
 	virtual AppAction execute() override;
 
+	virtual void resume() override;
 
-private: // callbacks
-	void labChosen(std::string lab);
-
-	void exitApp();
-
+	virtual void pause() override;
 
 private:
-	std::unique_ptr<ChooseGui> m_gui;
-	sig::Connection m_labChangedConn;
-	sig::Connection m_exitApp;
-
-	bool m_exit{false};
-	bool m_chosen{false};
-	std::string m_chosenLab;
-
-	bool m_initialized{false};
+	std::unique_ptr<ChooseGuiImpl> m_impl;
 };
