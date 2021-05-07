@@ -52,7 +52,8 @@ namespace
 	    const float pi2 = 2.0 * 3.14159265359;
 	    const float p   = 2.0;
 	    
-	    return vec3(1.,1.,1.) * vec3(
+		uv -= mod(uv, vec2(1.0 / 64.0));
+	    return vec3(
 	        sin(uv.x * p*pi2) * sin(uv.y * p*pi2),
 	        sin(uv.x * p*pi2 + p) * sin(uv.y * p*pi2),
 	        sin(uv.x * p*pi2 + 2.*p) * sin(uv.y * p*pi2)
