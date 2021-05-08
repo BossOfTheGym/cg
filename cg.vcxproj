@@ -148,7 +148,6 @@
     <ClInclude Include="src\bezier.h" />
     <ClInclude Include="src\casteljau.h" />
     <ClInclude Include="src\choose-gui.h" />
-    <ClInclude Include="src\choose-lab.h" />
     <ClInclude Include="src\convex_hull.h" />
     <ClInclude Include="src\core.h" />
     <ClInclude Include="src\dcel.h" />
@@ -173,16 +172,10 @@
     <ClInclude Include="src\imgui\imstb_truetype.h" />
     <ClInclude Include="src\lab-options.h" />
     <ClInclude Include="src\lab1-gui.h" />
-    <ClInclude Include="src\lab1.h" />
     <ClInclude Include="src\lab2-gui.h" />
-    <ClInclude Include="src\lab2.h" />
     <ClInclude Include="src\lab3-gui.h" />
-    <ClInclude Include="src\lab3.h" />
     <ClInclude Include="src\lab4-gui.h" />
-    <ClInclude Include="src\lab4.h" />
     <ClInclude Include="src\lab5-gui.h" />
-    <ClInclude Include="src\lab5.h" />
-    <ClInclude Include="src\lab6.h" />
     <ClInclude Include="src\list.h" />
     <ClInclude Include="src\main-window.h" />
     <ClInclude Include="src\pool_storage.h" />
@@ -201,7 +194,7 @@
     <ClInclude Include="src\quadtree_test.h" />
     <ClInclude Include="src\section.h" />
     <ClInclude Include="src\section_segments_test.h" />
-    <ClInclude Include="src\state-creator.h" />
+    <ClInclude Include="src\state-register.h" />
     <ClInclude Include="src\test_util.h" />
     <ClInclude Include="src\trb_tree.h" />
     <ClInclude Include="src\trb_util.h" />
@@ -253,7 +246,7 @@
     <ClCompile Include="src\qsort.cpp" />
     <ClCompile Include="src\quadtree_test.cpp" />
     <ClCompile Include="src\section_segments_test.cpp" />
-    <ClCompile Include="src\state-creator.cpp" />
+    <ClCompile Include="src\state-register.cpp" />
     <ClCompile Include="src\trb_test.cpp" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />

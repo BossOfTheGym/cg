@@ -168,24 +168,6 @@
     <ClInclude Include="src\gui-signal.h">
       <Filter>signal</Filter>
     </ClInclude>
-    <ClInclude Include="src\lab1.h">
-      <Filter>main\states</Filter>
-    </ClInclude>
-    <ClInclude Include="src\lab3.h">
-      <Filter>main\states</Filter>
-    </ClInclude>
-    <ClInclude Include="src\lab4.h">
-      <Filter>main\states</Filter>
-    </ClInclude>
-    <ClInclude Include="src\lab5.h">
-      <Filter>main\states</Filter>
-    </ClInclude>
-    <ClInclude Include="src\lab6.h">
-      <Filter>main\states</Filter>
-    </ClInclude>
-    <ClInclude Include="src\choose-lab.h">
-      <Filter>main\states</Filter>
-    </ClInclude>
     <ClInclude Include="src\prog-frame.h">
       <Filter>main\progs</Filter>
     </ClInclude>
@@ -210,10 +192,7 @@
     <ClInclude Include="src\lab2-gui.h">
       <Filter>main\gui</Filter>
     </ClInclude>
-    <ClInclude Include="src\lab2.h">
-      <Filter>main\states</Filter>
-    </ClInclude>
-    <ClInclude Include="src\state-creator.h">
+    <ClInclude Include="src\state-register.h">
       <Filter>main</Filter>
     </ClInclude>
     <ClInclude Include="src\gui.h">
@@ -350,7 +329,7 @@
     <ClCompile Include="src\lab2.cpp">
       <Filter>main\states</Filter>
     </ClCompile>
-    <ClCompile Include="src\state-creator.cpp">
+    <ClCompile Include="src\state-register.cpp">
       <Filter>main</Filter>
     </ClCompile>
     <ClCompile Include="src\lab3.cpp">

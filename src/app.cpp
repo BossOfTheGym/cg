@@ -1,9 +1,9 @@
 #include "app.h"
+#include "app-state.h"
+#include "state-register.h"
+
 #include "primitive.h"
-#include "choose-lab.h"
-#include "lab-options.h"
 #include "main-window.h"
-#include "state-creator.h"
 #include "gl-header/gl-header.h"
 
 #include "graphics-res/graphics-res.h"
@@ -55,7 +55,7 @@ public:
 		// window init
 		CreationInfo info;
 		info.height = 1024;
-		info.width  = 1536;
+		info.width  = 1024;
 		info.title = "cg";
 		info.intHints.push_back({Hint::Resizable, (int)Value::False});
 		info.intHints.push_back({Hint::ContextVersionMajor, 4});
@@ -67,11 +67,9 @@ public:
 		m_window->makeContextCurrent();
 
 		// choose state(default state)
-		auto chooseLab = std::make_unique<ChooseLab>(m_app);
-		assert(chooseLab != nullptr);
+		auto chooseLab = create("choose-lab");
 		stat = chooseLab->init();
 		assert(stat);
-
 		m_stateStack.push_back(std::move(chooseLab));
 
 		// imgui
@@ -158,12 +156,11 @@ private: // action handling
 			case ActionType::Push:
 				m_stateStack.back()->pause();
 
-				auto newState = m_stateCreator.createState(m_app, action.stateName);
-				assert(newState != nullptr);
+				auto newState = create(action.stateName);
 				bool stat = newState->init();
 				assert(stat);
-
 				m_stateStack.push_back(std::move(newState));
+
 				break;
 		}
 	}
@@ -194,12 +191,17 @@ private: // gui
 	}
 
 private:
+	std::unique_ptr<AppState> create(const std::string& name)
+	{
+		return std::unique_ptr<AppState>(AllStates::create(name, m_app));
+	}
+
+private:
 	App* m_app{};
 	bool m_initialized{false};
 
 	std::vector<std::unique_ptr<AppState>> m_stateStack;
 	std::unique_ptr<MainWindow> m_window;
-	StateCreator m_stateCreator;
 };
 
 

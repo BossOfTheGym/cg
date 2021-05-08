@@ -1,5 +1,5 @@
 #include "choose-gui.h"
-#include "lab-options.h"
+#include "state-register.h"
 
 #include "imgui/imgui.h"
 
@@ -8,10 +8,13 @@ void ChooseGui::draw()
 {
 	if (ImGui::Begin("Labs"))
 	{
-		for (auto& option : LAB_OPTIONS)
+		for (auto& [name, _] : AllStates::states())
 		{
-			if (ImGui::Button(option.c_str()))
-				optionChosen.emit(option);
+			if (name == "choose-lab")
+				continue; // workaround :)
+
+			if (ImGui::Button(name.c_str()))
+				optionChosen.emit(name);
 		}
 		ImGui::Spacing();
 		if (ImGui::Button("exit"))
