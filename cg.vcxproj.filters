@@ -240,6 +240,9 @@
     <ClInclude Include="src\casteljau.h">
       <Filter>curve</Filter>
     </ClInclude>
+    <ClInclude Include="src\lab7-gui.h">
+      <Filter>main\gui</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="src\trb_test.cpp">
@@ -370,6 +373,12 @@
     </ClCompile>
     <ClCompile Include="src\prog-fractal.cpp">
       <Filter>main\progs</Filter>
+    </ClCompile>
+    <ClCompile Include="src\lab7.cpp">
+      <Filter>main\states</Filter>
+    </ClCompile>
+    <ClCompile Include="src\lab7-gui.cpp">
+      <Filter>main\gui</Filter>
     </ClCompile>
   </ItemGroup>
 </Project>

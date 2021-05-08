@@ -176,6 +176,7 @@
     <ClInclude Include="src\lab3-gui.h" />
     <ClInclude Include="src\lab4-gui.h" />
     <ClInclude Include="src\lab5-gui.h" />
+    <ClInclude Include="src\lab7-gui.h" />
     <ClInclude Include="src\list.h" />
     <ClInclude Include="src\main-window.h" />
     <ClInclude Include="src\pool_storage.h" />
@@ -232,6 +233,8 @@
     <ClCompile Include="src\lab5.cpp" />
     <ClCompile Include="src\lab6-gui.cpp" />
     <ClCompile Include="src\lab6.cpp" />
+    <ClCompile Include="src\lab7-gui.cpp" />
+    <ClCompile Include="src\lab7.cpp" />
     <ClCompile Include="src\main-window.cpp" />
     <ClCompile Include="src\main.cpp" />
     <ClCompile Include="src\Predicates.cpp" />
