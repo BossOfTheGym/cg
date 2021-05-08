@@ -13,7 +13,7 @@ Lab4Gui::Lab4Gui(u32 maxPoints, u32 initPoints)
 
 void Lab4Gui::draw()
 {
-	if (ImGui::Begin("lab3"))
+	if (ImGui::Begin("lab4"))
 	{
 		ImGui::Text(m_maxPointString.c_str());
 		if (!m_built)
