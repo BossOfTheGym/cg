@@ -105,17 +105,6 @@ namespace bezier
 			return eval3d(vs, u, v);
 		}
 
-		vec evalRow(int row, value t)
-		{
-			row *= 4;
-			return eval2d(vs[row], vs[row + 1], vs[row + 2], vs[row + 3], t);
-		}
-
-		vec evalCol(int col, value t)
-		{
-			return eval2d(vs[col], vs[col + 4], vs[col + 8], vs[col + 12], t);
-		}
-
 		vec vs[16]{};
 	};
 }
