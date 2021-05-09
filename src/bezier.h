@@ -1,52 +1,34 @@
 #pragma once
 
-#include "primitive.h"
-
 #include <vector>
 #include <limits>
 #include <algorithm>
 
-
 namespace bezier
 {
-	using Float = prim::Float;
-	using Vec2  = prim::Vec2;
-	using Vec3  = prim::Vec3;
-
-	template<class vec>
-	struct Patch2D
-	{
-		vec v0{};
-		vec v1{};
-		vec v2{};
-		vec v3{};
-	};
-
-	template<class vec>
-	vec eval2d(const vec& v0, const vec& v1, const vec& v2, const vec& v3, Float t)
+	template<class vec, class val>
+	vec eval2d(const vec& v0, const vec& v1, const vec& v2, const vec& v3, val t)
 	{
 		using value = typename vec::value_type;
 
-		value m = 1.0 - t;
-		value mmm  = m * m * m;
-		value tmm3 = t * m * m * 3.0f;
-		value ttm3 = t * t * m * 3.0f;
-		value ttt  = t * t * t;
-		return v0 * mmm + v1 * tmm3 + v2 * ttm3 + v3 * ttt;
+		value t0 = t;
+		value m0 = 1.0 - t;
+
+		vec tmp0 = v0 * m0 + v1 * t0;
+		vec tmp1 = v1 * m0 + v2 * t0;
+		vec tmp2 = v2 * m0 + v3 * t0;
+		tmp0 = tmp0 * m0 + tmp1 * t0;
+		tmp1 = tmp1 * m0 + tmp2 * t0;
+
+		return tmp0 * m0 + tmp1 * t0;
 	}
 
-	template<class vec>
-	vec eval2d(const vec (&v)[4], Float t)
+	template<class vec, class val>
+	vec eval2d(const vec (&v)[4], val t)
 	{
 		return eval2d(v[0], v[1], v[2], v[3], t);
 	}
 
-	template<class vec>
-	vec eval2d(const Patch2D<vec>& patch, Float t)
-	{
-		return eval2d(patch.v0, patch.v1, patch.v2, patch.v3, t);
-	}
-	
 	template<class vec>
 	vec c1connect2d_prev(const vec& v, const vec& next)
 	{
@@ -64,10 +46,19 @@ namespace bezier
 	}
 
 
-	struct Patch3D
+	template<class vec>
+	struct Patch2D
 	{
-		Vec3 v[16]{};
+		using value = typename vec::value_type;
+
+		vec eval(value t)
+		{
+			return eval2d(vs, t);
+		}
+
+		vec vs[4]{};
 	};
+
 
 	// v ^
 	//   | v12 v13 v14 v15
@@ -77,12 +68,12 @@ namespace bezier
 	//   '----------------->
 	//                     u
 	// t = (u, v)
-	template<class vec_t>
-	vec_t eval3d(
-		const vec_t& v0 , const vec_t& v1 , const vec_t& v2 , const vec_t& v3 ,
-		const vec_t& v4 , const vec_t& v5 , const vec_t& v6 , const vec_t& v7 ,
-		const vec_t& v8 , const vec_t& v9 , const vec_t& v10, const vec_t& v11,
-		const vec_t& v12, const vec_t& v13, const vec_t& v14, const vec_t& v15, Float u, Float v)
+	template<class vec, class val>
+	vec eval3d(
+		const vec& v0 , const vec& v1 , const vec& v2 , const vec& v3 ,
+		const vec& v4 , const vec& v5 , const vec& v6 , const vec& v7 ,
+		const vec& v8 , const vec& v9 , const vec& v10, const vec& v11,
+		const vec& v12, const vec& v13, const vec& v14, const vec& v15, val u, val v)
 	{
 		auto vu0 = eval2d(v0 , v1 , v2 , v3 , u);
 		auto vu1 = eval2d(v4 , v5 , v6 , v7 , u);
@@ -92,8 +83,8 @@ namespace bezier
 		return eval2d(vu0, vu1, vu2, vu3, v);
 	}
 
-	template<class vec_t>
-	vec_t eval3d(const vec_t (&vs)[16], Float u, Float v)
+	template<class vec, class val>
+	vec eval3d(const vec (&vs)[16], val u, val v)
 	{
 		auto vu0 = eval2d(vs[0] , vs[1] , vs[2] , vs[3] , u);
 		auto vu1 = eval2d(vs[4] , vs[5] , vs[6] , vs[7] , u);
@@ -102,4 +93,29 @@ namespace bezier
 
 		return eval2d(vu0, vu1, vu2, vu3, v);
 	}
+
+
+	template<class vec>
+	struct Patch3D
+	{
+		using value = typename vec::value_type;
+
+		vec eval(value u, value v)
+		{
+			return eval3d(vs, u, v);
+		}
+
+		vec evalRow(int row, value t)
+		{
+			row *= 4;
+			return eval2d(vs[row], vs[row + 1], vs[row + 2], vs[row + 3], t);
+		}
+
+		vec evalCol(int col, value t)
+		{
+			return eval2d(vs[col], vs[col + 4], vs[col + 8], vs[col + 12], t);
+		}
+
+		vec vs[16]{};
+	};
 }
