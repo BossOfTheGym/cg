@@ -335,6 +335,7 @@ private: // utility
 	mat4 transform()
 	{
 		auto [w, h] = m_window->framebufferSize();
+		h = std::max(1, h); // minimization workaround
 
 		mat4 proj = perspective(radians(45.0f), (f32)w / h, 0.1f, 100.0f);
 		mat4 view = lookAt(vec3(3.0), vec3(0.0), vec3(0.0, 1.0, 0.0));
