@@ -132,7 +132,7 @@ public: // cnst & dstr
 	}
 
 public: // app state
-	bool init()
+	virtual bool init() override
 	{
 		if (m_initialized)
 			return true;
@@ -148,7 +148,7 @@ public: // app state
 		return true;
 	}
 
-	void deinit()
+	virtual void deinit() override
 	{
 		if (!m_initialized)
 			return;
@@ -164,30 +164,12 @@ public: // app state
 		m_initialized = false;
 	}
 
-	AppAction execute()
+	virtual AppAction execute() override
 	{
 		doGui();
 		swapDBuffered();
 		render();
 		return handleState();
-	}
-
-	void pause()
-	{
-		if (!m_paused)
-		{
-			deinitInput();
-			m_paused = true;
-		}
-	}
-
-	void resume()
-	{
-		if (m_paused)
-		{
-			initInput();
-			m_paused = false;
-		}
 	}
 
 private: // init & deinit

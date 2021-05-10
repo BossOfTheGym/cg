@@ -32,7 +32,7 @@ public:
 	}
 
 public:
-	bool init()
+	virtual bool init() override
 	{
 		if (m_initialized)
 			return true;
@@ -46,7 +46,7 @@ public:
 		return true;
 	}
 
-	void deinit()
+	virtual void deinit() override
 	{
 		if (!m_initialized)
 			return;
@@ -58,7 +58,7 @@ public:
 		m_initialized = false;
 	}
 
-	AppAction execute()
+	virtual AppAction execute() override
 	{
 		doGui();
 		auto act = handleState();
