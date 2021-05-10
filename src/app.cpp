@@ -18,6 +18,7 @@
 #include <iostream>
 
 
+// TODO : minimization problem, width and height turn to zero. It leads to crashes.
 class AppImpl
 {
 public:
