@@ -47,12 +47,11 @@ namespace
 	}
 	
 	vec3 coolTex(vec2 uv) {    
-	    const float sq2 = 1.41421356;
 	    const float pi  = 3.14159265359;
 	    const float pi2 = 2.0 * 3.14159265359;
 	    const float p   = 2.0;
 	    
-		uv -= mod(uv, vec2(1.0 / 64.0));
+		uv -= mod(uv, vec2(1.0 / 64.0)) - 1.0 / 128.0;
 	    return vec3(
 	        sin(uv.x * p*pi2) * sin(uv.y * p*pi2),
 	        sin(uv.x * p*pi2 + p) * sin(uv.y * p*pi2),
@@ -61,20 +60,19 @@ namespace
 	}
 	
 	vec3 badTrip(vec2 uv) {
-	    float t = iTime;
+	    float t = 0.5 * iTime;
 	    
-	    uv *= 1.0 + 0.2 * sin(t);
-	    
-	    for (float i = 0.0; i < 8.0; i++) {
-	        uv = abs(uv) - 0.25;
+		uv = mod(uv, 1.0) - 0.5;
+	    for (float i = 0.0; i < 4.0; i++) {
+	        uv = abs(uv) - 0.5;
 	        uv = rot(t) * uv;
+			uv = mod(uv, 1.0) - 0.5;
 	        t *= 0.75;
 	    }
+
 	    float cu = cube(uv, 0.5);
 	    float ci = circle(uv, 0.5);
 	    float c = mix(cu, ci, 0.5 + 0.5 * sin(iTime));
-	    
-	    uv = (1.0 + uv) / 2.0;
 	    
 	    vec3 tex = coolTex(uv);
 	    
