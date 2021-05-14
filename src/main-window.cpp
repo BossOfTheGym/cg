@@ -20,6 +20,13 @@ void MainWindow::mouseButtonEvent(int button, int action, int mods)
 		mouseButton.emit(button, action, mods);
 }
 
+void MainWindow::scrollEvent(double xOffset, double yOffset)
+{
+	ImGuiIO& io = ImGui::GetIO();
+	if (!io.WantCaptureMouse)
+		scrolled.emit(xOffset, yOffset);
+}
+
 void MainWindow::disconnectAll()
 {
 	mouseMoved.disconnectAll();
