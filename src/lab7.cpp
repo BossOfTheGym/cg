@@ -139,12 +139,19 @@ private: // init & deinit
 		m_yPrev = y;
 		m_dragging = false;
 
+		m_viewDir = normalize(vec3(-1.0));
+		m_viewPos = vec3(+5.0);
+		m_scroll = 0.0;
+		m_clamp = 100.0;
+
 		m_mouseClickedConn = m_window->mouseButton.connect([&](int button, int action, int mods){ onMouseClicked(button, action, mods); });
 		m_mouseMovedConn   = m_window->mouseMoved.connect([&](double x, double y){ onMouseMoved(x, y); });
+		m_scrollConn       = m_window->scrolled.connect([&](double xOffset, double yOffset){ onScrolled(xOffset, yOffset); });
 	}
 
 	void deinitInput()
 	{
+		m_scrollConn.release();
 		m_mouseClickedConn.release();
 		m_mouseMovedConn.release();
 	}
@@ -289,6 +296,11 @@ private: // input
 		}
 	}
 
+	void onScrolled(double xOffset, double yOffset)
+	{
+		m_scroll = clamp(m_scroll + yOffset, 0.0, m_clamp);
+	}
+
 	void handleInput()
 	{
 		if (m_dragging)
@@ -337,8 +349,10 @@ private: // utility
 		auto [w, h] = m_window->framebufferSize();
 		h = std::max(1, h); // minimization workaround
 
+		f32 coef = 8.0 * m_scroll / m_clamp;
+		vec3 eye = m_viewPos + coef * m_viewDir;
 		mat4 proj = perspective(radians(45.0f), (f32)w / h, 0.1f, 100.0f);
-		mat4 view = lookAt(vec3(3.0), vec3(0.0), vec3(0.0, 1.0, 0.0));
+		mat4 view = lookAt(eye, vec3(0.0), vec3(0.0, 1.0, 0.0));
 		mat4 model = mat4(1.0);
 
 		quat rot = m_track.rot;		
@@ -401,6 +415,11 @@ private:
 	Trackball m_track{quat(1.0, 0.0, 0.0, 0.0)};
 	sig::Connection m_mouseMovedConn;
 	sig::Connection m_mouseClickedConn;
+	sig::Connection m_scrollConn{};
+	vec3 m_viewDir{};
+	vec3 m_viewPos{};
+	double m_scroll{};
+	double m_clamp{};
 	double m_xPrev{};
 	double m_xCurr{};
 	double m_yPrev{};
