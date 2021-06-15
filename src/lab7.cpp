@@ -383,17 +383,13 @@ private: // operation
 		for (int i = 0; i <= m_lineSplit / m_showEvery; i++)
 		{
 			for (int j = 0; j <= m_lineSplit; j++)
-			{
 				*verts++ = m_patch.eval((f32)j / m_lineSplit, (f32)i / (m_lineSplit / m_showEvery));
-			}
 		}
 		// v-direction
 		for (int i = 0; i <= m_lineSplit / m_showEvery; i++)
 		{
 			for (int j = 0; j <= m_lineSplit; j++)
-			{
 				*verts++ = m_patch.eval((f32)i / (m_lineSplit / m_showEvery), (f32)j / m_lineSplit);
-			}
 		}
 
 		m_vertexBuffer->flush();
