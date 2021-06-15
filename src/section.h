@@ -67,9 +67,9 @@ namespace sect
 
 	// TODO : O(n^2) memory consumption removal, see https://bit.ly/3pUU4df
 	// NOTE : sweeping from up to down (from upper y to lower), from left to right (from left x to right)
-	// NOTE : overlapping must processed correctly but rather stangely: after new overlapping segment is found new intersection will be reported
+	// NOTE : overlapping is processed correctly but rather stangely: after new overlapping segment is found new intersection will be reported. Can be solved with postprocessing
 	// NOTE : segments are stored from left to right in what order they intersect the sweep line
-	// NOTE : algorithm (in theory) doesn't care in what order we insert horizontal order but there are inserted in special manner
+	// NOTE : algorithm (can be shown) doesn't care in what order we insert horizontal order but there are inserted in special manner
 	// NOTE : horizontal segments are processed in the following manner:
 	// 1) upper end is its leftmost end, lower end is its rightmost end
 	// 2) horizontal segment intersects sweep line in sweep.x so it can be processed by the algorithm correctly
