@@ -176,7 +176,7 @@ namespace sect
 			Vec2 point;
 
 			// segments that have their lower end in the point
-			// they will be deleted, added after upper ends are processed, order is not neccessary
+			// they will be deleted; they are added after upper ends are processed; order is not neccessary
 			std::vector<SweepLineIt> lowerEnd;
 
 			// segments that intersect in the point will not be stored explitly
@@ -184,7 +184,7 @@ namespace sect
 			// intersection count is not stored explicitly
 
 			// segments that have their upper end in the point
-			// they will be inserted, I will search next lower y (if there is no so it can be chosen arbitrarly)
+			// they will be inserted sorted by polar angle together with order-reversed intersecting segments
 			std::vector<Handle> upperEnd;
 		};
 
@@ -398,7 +398,6 @@ namespace sect
 			return intersections;
 		}
 
-		// NOTE : checked in handleEventPoint
 		void reportIntersection()
 		{
 			// lowed-end segments are already inserted
@@ -417,7 +416,6 @@ namespace sect
 			m_intersections.push_back(std::move(inter));
 		}
 
-		// NOTE : checked in handleEventPoint
 		void removeLowerEndSegments()
 		{
 			for (auto& it : m_event.lowerEnd)
@@ -480,7 +478,7 @@ namespace sect
 		void findNewEventPoints(u32 intersections)
 		{
 			// TODO : check possible impossible
-			// TODO : O(n^2) memory consumption removal, see https://ru.wikipedia.org/wiki/Алгоритм_Бентли_—_Оттманна
+			// TODO : O(n^2) memory consumption removal, see https://bit.ly/3pUU4df
 
 			auto beg = m_sweepLine.begin();
 			auto end = m_sweepLine.end();
@@ -496,13 +494,13 @@ namespace sect
 			{
 				if (l0 != beg)
 				{
-					if (l0 != end) // should never happen but happens
+					if (l0 != end) // must never happen but happens due to numerical errors
 						findNewEvent(l0 - 1, l0);
 				}
 
 				if (l1 != end)
 				{
-					if (l1 - 1 != end) // should never happen but happens
+					if (l1 - 1 != end) // must never happen but happens due to numerical errors
 						findNewEvent(l1 - 1, l1);
 				}
 			}
@@ -511,8 +509,6 @@ namespace sect
 		// NOTE : l0 preceds l1, l0 != end(), l1 != end()
 		void findNewEvent(SweepLineIt l0, SweepLineIt l1)
 		{			
-			// TODO : check possible impossible
-
 			Vec2 i0, i1;
 			auto status = intersectSegSeg(m_sampler(*l0), m_sampler(*l1), i0, i1); 
 			if (status == Status::Intersection && m_eventQueue.preceds(m_event, i0))
