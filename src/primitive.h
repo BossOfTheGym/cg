@@ -73,6 +73,8 @@ namespace prim
 	// orientation
 	bool inAABB(const AABB2& aabb, const Vec2& vec);
 
+	bool inAABB(const AABB2& tested, const AABB2& aabb);
+
 	bool inTriangle(const Triangle2& tri, const Vec2& vec);
 
 	bool inTriangle(const Vec2& v0, const Vec2& v1, const Vec2& v2, const Vec2& v);

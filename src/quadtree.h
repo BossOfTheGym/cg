@@ -379,6 +379,11 @@ namespace qtree
 			if (!prim::overlaps(box, node->box))
 				return;
 
+			if (prim::inAABB(box, node->box))
+			{
+				collectFromNode(node, result);
+				return;
+			}
 			if (!node->leaf())
 			{
 				for (auto& child : node->children)
@@ -392,6 +397,17 @@ namespace qtree
 						result.push_back(elem);
 				}
 			}
+		}
+
+		void collectFromNode(Node* node, std::vector<Elem>& result)
+		{
+			if (node->leaf())
+			{
+				result.insert(result.end(), node->data.begin(), node->data.end());
+				return;
+			}
+			for (auto& child : node->children)
+				collectFromNode(child, result);
 		}
 
 	public:
@@ -415,33 +431,7 @@ namespace qtree
 		void query(const AABB& box, std::vector<Elem>& result)
 		{
 			result.clear();
-
 			query(m_root, box, result);
-			/*std::queue<Node*> nodes;
-
-			nodes.push(m_root);
-			while(!nodes.empty())
-			{
-				auto curr = nodes.front();
-				nodes.pop();
-
-				if (!prim::overlaps(box, curr->box))
-					continue;
-
-				if (!curr->leaf())
-				{
-					for (auto& child : curr->children)
-						nodes.push(child);
-				}
-				else
-				{
-					for (auto& elem : curr->data)
-					{
-						if (prim::inAABB(box, m_position(elem)))
-							result.push_back(elem);
-					}
-				}
-			}*/
 		}
 		
 		#ifdef DEBUG_QTREE
@@ -476,7 +466,7 @@ namespace qtree
 		NodeAllocator m_allocator;
 
 		Node* m_root{nullptr};
-		u32 m_maxDepth{32};
+		u32 m_maxDepth{8};
 	};
 
 

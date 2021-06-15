@@ -44,6 +44,12 @@ namespace prim
 			&& aabb.v0.y <= vec.y && vec.y <= aabb.v1.y;
 	}
 
+	bool inAABB(const AABB2& tested, const AABB2& aabb)
+	{
+		return tested.v0.x <= aabb.v0.x && aabb.v1.x <= tested.v1.x
+			&& tested.v0.y <= aabb.v0.y && aabb.v1.y <= tested.v1.y;
+	}
+
 	bool inTriangle(const Triangle2& tri, const Vec2& v)
 	{
 		return cross_z(tri.v1 - tri.v0, v - tri.v1) >= 0
