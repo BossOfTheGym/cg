@@ -7,46 +7,41 @@
 #include <algorithm>
 #include <vector>
 
-
-// just general description
-// TODO : this is little bit primitive representation of dcel
-// TODO : maybe go full adjacency?
 namespace ds
 {
-	using vec2 = prim::vec2;
+	using prim::vec2;
+	using handle = u32;
+
+	constexpr handle null = std::numeric_limits<handle>::max();
 
 	struct Vertex;
 	struct HalfEdge;
 	struct Face;
 
-	// TODO : maybe go full adjacency?
 	struct Vertex
 	{
-		vec2* pos{};
-		HalfEdge* edge{};
+		vec2 pos{};
+		handle edge{null};
 	};
 
 	struct HalfEdge
 	{
-		HalfEdge* prev{};
-		HalfEdge* next{};
-		HalfEdge* twin{};
-		Vertex* v0{};
-		Face* face{};
+		handle prevEdge{null};
+		handle nextEdge{null};
+		handle twinEdge{null};
+		handle vertex{null};
+		handle face{null};
 	};
 
-	// TODO : maybe go full adjacency?
 	struct Face
 	{
-		HalfEdge* inner{};
-		HalfEdge* outer{};
+		handle inner{};
 	};
 
 	struct Bundle
 	{
-		std::vector<vec2>     vertexData{};
 		std::vector<Vertex>   vertices{};
-		std::vector<HalfEdge> halfEdges{};
+		std::vector<HalfEdge> edges{};
 		std::vector<Face>     faces{};
 	};
 }
